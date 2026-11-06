@@ -1,0 +1,96 @@
+{
+  "checks": {
+    "main_eqbw20": {
+      "L1_identities": {
+        "max_abs_error_db": 17.075701760979356,
+        "passed": false
+      },
+      "L2_reciprocity": {
+        "max_abs_error_db": 0.0,
+        "passed": true
+      },
+      "L3_frequency_offset": {
+        "expected_db": 6.265289041619856,
+        "max_abs_error_db": 3.8191672047105385e-14,
+        "passed": true
+      },
+      "L4_direction_offset": {
+        "per_carrier": {
+          "3.5e+09": {
+            "offset_db": 1.9242982390206436,
+            "spread_db": 1.4210854715202004e-14
+          },
+          "7.2e+09": {
+            "offset_db": 1.9242982390206436,
+            "spread_db": 0.0
+          }
+        },
+        "passed": true
+      },
+      "L7_monotone_frequency": {
+        "detail": [
+          {
+            "profile": "F1",
+            "direction": "DL",
+            "violations": 0
+          },
+          {
+            "profile": "F1",
+            "direction": "UL",
+            "violations": 0
+          },
+          {
+            "profile": "F2",
+            "direction": "DL",
+            "violations": 0
+          },
+          {
+            "profile": "F2",
+            "direction": "UL",
+            "violations": 0
+          }
+        ],
+        "passed": true
+      },
+      "L6_ul_allocation": {
+        "passed": true
+      },
+      "L5_mapping": {
+        "passed": true
+      }
+    },
+    "sens_nf_cfgB_at_7p2": {
+      "L1_identities": {
+        "max_abs_error_db": 17.075701760979356,
+        "passed": false
+      },
+      "L2_reciprocity": {
+        "max_abs_error_db": 0.0,
+        "passed": true
+      },
+      "L6_ul_allocation": {
+        "passed": true
+      },
+      "L5_mapping": {
+        "passed": true
+      }
+    },
+    "sens_eqbw100": {
+      "L1_identities": {
+        "max_abs_error_db": 24.361626470407558,
+        "passed": false
+      },
+      "L2_reciprocity": {
+        "max_abs_error_db": 0.0,
+        "passed": true
+      },
+      "L6_ul_allocation": {
+        "passed": true
+      },
+      "L5_mapping": {
+        "passed": true
+      }
+    }
+  },
+  "all_checks_passed": false
+}

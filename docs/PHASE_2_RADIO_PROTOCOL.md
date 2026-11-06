@@ -328,6 +328,57 @@ preserved. Reported: on the links where ray tracing was shown valid, ray
 tracing minus UMa median is +0.02 / -0.74 dB (LOS, n=9, 3.5 / 7.2 GHz) and
 +2.40 / +2.81 dB (near-NLOS ue03 and ue11).
 
+### E1.3 single-link budgets: PASSED (2026-11-06)
+
+Pre-registered in `configs/e1/e1_3_link_budget.json` (commit 472e094, before
+any result): parameters with sources, TR 36.942 V19.0.0 Table A.1 rate
+mapping, feasibility profiles F1 (link closure, SNR >= -10 dB, UL on 1 PRB;
+primary) and F2 (M.2410-equivalent, derived: SE >= 2.25 DL / 1.5 UL
+bit/s/Hz), classes K1-K5, checks L1-L8. The first run FAILED check L1: for
+uplink rows without any achievable rate the record paired the 1-PRB SNR with
+full-band noise (error exactly 10 log10(N_PRB)); a reporting bug, verdicts
+unaffected (`validation_run1_failed_L1.json` kept). Fixed in 13360ff with a
+regression test; results regenerated from committed code are byte-identical.
+All checks L1-L7 pass in all three cases; 37/37 unit tests pass; an
+independent hand calculation reproduces every median SNR within 7e-10 dB.
+Files: `results/phase2/e1_3_link_budget/` (64,800 records).
+
+Structure of the main case (equal 20 MHz, isotropic, no interference):
+DL SNR = 138.36 - L; UL SNR on 1 PRB = 136.44 - L; UL SNR on the full band =
+119.36 - L (L = total loss, dB). The full-band DL/UL difference is 19.00 dB
+(21 dB transmit power minus 2 dB noise figure); the carrier difference is the
+model's 6.27 dB. Under F2 both directions need SNR >= 10.95 dB, so the 7.2 GHz
+downlink works up to L(7.2) = 127.4 dB while the uplink needs about 108.4 dB:
+K2 ("7.2 GHz DL usable only with the 3.5 GHz UL") is a loss window exactly
+6.27 dB wide, and K3 ("7.2 GHz DL works, no UL meets F2 on either carrier")
+a window 12.7 dB wide.
+
+| Case, profile | DL 3.5 | UL 3.5 | DL 7.2 | UL 7.2 | K1 | K2 | K3 | K4 |
+|---|---|---|---|---|---|---|---|---|
+| main 20 MHz, F1 | 1.000 | 0.999 | 0.995 | 0.990 | 0.990 | 0.005 | 0.000 | 0.005 |
+| main 20 MHz, F2 | 0.860 | 0.577 | 0.756 | 0.528 | 0.528 | 0.049 | 0.180 | 0.244 |
+| 7.2 GHz NF of Config B, F2 | 0.860 | 0.577 | 0.707 | 0.510 | 0.510 | 0.066 | 0.131 | 0.293 |
+| equal 100 MHz, F2 | 0.855 | 0.519 | 0.751 | 0.454 | 0.454 | 0.064 | 0.232 | 0.249 |
+
+K5 (7.2 GHz UL feasible without its DL) is 0 everywhere; K1-K4 partition all
+outcomes. F2 by distance (main): K2 peaks at 50-100 m (10.4%); K3 dominates
+at 200-300 m (64.2%); K4 reaches 96.5% at 450-600 m.
+
+What E1.3 shows: link closure (F1) is not the limit in this baseline; at a
+service level (F2) the uplink is the binding direction on BOTH carriers, and
+the region where a 3.5 GHz uplink rescues the 7.2 GHz downlink is narrow
+(6.27 dB of loss) compared with the region where no uplink meets the service
+level. Widening the band at constant PSD (100 MHz) enlarges K3: the UE's
+fixed power is spread over more spectrum.
+
+What E1.3 does NOT show (stated with every use of these numbers):
+fractions are over 27 distance-stratified positions x 200 shadowing
+realizations, NOT area-weighted coverage (E1c); single isotropic elements, so
+no array gain (E1.4 will shift every threshold); no interference (SNR, not
+SINR); no O2I loss; E-UTRA-era rate mapping (E1.5 calibrates); F2 is a derived
+equivalence, not an ITU requirement; the 6.27 dB carrier gap is a model
+assumption.
+
 ### Original options considered
 
 Recommended (adopted): geometry-aware 3GPP model as the main engine. TR 38.901 UMa path

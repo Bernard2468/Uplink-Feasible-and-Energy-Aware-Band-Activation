@@ -1,0 +1,17 @@
+{
+  "generated_utc": "2026-11-06T23:43:23.523882+00:00",
+  "tool": "scripts/e1_link_budget.py",
+  "git_head_at_run": "13360ffd32e3c1dcc13993927cc03355d47e484e",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "config": "configs/e1/e1_3_link_budget.json",
+  "config_sha256": "623190f061a9d8ce11de12cde6534f94cf6aef3acc7f8841c2e175bccd465574",
+  "propagation_manifest_sha256": "88ccb5de3ad855068270c08e454e677ed81ec7e97b3c4a5743eb444c1d6a1298",
+  "realizations_sha256": "f2e3ef18bf6c0b19f33f43af9f44c07d8b321e50d13ad19da42e8f31236505ea",
+  "outputs_sha256": {
+    "records.csv.gz": "8f599580845de8f36f262b6c1beb6d8f9ad5c7a9b3d881dc8c6194a12fa264b6",
+    "links_median.csv": "d84e0e47499c930d50e242c60d4dc842b7def55e8924ff0097e665a711f580a3"
+  },
+  "n_records": 64800,
+  "all_checks_passed": true
+}

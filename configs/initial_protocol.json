@@ -1,0 +1,41 @@
+{
+  "project_id": "cmwave6g",
+  "version": "phase1-pre-registration-draft-2026-11-06",
+  "primary_question": "Net energy break-even conditions for selective 7.2 GHz activation under per-UE UL/DL feasibility",
+  "stage_1": {
+    "sites": 1,
+    "users": 1,
+    "active_band_ghz": [
+      3.5
+    ],
+    "status": "reference NR example; not yet calibrated"
+  },
+  "stage_2": {
+    "sites": 1,
+    "users": 1,
+    "candidate_bands_ghz": [
+      3.5,
+      7.2
+    ],
+    "status": "future controlled integration"
+  },
+  "model_comparisons": [
+    "equal_bandwidth_frequency_comparison",
+    "added_spectrum_capacity_comparison"
+  ],
+  "primary_metrics": [
+    "whole_network_energy_j",
+    "per_ue_ul_outage",
+    "per_ue_dl_outage",
+    "delivered_ul_mbps",
+    "delivered_dl_mbps"
+  ],
+  "secondary_metrics": [
+    "packet_loss_fraction",
+    "application_e2e_delay_ms",
+    "switch_count",
+    "wake_up_energy_j",
+    "controller_decision_ms"
+  ],
+  "result_status": "NO EMPIRICAL RESULTS"
+}

@@ -1,0 +1,44 @@
+# Shared Python environment: Python 3.12 (deadsnakes PPA) on Ubuntu 22.04 in WSL2.
+# Created by env/setup_python_env.sh; exact resolved versions are written to
+# env/requirements-lock.txt after installation.
+#
+# Source of truth for the integration-critical pins below: the official ns-3.48
+# guide doc/installation/source/sionna-rt.rst ("Instructions are for Python 3.12
+# because that is the version we have tested"), which installs
+#   sionna==1.2.0  sionna-rt==1.2.0  pybind11==2.11.1  cppyy==3.5.0
+# and configures ns-3 with --enable-python-bindings.
+#
+# Why ONE environment: ns-3's Sionna RT channel model (src/spectrum) and the
+# 5G-LENA example cttc-nr-demo-sionna-rt are only built if cppyy, sionna.rt and
+# pybind11 are importable by the Python seen at configure time, and at run time
+# the C++ code imports sionna.rt and numpy from that same Python.
+
+# --- ns-3 / Sionna integration (versions as tested by ns-3) -----------------
+# Ray tracing; pulls mitsuba==3.7.1, drjit==1.2.0. Same version is used for
+# standalone Python ray tracing, so both simulation levels share one engine.
+sionna-rt==1.2.0
+pybind11==2.11.1
+cppyy==3.5.0
+# ns-3's tested set has numpy<2.0 (pinned by sionna==1.2.0), and pybind11 2.11
+# predates NumPy 2 support. The full 'sionna' package (TensorFlow) is NOT
+# installed: the ns-3 C++ code imports only sionna.rt and numpy (verified in
+# src/spectrum/model/sionna-rt-channel-model.cc).
+numpy==1.26.4
+
+# --- Build tool for ns-3 -------------------------------------------------------
+# ns-3.48 requires CMake >= 3.25 (cmake_minimum_required 3.25..3.25); Ubuntu
+# 22.04 ships 3.22.1. The venv copy takes precedence on PATH when active.
+# Pinned to the final 3.x release (avoids CMake 4 policy changes).
+cmake==3.31.10
+
+# --- Optimization benchmarks (exact MILP / CP-SAT) ----------------------------
+highspy==1.15.1
+# 9.14.6206 is the newest OR-Tools allowing numpy 1.x (9.15 requires numpy>=2.0.2,
+# which conflicts with the ns-3 tested numpy 1.26.4 above).
+ortools==9.14.6206
+
+# --- Analysis and testing (resolved by pip; see lock file) --------------------
+scipy
+pandas
+matplotlib
+pytest

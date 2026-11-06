@@ -1,0 +1,7 @@
+# Force LF line endings: these files run inside WSL/Linux, where CRLF breaks
+# bash scripts ("$'\r': command not found"), even when edited on Windows.
+* text=auto eol=lf
+*.png binary
+*.npz binary
+*.h5 binary
+*.zip binary

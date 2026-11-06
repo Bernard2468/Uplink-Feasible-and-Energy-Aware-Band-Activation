@@ -1,0 +1,44 @@
+cttc-nr-demo-sionna-rt [Program Options] [General Arguments]
+
+Program Options:
+    --Scenario:               Propagation scenario [simple_street_canyon_with_cars]
+    --outputFileName:         Output file name for scene images [sionna-rt-scene-]
+    --outputFileDirectory:    Output file directory for scene images [sionna-rt-images]
+    --cameraPosition:         Camera position for scene rendering [70:-20:190]
+    --cameraLookAt:           Camera look-at point for scene rendering [0:0:4]
+    --maxDepth:               Maximum reflection/refraction depth [1]
+    --los:                    Include line-of-sight path [true]
+    --specularReflection:     Enable specular reflections [false]
+    --diffuseReflection:      Enable diffuse reflections [false]
+    --refraction:             Enable refractions [false]
+    --syntheticArray:         Use synthetic array processing [false]
+    --diffraction:            Enable diffraction [false]
+    --edgeDiffraction:        Enable edge diffraction [false]
+    --gNbNum:                 The number of gNbs in multiple-ue topology [1]
+    --ueNumPergNb:            The number of UE per gNb in multiple-ue topology [2]
+    --logging:                Enable logging [false]
+    --doubleOperationalBand:  If true, simulate two operational bands with one CC for each band,and each CC will have 1 BWP that spans the entire CC. [false]
+    --packetSizeUll:          packet size in bytes to be used by ultra low latency traffic [100]
+    --packetSizeBe:           packet size in bytes to be used by best effort traffic [1252]
+    --lambdaUll:              Number of UDP packets in one second for ultra low latency traffic [10000]
+    --lambdaBe:               Number of UDP packets in one second for best effort traffic [10000]
+    --simTime:                Simulation time [+500ms]
+    --numerologyBwp1:         The numerology to be used in bandwidth part 1 [4]
+    --centralFrequencyBand1:  The system frequency to be used in band 1 [2.8e+10]
+    --bandwidthBand1:         The system bandwidth to be used in band 1 [5e+07]
+    --numerologyBwp2:         The numerology to be used in bandwidth part 2 [2]
+    --centralFrequencyBand2:  The system frequency to be used in band 2 [2.82e+10]
+    --bandwidthBand2:         The system bandwidth to be used in band 2 [5e+07]
+    --totalTxPower:           total tx power that will be proportionally assigned to bands, CCs and bandwidth parts depending on each BWP bandwidth  [35]
+    --simTag:                 tag to be appended to output filenames to distinguish simulation campaigns [default]
+    --outputDir:              directory where to store simulation results [./]
+
+General Arguments:
+    --PrintGlobals:              Print the list of globals.
+    --PrintGroups:               Print the list of groups.
+    --PrintGroup=[group]:        Print all TypeIds of group.
+    --PrintTypeIds:              Print all TypeIds.
+    --PrintAttributes=[typeid]:  Print all attributes of typeid.
+    --PrintVersion:              Print the ns-3 version.
+    --PrintHelp:                 Print this help message.
+

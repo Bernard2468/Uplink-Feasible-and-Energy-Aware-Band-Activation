@@ -11,6 +11,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PATCH_DIR="$ROOT/env/patches"
 NS3_BRANCH="ns-3.48+mr2929-backport"
+# Research lock from the verified WSL checkout. Abort on drift instead of silently
+# rebuilding a newer state of the moving 5g-lena-v5.1.y branch.
+NR_COMMIT="cedceadda17392c90587fb9400eb9b1f8c236713"
 BASE="${1:-$HOME/6g-external}"
 # Parallel compile jobs. Each g++ job on the nr module can need 1-2 GB RAM;
 # with WSL capped at ~10 GB, 4 jobs is safe. Override: JOBS=2 bash ...
@@ -69,10 +72,10 @@ if [ -e ns-3-dev ]; then
   # ns-3.48 plus exactly our patches on $NS3_BRANCH. Never overwrite sources.
   cd ns-3-dev
   NS3_COMMIT="$(git rev-parse 'ns-3.48^{commit}')"
-  if [ "$(git -C contrib/nr rev-parse --abbrev-ref HEAD 2>/dev/null)" != "5g-lena-v5.1.y" ] \
+  if [ "$(git -C contrib/nr rev-parse HEAD 2>/dev/null)" != "$NR_COMMIT" ] \
      || [ -n "$(git status --porcelain --untracked-files=no)" ] \
      || [ -n "$(git -C contrib/nr status --porcelain --untracked-files=no)" ]; then
-    echo "Existing $BASE/ns-3-dev has local changes or a wrong NR branch. Refusing to touch it." >&2
+    echo "Existing $BASE/ns-3-dev has local changes or contrib/nr is not at the pinned commit $NR_COMMIT. Refusing to touch it." >&2
     exit 1
   fi
   if [ "$(git rev-parse HEAD)" = "$NS3_COMMIT" ]; then
@@ -96,7 +99,8 @@ else
   cd contrib
   git clone https://gitlab.com/cttc-lena/nr.git
   cd nr
-  git checkout 5g-lena-v5.1.y
+  # The v5.1.y branch can advance; checkout the exact verified revision.
+  git checkout "$NR_COMMIT"
   cd ../..
 fi
 # --enable-python-bindings is required by the official ns-3.48 Sionna guide

@@ -1,0 +1,9 @@
+SYNTHETIC ABSTRACT SOFTWARE TEST — NOT 6G MEASUREMENTS
+Created /mnt/c/Users/FJ/Desktop/Uplink-Feasible and Energy-Aware Band Activation/results/synthetic_smoke/results.csv
+Created /mnt/c/Users/FJ/Desktop/Uplink-Feasible and Energy-Aware Band Activation/results/synthetic_smoke/schedules.csv
+Created /mnt/c/Users/FJ/Desktop/Uplink-Feasible and Energy-Aware Band Activation/results/synthetic_smoke/run_manifest.json
+{'seed': 0, 'policy': 'low_band_only', 'energy_j': 325440.0, 'violations': 14, 'violation_fraction': 0.291667, 'wake_events': 0, 'feasible': False, 'status': 'ok'}
+{'seed': 0, 'policy': 'always_fr3_on', 'energy_j': 533400.0, 'violations': 0, 'violation_fraction': 0.0, 'wake_events': 1, 'feasible': True, 'status': 'ok'}
+{'seed': 0, 'policy': 'threshold_online', 'energy_j': 387720.0, 'violations': 0, 'violation_fraction': 0.0, 'wake_events': 3, 'feasible': True, 'status': 'ok'}
+{'seed': 0, 'policy': 'hysteresis_online', 'energy_j': 395760.0, 'violations': 0, 'violation_fraction': 0.0, 'wake_events': 2, 'feasible': True, 'status': 'ok'}
+{'seed': 0, 'policy': 'offline_clairvoyant_bound', 'energy_j': 387720.0, 'violations': 0, 'violation_fraction': 0.0, 'wake_events': 3, 'feasible': True, 'status': 'ok'}

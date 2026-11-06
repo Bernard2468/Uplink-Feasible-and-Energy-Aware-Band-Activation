@@ -1,6 +1,6 @@
 import unittest
 from itertools import product
-from cmwave.control import Energy, Slot, capacities, evaluate, feasible, offline_optimum, transition_j, policies
+from cmwave.control import Energy, Slot, capacities, evaluate, feasible, offline_optimum, transition_j, policies, threshold_online, hysteresis_online, threshold_current_slot_oracle
 from cmwave.scenarios import create_synthetic_trace
 
 
@@ -69,6 +69,50 @@ class CoreTests(unittest.TestCase):
                 self.assertAlmostEqual(evaluate(slots, dp_schedule, self.e)['energy_j'], min(candidates))
             else:
                 self.assertIsNone(dp_schedule)
+
+
+    def test_online_policies_do_not_see_current_slot_realization(self):
+        quiet = Slot(2, 3, 10, 20, 8, 30)
+        busy = Slot(14, 40, 10, 20, 8, 30)
+        # No observation before slot zero; cannot respond to current demand.
+        for policy in (threshold_online, hysteresis_online):
+            self.assertEqual(policy([quiet], self.e), [0])
+            self.assertEqual(policy([busy], self.e), [0])
+            # At t=1 the controllers can respond to slot 0, not slot 1.
+            self.assertEqual(policy([quiet, busy], self.e)[1],
+                             policy([quiet, quiet], self.e)[1])
+            self.assertNotEqual(policy([busy, quiet], self.e)[1],
+                                policy([quiet, quiet], self.e)[1])
+
+    def test_current_slot_policy_is_honestly_labeled_oracle(self):
+        busy = Slot(14, 40, 10, 20, 8, 30)
+        self.assertEqual(threshold_current_slot_oracle([busy], self.e), [1])
+        self.assertEqual(threshold_online([busy], self.e), [0])
+        self.assertFalse(evaluate([busy], threshold_online([busy], self.e), self.e)['feasible'])
+        self.assertIn('threshold_current_slot_oracle', policies([busy], self.e))
+
+    def test_high_switch_cost_creates_nontrivial_multi_slot_tradeoff(self):
+        # Illustrative synthetic cost only: NOT a calibrated 7 GHz radio model.
+        slow = Energy(slot_s=60, base_w=110, fr3_active_w=75,
+                      fr3_sleep_w=3, wake_j=5000, wake_delay_s=3)
+        busy = Slot(14, 35, 10, 20, 8, 30)
+        quiet = Slot(3, 5, 10, 20, 8, 30)
+        trace = [busy, quiet, busy]
+        oracle_greedy = threshold_current_slot_oracle(trace, slow)
+        opt = offline_optimum(trace, slow)
+        self.assertEqual(oracle_greedy, [1, 0, 1])
+        self.assertEqual(opt, [1, 1, 1])
+        self.assertLess(evaluate(trace, opt, slow)['energy_j'],
+                        evaluate(trace, oracle_greedy, slow)['energy_j'])
+
+    def test_online_outages_are_counted_not_silently_discarded(self):
+        quiet = Slot(2, 3, 10, 20, 8, 30)
+        busy = Slot(14, 40, 10, 20, 8, 30)
+        trace = [quiet, busy, quiet]
+        result = evaluate(trace, threshold_online(trace, self.e), self.e)
+        self.assertFalse(result['feasible'])
+        self.assertEqual(result['constraint_violations'], 1)
+        self.assertAlmostEqual(result['violation_fraction'], 1/3)
 
     def test_input_validation(self):
         with self.assertRaises(ValueError):

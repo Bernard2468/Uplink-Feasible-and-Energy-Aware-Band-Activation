@@ -87,8 +87,12 @@ def evaluate(slots: list[Slot], schedule: list[int], energy: Energy) -> dict:
             'wake_events': wakes, 'feasible': violations == 0, 'slot_energy_j': energies}
 
 
-def threshold_online(slots: list[Slot], energy: Energy) -> list[int]:
-    """Online capacity-triggered heuristic. Does not foresee future demand."""
+def threshold_current_slot_oracle(slots: list[Slot], energy: Energy) -> list[int]:
+    """INFORMATION-ADVANTAGED benchmark: knows realized demand and channel in each slot.
+
+    This is NOT a deployable causal controller when slot demand/channel is only
+    observed after activation. It is also NOT guaranteed globally energy-optimal.
+    """
     prev = 0
     schedule = []
     for slot in slots:
@@ -98,18 +102,45 @@ def threshold_online(slots: list[Slot], energy: Energy) -> list[int]:
     return schedule
 
 
+def threshold_online(slots: list[Slot], energy: Energy) -> list[int]:
+    """Causal one-slot-lag heuristic: decision at t sees only realized slot t-1.
+
+    Time zero starts OFF without an available observation. In the current
+    abstract model, previous-slot demands and capacities are used as a naive
+    one-step persistence forecast. Actions may violate realized slot QoS; that
+    violation MUST be counted and cannot be called guaranteed feasibility.
+    """
+    previous_action = 0
+    schedule = []
+    for t in range(len(slots)):
+        observed = slots[t - 1] if t > 0 else None
+        action = (0 if observed is None or feasible(observed, previous_action, 0, energy)
+                  else 1)
+        schedule.append(action)
+        previous_action = action
+    return schedule
+
+
 def hysteresis_online(slots: list[Slot], energy: Energy, off_margin: float = 0.78) -> list[int]:
-    """Online conservative shut-down policy (uses only current demand)."""
+    """Causal one-slot-lag heuristic with conservative off switching.
+
+    Previous realized demand/capacities are the sole observations. No access
+    to realized current-slot demand, even for t=0. QoS remains ex-post tested.
+    """
     if not (0 < off_margin <= 1):
         raise ValueError('off_margin must be in (0,1]')
     prev = 0
     schedule = []
-    for slot in slots:
-        off_can_serve = feasible(slot, prev, 0, energy)
-        if not off_can_serve:
+    for t in range(len(slots)):
+        observed = slots[t - 1] if t > 0 else None
+        if observed is None:
+            action = 0
+        elif not feasible(observed, prev, 0, energy):
             action = 1
-        elif prev == 1 and (slot.ul_demand_mbps > off_margin * slot.low_ul_capacity_mbps or
-                                slot.dl_demand_mbps > off_margin * slot.low_dl_capacity_mbps):
+        elif prev == 1 and (
+            observed.ul_demand_mbps > off_margin * observed.low_ul_capacity_mbps
+            or observed.dl_demand_mbps > off_margin * observed.low_dl_capacity_mbps
+        ):
             action = 1
         else:
             action = 0
@@ -150,7 +181,8 @@ def policies(slots: list[Slot], energy: Energy) -> dict[str, Optional[list[int]]
     return {
         'low_band_only': [0] * len(slots),
         'always_fr3_on': [1] * len(slots),
-        'threshold_online': threshold_online(slots, energy),
-        'hysteresis_online': hysteresis_online(slots, energy),
+        'threshold_lagged_online': threshold_online(slots, energy),
+        'threshold_current_slot_oracle': threshold_current_slot_oracle(slots, energy),
+        'hysteresis_lagged_online': hysteresis_online(slots, energy),
         'offline_clairvoyant_bound': offline_optimum(slots, energy),
     }

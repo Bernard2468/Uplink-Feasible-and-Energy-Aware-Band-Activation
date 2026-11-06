@@ -1,0 +1,14 @@
+test_determinism (test_control.CoreTests) ... ok
+test_dp_matches_exhaustive_search_small_traces (test_control.CoreTests) ... ok
+test_dp_never_worse_than_other_feasible_policies (test_control.CoreTests) ... ok
+test_fri_capacity_wake_decrease (test_control.CoreTests) ... ok
+test_impossible_case_returns_none (test_control.CoreTests) ... ok
+test_input_validation (test_control.CoreTests) ... ok
+test_single_slot_off_optimal (test_control.CoreTests) ... ok
+test_sleep_energy (test_control.CoreTests) ... ok
+test_uplink_guard_stops_false_feasibility (test_control.CoreTests) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.050s
+
+OK

@@ -1,0 +1,41 @@
+Backport verification. HEAD d083a17a3fb98f527a2711c2d9de3b69d841f895 on ns-3.48+mr2929-backport; parent d2add90b452d600cfb4859baed8e9ea633519447 (ns-3.48 = d2add90b452d600cfb4859baed8e9ea633519447)
+Fri Nov  6 17:51:44 GMT 2026
+Finished executing the following commands:
+/home/dhopes/.venvs/cmwave/bin/cmake --build /home/dhopes/6g-external/ns-3-dev/cmake-cache -j 4
+build exit=0
+=== three-gpp-channel suite (all cases):
+PASS three-gpp-channel 28.189 s
+  PASS Check the channel consistency feature for losCondition LOS, speed=30.000000 kmph, and freq=4.000000 GHz. 0.642 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=30.000000 kmph, and freq=4.000000 GHz. 0.848 s
+  PASS Check the channel consistency feature for losCondition LOS, speed=30.000000 kmph, and freq=30.000000 GHz. 0.591 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=30.000000 kmph, and freq=30.000000 GHz. 0.923 s
+  PASS Check the channel consistency feature for losCondition LOS, speed=10.000000 kmph, and freq=30.000000 GHz. 0.540 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=10.000000 kmph, and freq=30.000000 GHz. 0.954 s
+  PASS Check the channel consistency feature for losCondition LOS, speed=10.000000 kmph, and freq=4.000000 GHz. 0.660 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=10.000000 kmph, and freq=4.000000 GHz. 1.643 s
+  PASS Check the dimensions and the norm of the channel matrix 2.366 s
+  PASS Check the dimensions and the norm of the channel matrix 5.047 s
+  PASS Check the dimensions and the norm of the channel matrix 1.262 s
+  PASS Check the dimensions and the norm of the channel matrix 9.547 s
+  PASS Check the dimensions and the norm of the channel matrix 2.900 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.003 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.001 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.004 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.001 s
+  PASS Check if the channel realizations are correctly updated after antenna port changes during the simulation 0.032 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.019 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.020 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.008 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.006 s
+  PASS Check long term channel matrix generation when multiple ports at TX and RX are being used. 0.012 s
+  PASS Directional-element channel power is reciprocal w.r.t. GetChannel endpoint order 0.057 s
+  PASS Test MIMO using dual polarization.Face-to-face. 0 and 0 pol. slant angles. 0.001 s
+  PASS Test MIMO using dual polarization.Face-to-face. 30 and 0 pol. slant angles. 0.001 s
+  PASS Test MIMO using dual polarization.Face-to-face. 45 and 0 pol. slant angles. 0.000 s
+  PASS Test MIMO using dual polarization.Face-to-face. 90 and 0 pol. slant angles. 0.001 s
+  PASS Test MIMO using dual polarization.Face-to-face. Different positions. Different bearing angles. 0 and 0 pol. slant angles. 0.001 s
+  PASS Test MIMO using dual polarization.Not face-to-face. Different heights. 0 and 0 pol. slant angles. 0.001 s
+=== suites that use the 3GPP channel / spectrum (summary):
+=== cttc-nr-demo after backport vs before:
+cttc-nr-demo output IDENTICAL before/after backport
+elapsed 1 min

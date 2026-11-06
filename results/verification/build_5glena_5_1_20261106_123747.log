@@ -1,0 +1,550 @@
+Using Python env /home/dhopes/.venvs/cmwave (Python 3.12.16)
+Using CMake 3.31.10 from /home/dhopes/.venvs/cmwave/bin/cmake
+Cloning into 'ns-3-dev'...
+Updating files:  83% (3340/4024)Updating files:  84% (3381/4024)Updating files:  85% (3421/4024)Updating files:  86% (3461/4024)Updating files:  87% (3501/4024)Updating files:  88% (3542/4024)Updating files:  89% (3582/4024)Updating files:  90% (3622/4024)Updating files:  91% (3662/4024)Updating files:  92% (3703/4024)Updating files:  93% (3743/4024)Updating files:  94% (3783/4024)Updating files:  95% (3823/4024)Updating files:  96% (3864/4024)Updating files:  97% (3904/4024)Updating files:  98% (3944/4024)Updating files:  99% (3984/4024)Updating files: 100% (4024/4024)Updating files: 100% (4024/4024), done.
+Note: switching to 'ns-3.48'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at d2add90b4 Update availability in RELEASE_NOTES.md and CHANGES.md
+Cloning into 'nr'...
+Switched to a new branch '5g-lena-v5.1.y'
+Branch '5g-lena-v5.1.y' set up to track remote branch '5g-lena-v5.1.y' from 'origin'.
+Warn about uninitialized values.
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Using default output directory /home/dhopes/6g-external/ns-3-dev/build
+CMake Warning at build-support/3rd-party/colored-messages.cmake:84 (_message):
+  [33mTo prevent Windows path injection on WSL, append the following to
+  /etc/wsl.conf, then use `wsl --shutdown` to restart the WSL VM:
+
+  [interop]
+
+  appendWindowsPath = false[0m
+Call Stack (most recent call first):
+  build-support/custom-modules/ns3-platform-support.cmake:25 (message)
+  build-support/macros-and-definitions.cmake:41 (include)
+  CMakeLists.txt:119 (include)
+
+
+-- Performing Test GCC_WORKING_PEDANTIC_SEMICOLON
+-- Performing Test GCC_WORKING_PEDANTIC_SEMICOLON - Success
+-- [33mProceeding without cmake-format[0m
+-- Performing Test STACKTRACE_LIBRARY_ENABLED
+-- Performing Test STACKTRACE_LIBRARY_ENABLED - Failed
+-- Found Git: /usr/bin/git (found version "2.34.1")
+-- Found Python3: /home/dhopes/.venvs/cmwave/bin/python3.12 (found version "3.12.16") found components: Interpreter
+-- [33mPython: development libraries were not found[0m
+-- [33mBoost was not found[0m
+-- GSL was found.
+-- [33mdocs: doxygen documentation not enabled due to missing dependencies: doxygen dot dia[0m
+-- Failed to locate sphinx-build executable (missing: SPHINX_EXECUTABLE) 
+-- [33mdocs: sphinx documentation not enabled due to missing dependencies: Sphinx epstopdf pdflatex latexmk convert dvipng dia[0m
+-- Performing Test HAVE_UINT128_T
+-- Performing Test HAVE_UINT128_T - Failed
+-- Performing Test HAVE___UINT128_T
+-- Performing Test HAVE___UINT128_T - Success
+-- Looking for C++ include sys/types.h
+-- Looking for C++ include sys/types.h - found
+-- Looking for C++ include sys/stat.h
+-- Looking for C++ include sys/stat.h - found
+-- Looking for C++ include dirent.h
+-- Looking for C++ include dirent.h - found
+-- Looking for C++ include signal.h
+-- Looking for C++ include signal.h - found
+-- Looking for C++ include netpacket/packet.h
+-- Looking for C++ include netpacket/packet.h - found
+-- Looking for getenv
+-- Looking for getenv - found
+-- Precompiled headers were enabled
+-- Processing contrib/nr
+-- Search-free PMI selection requires pyttb and pybind11, and only works on Unix
+-- Performing Test COMPILER_HAS_HIDDEN_VISIBILITY
+-- Performing Test COMPILER_HAS_HIDDEN_VISIBILITY - Success
+-- Performing Test COMPILER_HAS_HIDDEN_INLINE_VISIBILITY
+-- Performing Test COMPILER_HAS_HIDDEN_INLINE_VISIBILITY - Success
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR - Success
+-- Processing src/antenna
+-- Performing Test HAVE_STD_BESSEL_FUNC
+-- Performing Test HAVE_STD_BESSEL_FUNC - Success
+-- Standard library Bessel function has been found
+-- Processing src/aodv
+-- Processing src/applications
+-- Processing src/bridge
+-- Processing src/brite
+-- [33mSkipping src/brite[0m
+-- Processing src/buildings
+-- Processing src/click
+-- [33mSkipping src/click[0m
+-- Processing src/config-store
+-- Processing src/core
+-- Looking for include files boost/units/quantity.hpp, boost/units/systems/si.hpp
+-- Looking for include files boost/units/quantity.hpp, boost/units/systems/si.hpp - not found
+-- Boost Units are an optional feature of length.cc.  Ubuntu ships it within the libboost-dev package.  You may need to clean up the CMake cache after installing it to pass this check.
+-- Processing src/csma
+-- Processing src/csma-layout
+-- Processing src/dsdv
+-- Processing src/dsr
+-- Processing src/energy
+-- Processing src/fd-net-device
+-- Looking for C++ include net/ethernet.h
+-- Looking for C++ include net/ethernet.h - found
+-- Looking for C++ include netpacket/packet.h
+-- Looking for C++ include netpacket/packet.h - found
+-- Looking for C++ include net/if.h
+-- Looking for C++ include net/if.h - found
+-- Looking for C++ include linux/if_tun.h
+-- Looking for C++ include linux/if_tun.h - found
+-- Looking for C++ include net/netmap_user.h
+-- Looking for C++ include net/netmap_user.h - not found
+-- Looking for C++ include sys/ioctl.h
+-- Looking for C++ include sys/ioctl.h - found
+-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.2")
+-- Checking for module 'libdpdk'
+--   No package 'libdpdk' found
+-- Processing src/flow-monitor
+-- Processing src/internet
+-- Processing src/internet-apps
+-- Processing src/lr-wpan
+-- Processing src/lte
+-- Processing src/mesh
+-- Processing src/mobility
+-- Processing src/netanim
+-- Processing src/network
+-- Processing src/nix-vector-routing
+-- Processing src/olsr
+-- Processing src/openflow
+-- [33mSkipping src/openflow[0m
+-- Processing src/point-to-point
+-- Processing src/point-to-point-layout
+-- Processing src/propagation
+-- Processing src/sixlowpan
+-- Processing src/spectrum
+-- Performing Test HAS_FLTO_AUTO
+-- Performing Test HAS_FLTO_AUTO - Success
+-- Found pybind11: /home/dhopes/.venvs/cmwave/lib/python3.12/site-packages/pybind11/include (found version "3.1.0")
+-- Sionna-RT support enabled: all required dependencies were found.
+-- Sionna-RT: CUDA toolkit (nvcc) not found.  Dr.Jit will fall back to the CPU/LLVM backend at runtime,  which may result in significantly longer simulation times.  Install the CUDA toolkit and a compatible GPU driver to enable GPU acceleration.
+-- Processing src/stats
+-- Processing src/tap-bridge
+-- Processing src/test
+-- Processing src/topology-read
+-- Processing src/traffic-control
+-- Processing src/uan
+-- Processing src/virtual-net-device
+-- Processing src/wifi
+-- Processing src/zigbee
+-- ---- Summary of ns-3 settings:
+Build profile                 : default
+Build directory               : /home/dhopes/6g-external/ns-3-dev/build
+Build with runtime asserts    : [32mON[0m
+Build with runtime logging    : [32mON[0m
+Build version embedding       : OFF (not requested)
+BRITE Integration             : [31mOFF (Missing headers: "Brite.h" and missing libraries: "brite")[0m
+DES Metrics event collection  : OFF (not requested)
+DPDK NetDevice                : OFF (not requested)
+Emulation FdNetDevice         : [32mON[0m
+Examples                      : [32mON[0m
+File descriptor NetDevice     : [32mON[0m
+GNU Scientific Library (GSL)  : [32mON[0m
+GtkConfigStore                : [31mOFF (Harfbuzz is required by GTK3 and was not found)[0m
+LibXml2 support               : [32mON[0m
+MPI Support                   : OFF (not requested)
+ns-3 Click Integration        : [31mOFF (Missing headers: "simclick.h" and missing libraries: "nsclick click")[0m
+ns-3 OpenFlow Integration     : [31mOFF (Missing headers: "openflow.h" and missing libraries: "openflow")[0m
+Netmap emulation FdNetDevice  : [31mOFF (missing dependency)[0m
+PyViz visualizer              : [31mOFF (Python Bindings are disabled)[0m
+Python Bindings               : OFF (not requested)
+SQLite support                : [32mON[0m
+Eigen3 support                : [32mON[0m
+Tap Bridge                    : [32mON[0m
+Tap FdNetDevice               : [32mON[0m
+Tests                         : [32mON[0m
+
+
+Modules configured to be built:
+antenna                   aodv                      applications              
+bridge                    buildings                 config-store              
+core                      csma                      csma-layout               
+dsdv                      dsr                       energy                    
+fd-net-device             flow-monitor              internet                  
+internet-apps             lr-wpan                   lte                       
+mesh                      mobility                  netanim                   
+network                   nix-vector-routing        nr                        
+olsr                      point-to-point            point-to-point-layout     
+propagation               sixlowpan                 spectrum                  
+stats                     tap-bridge                test                      
+topology-read             traffic-control           uan                       
+virtual-net-device        wifi                      zigbee                    
+
+
+Modules that cannot be built:
+brite                     click                     mpi                       
+openflow                  visualizer                
+
+
+-- Configuring done (26.1s)
+-- Generating done (2.5s)
+-- Build files have been written to: /home/dhopes/6g-external/ns-3-dev/cmake-cache
+Finished executing the following commands:
+mkdir cmake-cache
+/home/dhopes/.venvs/cmwave/bin/cmake -S /home/dhopes/6g-external/ns-3-dev -B /home/dhopes/6g-external/ns-3-dev/cmake-cache -DCMAKE_BUILD_TYPE=default -DNS3_ASSERT=ON -DNS3_LOG=ON -DNS3_WARNINGS_AS_ERRORS=OFF -DNS3_NATIVE_OPTIMIZATIONS=OFF -DNS3_EXAMPLES=ON -DNS3_TESTS=ON -G Ninja --warn-uninitialized
+[0/2] Re-checking globbed directories...
+[1/2398] Building CXX object src/test/CMakeFiles/test.dir/__/__/build-support/empty.cc.o
+[2/2398] Building CXX object CMakeFiles/stdlib_pch-default.dir/cmake_pch.hxx.gch
+[3/2398] Building CXX object CMakeFiles/stdlib_pch_exec.dir/cmake_pch.hxx.gch
+[4/2398] Building CXX object CMakeFiles/stdlib_pch_exec.dir/build-support/empty-main.cc.o
+[5/2398] Building CXX object CMakeFiles/stdlib_pch-default.dir/build-support/empty.cc.o
+[6/2398] Linking CXX executable ns3.48-stdlib_pch_exec-default
+[7/2398] Building CXX object src/test/CMakeFiles/test.dir/ns3tcp/ns3tcp-loss-test-suite.cc.o
+[8/2398] Building CXX object src/test/CMakeFiles/test.dir/ns3tcp/ns3tcp-cubic-test-suite.cc.o
+[9/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/beamforming-helper-base.cc.o
+[10/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/cc-bwp-helper.cc.o
+[11/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/grid-scenario-helper.cc.o
+[12/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/file-scenario-helper.cc.o
+[13/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/hexagonal-grid-scenario-helper.cc.o
+[14/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/ideal-beamforming-helper.cc.o
+[15/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-sched-released-ue.cc.o
+[16/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/node-distribution-scenario-interface.cc.o
+[17/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-bearer-stats-calculator.cc.o
+[18/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rlc-um-rx.cc.o
+[19/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-bearer-stats-simple.cc.o
+[20/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-bearer-stats-connector.cc.o
+[21/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-epc-helper.cc.o
+[22/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-channel-helper.cc.o
+[23/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-mac-rx-trace.cc.o
+[24/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rrc.cc.o
+[25/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mimo-matrices-eigen.cc.o
+[26/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-mac-scheduling-stats.cc.o
+[27/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-point-to-point-epc-helper-base.cc.o
+[28/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-phy-rx-trace.cc.o
+[29/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-point-to-point-epc-helper.cc.o
+[30/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-spectrum-value-helper.cc.o
+[31/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-no-backhaul-epc-helper.cc.o
+[32/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-stats-calculator.cc.o
+[33/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/scenario-parameters.cc.o
+[34/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/realistic-beamforming-helper.cc.o
+[35/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-radio-environment-map-helper.cc.o
+[36/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/bandwidth-part-gnb.cc.o
+[37/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/beam-id.cc.o
+[38/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/three-gpp-ftp-m1-helper.cc.o
+[39/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/bandwidth-part-ue.cc.o
+[40/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/beam-manager.cc.o
+[41/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/bwp-manager-algorithm.cc.o
+[42/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/beamforming-vector.cc.o
+[43/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/bwp-manager-ue.cc.o
+[44/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/bwp-manager-gnb.cc.o
+[45/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/lena-error-model.cc.o
+[46/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/ideal-beamforming-algorithm.cc.o
+[47/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-a3-rsrp-handover-algorithm.cc.o
+[48/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-a2-a4-rsrp-handover-algorithm.cc.o
+[49/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/helper/nr-helper.cc.o
+[50/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-anr.cc.o
+[51/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-cb-two-port.cc.o
+[52/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-amc.cc.o
+[53/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-asn1-header.cc.o
+[54/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-cb-type-one.cc.o
+[55/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-common.cc.o
+[56/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-cb-type-one-sp.cc.o
+[57/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-chunk-processor.cc.o
+[58/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-component-carrier.cc.o
+[59/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-ch-access-manager.cc.o
+[60/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-control-messages.cc.o
+[61/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-csi-rs-filter.cc.o
+[62/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-eesm-cc-t1.cc.o
+[63/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-device-registry.cc.o
+[64/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-eesm-cc-t2.cc.o
+[65/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-eesm-ir-t1.cc.o
+[66/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-eesm-cc.cc.o
+[67/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-eesm-ir-t2.cc.o
+[68/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-eesm-ir.cc.o
+[69/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-eesm-error-model.cc.o
+[70/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-epc-gtpc-header.cc.o
+[71/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-epc-gtpu-header.cc.o
+[72/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-epc-gnb-application.cc.o
+[73/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-epc-mme-application.cc.o
+[74/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-epc-pgw-application.cc.o
+[75/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-epc-sgw-application.cc.o
+[76/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-epc-ue-nas.cc.o
+[77/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-epc-x2-header.cc.o
+[78/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-error-model.cc.o
+[79/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-epc-x2.cc.o
+[80/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-fh-phy-sap.cc.o
+[81/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-fh-sched-sap.cc.o
+[82/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-fh-control.cc.o
+[83/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-gnb-component-carrier-manager.cc.o
+[84/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-gnb-net-device.cc.o
+[85/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-gnb-mac.cc.o
+[86/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-gnb-phy.cc.o
+[87/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-handover-algorithm.cc.o
+[88/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-eesm-t2.cc.o
+[89/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-harq-phy.cc.o
+[90/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-eesm-t1.cc.o
+[91/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-interference-base.cc.o
+[92/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-lte-amc.cc.o
+[93/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-initial-association.cc.o
+[94/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-interference.cc.o
+[95/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-lte-mi-error-model.cc.o
+[96/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-harq-vector.cc.o
+[97/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-header-fs-dl.cc.o
+[98/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-header-fs-ul.cc.o
+[99/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-header-fs.cc.o
+[100/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-header-vs-dl.cc.o
+[101/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-header-vs-ul.cc.o
+[102/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-header-vs.cc.o
+[103/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-cqi-management.cc.o
+[104/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-lc-alg.cc.o
+[105/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-lc-rr.cc.o
+[106/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-gnb-rrc.cc.o
+[107/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-lc-qos.cc.o
+[108/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-harq-rr.cc.o
+[109/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-lcg.cc.o
+[110/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ofdma-mr.cc.o
+[111/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ofdma-pf.cc.o
+[112/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ofdma-qos.cc.o
+[113/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ofdma-rr.cc.o
+[114/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ofdma-random.cc.o
+[115/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ofdma-symbol-per-beam.cc.o
+[116/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-srs-default.cc.o
+[117/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-tdma-mr.cc.o
+[118/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-tdma-pf.cc.o
+[119/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-tdma-qos.cc.o
+[120/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ofdma.cc.o
+[121/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-tdma-random.cc.o
+[122/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-tdma-rr.cc.o
+[123/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ue-info-pf.cc.o
+[124/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ue-info-qos.cc.o
+[125/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler.cc.o
+[126/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-tdma.cc.o
+[127/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ue-info.cc.o
+[128/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mcs-tables.cc.o
+[129/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-short-bsr-ce.cc.o
+[130/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mac-scheduler-ns3.cc.o
+[131/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mimo-matrices.cc.o
+[132/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mimo-chunk-processor.cc.o
+[133/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-mimo-signal.cc.o
+[134/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-pdcp-header.cc.o
+[135/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-no-op-handover-algorithm.cc.o
+[136/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-pdcp-tag.cc.o
+[137/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-phy-mac-common.cc.o
+[138/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-net-device.cc.o
+[139/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-pdcp.cc.o
+[140/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-no-op-component-carrier-manager.cc.o
+[141/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-phy-tag.cc.o
+[142/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-pm-search-fast.cc.o
+[143/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-pm-search-ideal.cc.o
+[144/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-pm-search-full.cc.o
+[145/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-pm-search-sasaoka.cc.o
+[146/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-qos-flow-tag.cc.o
+[147/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-qos-flow.cc.o
+[148/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-pm-search.cc.o
+[149/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-qos-rule.cc.o
+[150/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-radio-bearer-tag.cc.o
+[151/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-radio-bearer-info.cc.o
+[152/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-qos-rule-classifier.cc.o
+[153/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-phy.cc.o
+[154/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rlc-am-header.cc.o
+[155/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rlc-sequence-number.cc.o
+[156/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rlc-sdu-status-tag.cc.o
+[157/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rlc-header.cc.o
+[158/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rlc-tag.cc.o
+[159/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rlc-tm.cc.o
+[160/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rlc.cc.o
+[161/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rlc-um.cc.o
+[162/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rlc-am.cc.o
+[163/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rrc-header.cc.o
+[164/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-simple-ue-component-carrier-manager.cc.o
+[165/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rrc-protocol-real-gnb.cc.o
+[166/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rrc-protocol-ideal.cc.o
+[167/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-rrc-protocol-real-ue.cc.o
+[168/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-spectrum-signal-parameters.cc.o
+[169/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-ue-component-carrier-manager.cc.o
+[170/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-ue-net-device.cc.o
+[171/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-ue-mac.cc.o
+[172/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-ue-power-control.cc.o
+[173/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-vendor-specific-parameters.cc.o
+[174/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-spectrum-phy.cc.o
+[175/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/realistic-bf-manager.cc.o
+[176/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/realistic-beamforming-algorithm.cc.o
+[177/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/sfnsf.cc.o
+[178/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/resource-assignment-matrix.cc.o
+[179/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/channels/nyu/nyu-channel-condition-model.cc.o
+[180/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-ue-phy.cc.o
+[181/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/channels/nyu/nyu-spectrum-propagation-loss-model.cc.o
+[182/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/channels/nyu/nyu-propagation-loss-model.cc.o
+[183/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/distance-based-three-gpp-spectrum-propagation-loss-model.cc.o
+[184/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/fast-fading-constant-position-mobility-model.cc.o
+[185/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/random-direction-disc-2d-mobility-model.cc.o
+[186/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/helper/traffic-generator-helper.cc.o
+[187/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/channels/nyu/nyu-channel-model.cc.o
+[188/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/helper/xr-traffic-mixer-helper.cc.o
+[189/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/parse-string-to-vector.cc.o
+[190/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/model/traffic-generator-3gpp-audio-data.cc.o
+[191/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/model/traffic-generator-3gpp-pose-control.cc.o
+[192/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/model/traffic-generator-3gpp-generic-video.cc.o
+[193/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/model/traffic-generator-ftp-single.cc.o
+[194/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/model/nr-ue-rrc.cc.o
+[195/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/model/traffic-generator-ngmn-ftp-multi.cc.o
+[196/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/model/traffic-generator-ngmn-gaming.cc.o
+[197/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/model/traffic-generator-ngmn-video.cc.o
+[198/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/nr-wraparound-utils.cc.o
+[199/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/model/traffic-generator-ngmn-voip.cc.o
+[200/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-amc-tb-size-test.cc.o
+[201/2398] Building CXX object contrib/nr/CMakeFiles/nr.dir/utils/traffic-generators/model/traffic-generator.cc.o
+[202/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-ri-pmi.cc.o
+[203/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-channel-setup-test.cc.o
+[204/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-epc-test-gtpu.cc.o
+[205/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-epc-test-s1u-downlink.cc.o
+[206/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-cc-bwp-configuration.cc.o
+[207/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-csi.cc.o
+[208/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-antenna-3gpp-model-conf.cc.o
+[209/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-epc-test-s1u-uplink.cc.o
+[210/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-mac-short-bsr-ce-test.cc.o
+[211/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-ideal-beamforming-test.cc.o
+[212/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-lte-pattern-generation.cc.o
+[213/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-power-allocation.cc.o
+[214/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-phy-patterns.cc.o
+[215/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-simple-net-device.cc.o
+[216/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-simple-helper.cc.o
+[217/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-simple-spectrum-phy.cc.o
+[218/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-spectrum-phy-test.cc.o
+[219/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-multipanel-test.cc.o
+[220/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-test-schedulers-ofdma-mr.cc.o
+[221/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-test-schedulers-ofdma-pf.cc.o
+[222/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-test-schedulers-ofdma-rr.cc.o
+[223/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-test-schedulers-tdma-mr.cc.o
+[224/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-test-schedulers-tdma-pf.cc.o
+[225/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-realistic-beamforming-test.cc.o
+[226/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-test-schedulers-tdma-rr.cc.o
+[227/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-test-schedulers-random.cc.o
+[228/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-test-configurations.cc.o
+[229/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-entities.cc.o
+[230/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-test-scheduler-many-ues.cc.o
+[231/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-qos-rule-classifier.cc.o
+[232/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-asn1-encoding.cc.o
+[233/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-deactivate-bearer.cc.o
+[234/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-harq.cc.o
+[235/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-epc-e2e-data.cc.o
+[236/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-harq-flush.cc.o
+[237/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-interference-overlap-test.cc.o
+[238/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-interference-saturating-signal-test.cc.o
+[239/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-ue-handover-interference-test.cc.o
+[240/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-x2-forwarding-drop-test.cc.o
+[241/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-l2sm-eesm.cc.o
+[242/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-notching.cc.o
+[243/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-fdm-of-numerologies.cc.o
+[244/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-phy.cc.o
+[245/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-ul-sr-retransmission-test.cc.o
+[246/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-resource-assignment-matrix.cc.o
+[247/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rlc-am-e2e.cc.o
+[248/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rlc-am-transmitter.cc.o
+[249/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rlc-am-status.cc.o
+[250/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rlc-header.cc.o
+[251/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-ipv6-routing.cc.o
+[252/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rlc-um-transmitter.cc.o
+[253/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rlc-um-e2e.cc.o
+[254/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rlc-tm.cc.o
+[255/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-sched-msg3-retx.cc.o
+[256/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-sched-lc.cc.o
+[257/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-numerology-delay.cc.o
+[258/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-sched-harq.cc.o
+[259/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-sched-ofdma-frequency-domain.cc.o
+[260/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-sfnsf.cc.o
+[261/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-sched.cc.o
+[262/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-sched-symbols-per-beam.cc.o
+[263/2398] Building CXX object src/dsr/CMakeFiles/dsr.dir/model/dsr-rreq-table.cc.o
+[264/2398] Building CXX object src/dsr/CMakeFiles/dsr.dir/model/dsr-rsendbuff.cc.o
+[265/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-sched-temporal-fairness.cc.o
+[266/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-subband.cc.o
+[267/2398] Building CXX object src/dsr/CMakeFiles/dsr.dir/model/dsr-routing.cc.o
+[268/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-uplink-power-control-test.cc.o
+[269/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-system-scheduler-test-qos.cc.o
+[270/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-timings.cc.o
+[271/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-hexagonal-grid-scenario-helper.cc.o
+[272/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/utils/traffic-generators/test/traffic-generator-test.cc.o
+[273/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/system-scheduler-test.cc.o
+[274/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/ul-scheduling-test.cc.o
+[275/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-ue-measurements.cc.o
+[276/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-radio-link-failure.cc.o
+[277/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-cell-selection.cc.o
+[278/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rrc-reestablishment.cc.o
+[279/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rrc-state-transition.cc.o
+[280/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-x2-handover.cc.o
+[281/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-handover-delay.cc.o
+[282/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-same-cell-bwp-switch.cc.o
+[283/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-x2-handover-measures.cc.o
+[284/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-inter-freq-handover.cc.o
+[285/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-rbg-data-path.cc.o
+[286/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-fdd-ul-routing.cc.o
+[287/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-handover-failure.cc.o
+[288/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-handover-rach-config.cc.o
+[289/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-handover-target.cc.o
+[290/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-cell-individual-offset.cc.o
+[291/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-random-direction-disc-2d-mobility.cc.o
+[292/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-handover-scenarios.cc.o
+[293/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-cell-selection-with-rlf.cc.o
+[294/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-attach-window.cc.o
+[295/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-mib-wait-reselection.cc.o
+[296/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-tr36839-handover-failure.cc.o
+[297/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-handover-target-admission.cc.o
+[298/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-handover-metrics-guards.cc.o
+[299/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-stray-rrc-request.cc.o
+[300/2398] Building CXX object contrib/nr/CMakeFiles/nr-test.dir/test/nr-test-mobility-state-ttt.cc.o
+[301/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-3gpp-channel-example.dir/cttc-3gpp-channel-example.cc.o
+[302/2398] Building CXX object contrib/nr/CMakeFiles/nr-print-introspected-doxygen.dir/tools/print-introspected-doxygen.cc.o
+[303/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-3gpp-channel-simple-ran.dir/cttc-3gpp-channel-simple-ran.cc.o
+[304/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-3gpp-channel-simple-fdm.dir/cttc-3gpp-channel-simple-fdm.cc.o
+[305/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-3gpp-channel-nums.dir/cttc-3gpp-channel-nums.cc.o
+[306/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-3gpp-channel-nums-fdm.dir/cttc-3gpp-channel-nums-fdm.cc.o
+[307/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-nr-cc-bwp-demo.dir/cttc-nr-cc-bwp-demo.cc.o
+[308/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-lte-ca-demo.dir/cttc-lte-ca-demo.cc.o
+[309/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-nr-demo.dir/cttc-nr-demo.cc.o
+[310/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-error-model.dir/cttc-error-model.cc.o
+[311/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-error-model-comparison.dir/cttc-error-model-comparison.cc.o
+[312/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-error-model-amc.dir/cttc-error-model-amc.cc.o
+[313/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-channel-randomness.dir/cttc-channel-randomness.cc.o
+[314/2398] Building CXX object contrib/nr/examples/CMakeFiles/rem-example.dir/rem-example.cc.o
+[315/2398] Building CXX object contrib/nr/examples/CMakeFiles/rem-beam-example.dir/rem-beam-example.cc.o
+[316/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-nr-notching.dir/cttc-nr-notching.cc.o
+[317/2398] Building CXX object contrib/nr/examples/CMakeFiles/traffic-generator-example.dir/traffic-generator-example.cc.o
+[318/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-nr-traffic-ngmn-mixed.dir/cttc-nr-traffic-ngmn-mixed.cc.o
+[319/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-nr-traffic-3gpp-xr.dir/cttc-nr-traffic-3gpp-xr.cc.o
+[320/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-nr-demo-sionna-rt.dir/cttc-nr-demo-sionna-rt.cc.o
+FAILED: contrib/nr/examples/CMakeFiles/cttc-nr-demo-sionna-rt.dir/cttc-nr-demo-sionna-rt.cc.o 
+/usr/bin/c++ -DEIGEN_MPL2_ONLY -DHAVE_EIGEN3 -DHAVE_GSL -DHAVE_LIBXML2 -DHAVE_SQLITE3 -DNS3_ASSERT_ENABLE -DNS3_BUILD_PROFILE_DEBUG -DNS3_LOG_ENABLE -DPROJECT_SOURCE_PATH=\"/home/dhopes/6g-external/ns-3-dev\" -DSIONNA_RT=1 -D__LINUX__ -I/home/dhopes/6g-external/ns-3-dev/build/include -isystem /usr/include/eigen3 -isystem /usr/include/libxml2 -isystem /home/dhopes/.venvs/cmwave/lib/python3.12/site-packages/pybind11/include -Os -g -DNDEBUG -std=c++23 -fPIE   -fno-semantic-interposition -fdiagnostics-color=always -Wall -Wpedantic -Winvalid-pch -include /home/dhopes/6g-external/ns-3-dev/cmake-cache/CMakeFiles/stdlib_pch_exec.dir/cmake_pch.hxx -MD -MT contrib/nr/examples/CMakeFiles/cttc-nr-demo-sionna-rt.dir/cttc-nr-demo-sionna-rt.cc.o -MF contrib/nr/examples/CMakeFiles/cttc-nr-demo-sionna-rt.dir/cttc-nr-demo-sionna-rt.cc.o.d -o contrib/nr/examples/CMakeFiles/cttc-nr-demo-sionna-rt.dir/cttc-nr-demo-sionna-rt.cc.o -c /home/dhopes/6g-external/ns-3-dev/contrib/nr/examples/cttc-nr-demo-sionna-rt.cc
+In file included from /home/dhopes/.venvs/cmwave/lib/python3.12/site-packages/pybind11/include/pybind11/detail/common.h:12,
+                 from /home/dhopes/.venvs/cmwave/lib/python3.12/site-packages/pybind11/include/pybind11/attr.h:13,
+                 from /home/dhopes/.venvs/cmwave/lib/python3.12/site-packages/pybind11/include/pybind11/detail/class.h:12,
+                 from /home/dhopes/.venvs/cmwave/lib/python3.12/site-packages/pybind11/include/pybind11/pybind11.h:12,
+                 from /home/dhopes/.venvs/cmwave/lib/python3.12/site-packages/pybind11/include/pybind11/embed.h:12,
+                 from /home/dhopes/6g-external/ns-3-dev/src/spectrum/model/sionna-rt-channel-model.h:17,
+                 from /home/dhopes/6g-external/ns-3-dev/build/include/ns3/sionna-rt-channel-model.h:1,
+                 from /home/dhopes/6g-external/ns-3-dev/contrib/nr/examples/cttc-nr-demo-sionna-rt.cc:59:
+/home/dhopes/.venvs/cmwave/lib/python3.12/site-packages/pybind11/include/pybind11/conduit/wrap_include_python_h.h:44:10: fatal error: Python.h: No such file or directory
+   44 | #include <Python.h>
+      |          ^~~~~~~~~~
+compilation terminated.
+[321/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-nr-simple-qos-sched.dir/cttc-nr-simple-qos-sched.cc.o
+[322/2398] Building CXX object contrib/nr/examples/CMakeFiles/cttc-nr-multi-flow-qos-sched.dir/cttc-nr-multi-flow-qos-sched.cc.o
+[323/2398] Building CXX object contrib/nr/examples/CMakeFiles/gsoc-nr-channel-models.dir/gsoc-nr-channel-models.cc.o
+ninja: build stopped: subcommand failed.
+Finished executing the following commands:
+/home/dhopes/.venvs/cmwave/bin/cmake --build /home/dhopes/6g-external/ns-3-dev/cmake-cache -j 4

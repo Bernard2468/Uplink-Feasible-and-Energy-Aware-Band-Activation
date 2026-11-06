@@ -1,0 +1,66 @@
+=== (1) PRISTINE ns-3.48 three-gpp-channel suite (no added test). HEAD d2add90b4, modified files: 0
+  PASS Check the channel consistency feature for losCondition LOS, speed=10.000000 kmph, and freq=30.000000 GHz. 1.247 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=10.000000 kmph, and freq=30.000000 GHz. 1.270 s
+  PASS Check the channel consistency feature for losCondition LOS, speed=10.000000 kmph, and freq=4.000000 GHz. 0.542 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=10.000000 kmph, and freq=4.000000 GHz. 0.806 s
+  PASS Check the dimensions and the norm of the channel matrix 1.561 s
+  PASS Check the dimensions and the norm of the channel matrix 4.163 s
+  PASS Check the dimensions and the norm of the channel matrix 1.806 s
+  PASS Check the dimensions and the norm of the channel matrix 12.437 s
+  PASS Check the dimensions and the norm of the channel matrix 2.987 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.007 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.002 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.007 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.002 s
+  PASS Check if the channel realizations are correctly updated after antenna port changes during the simulation 0.035 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.021 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.022 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.006 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.006 s
+  PASS Check long term channel matrix generation when multiple ports at TX and RX are being used. 0.011 s
+  PASS Test MIMO using dual polarization.Face-to-face. 0 and 0 pol. slant angles. 0.001 s
+  PASS Test MIMO using dual polarization.Face-to-face. 30 and 0 pol. slant angles. 0.001 s
+  PASS Test MIMO using dual polarization.Face-to-face. 45 and 0 pol. slant angles. 0.001 s
+  PASS Test MIMO using dual polarization.Face-to-face. 90 and 0 pol. slant angles. 0.001 s
+  PASS Test MIMO using dual polarization.Face-to-face. Different positions. Different bearing angles. 0 and 0 pol. slant angles. 0.001 s
+  PASS Test MIMO using dual polarization.Not face-to-face. Different heights. 0 and 0 pol. slant angles. 0.001 s
+pristine exit=0
+
+=== (2) where ns-3.48 evaluates element field patterns:
+4104:                auto [rxFieldPatternPhi, rxFieldPatternTheta] = uAntenna->GetElementFieldPattern(
+4111:                        sAntenna->GetElementFieldPattern(
+4290:                auto [rxFieldPatternPhi, rxFieldPatternTheta] = uAntenna->GetElementFieldPattern(
+4293:                auto [txFieldPatternPhi, txFieldPatternTheta] = sAntenna->GetElementFieldPattern(
+
+=== (3) ns-3.48 + regression test only (model unchanged):
+/home/dhopes/.venvs/cmwave/bin/cmake --build /home/dhopes/6g-external/ns-3-dev/cmake-cache -j 4
+FAIL three-gpp-channel 32.627 s
+  PASS Check the channel consistency feature for losCondition LOS, speed=30.000000 kmph, and freq=4.000000 GHz. 0.498 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=30.000000 kmph, and freq=4.000000 GHz. 0.750 s
+  PASS Check the channel consistency feature for losCondition LOS, speed=30.000000 kmph, and freq=30.000000 GHz. 0.611 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=30.000000 kmph, and freq=30.000000 GHz. 0.789 s
+  PASS Check the channel consistency feature for losCondition LOS, speed=10.000000 kmph, and freq=30.000000 GHz. 0.517 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=10.000000 kmph, and freq=30.000000 GHz. 0.806 s
+  PASS Check the channel consistency feature for losCondition LOS, speed=10.000000 kmph, and freq=4.000000 GHz. 0.575 s
+  PASS Check the channel consistency feature for losCondition NLOS, speed=10.000000 kmph, and freq=4.000000 GHz. 1.818 s
+  PASS Check the dimensions and the norm of the channel matrix 2.441 s
+  PASS Check the dimensions and the norm of the channel matrix 3.548 s
+  PASS Check the dimensions and the norm of the channel matrix 1.407 s
+  PASS Check the dimensions and the norm of the channel matrix 15.028 s
+  PASS Check the dimensions and the norm of the channel matrix 3.589 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.004 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.002 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.004 s
+  PASS Check if the channel realizations are correctly updated during the simulation 0.001 s
+  PASS Check if the channel realizations are correctly updated after antenna port changes during the simulation 0.028 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.020 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.020 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.006 s
+  PASS Test case for the ThreeGppSpectrumPropagationLossModel class 0.007 s
+  PASS Check long term channel matrix generation when multiple ports at TX and RX are being used. 0.017 s
+  FAIL Directional-element channel power is reciprocal w.r.t. GetChannel endpoint order 0.060 s
+      test="ratioDb (actual) < 0.0 (limit) + 1.0 (tol) && ratioDb (actual) > 0.0 (limit) - 1.0 (tol)" actual="17.2089" limit="0 +- 1" in="/home/dhopes/6g-external/ns-3-dev/src/spectrum/test/three-gpp-channel-test-suite.cc:2096" Channel power must be independent of GetChannel endpoint order with a directional element (reversed-direction field-pattern regression)
+
+=== restore
+/home/dhopes/.venvs/cmwave/bin/cmake --build /home/dhopes/6g-external/ns-3-dev/cmake-cache -j 4
+modified files now: 0; HEAD d2add90b4

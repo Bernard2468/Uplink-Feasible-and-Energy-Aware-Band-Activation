@@ -1,0 +1,7 @@
+date_utc 2026-11-06T21:35:15Z
+ns3 d083a17a3fb98f527a2711c2d9de3b69d841f895 (ns-3.48+mr2929-backport)
+nr cedceadda17392c90587fb9400eb9b1f8c236713
+python Python 3.12.16 at /home/dhopes/.venvs/cmwave/bin/python
+sionna-rt 1.2.0 mitsuba 3.7.1 drjit 1.2.0 llvm (18, 1, 8)
+DRJIT_LIBLLVM_PATH /usr/lib/x86_64-linux-gnu/libLLVM-18.so.1
+ns3_tree_clean yes

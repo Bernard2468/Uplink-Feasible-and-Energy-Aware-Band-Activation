@@ -4,6 +4,11 @@ __pycache__/
 *.pyc
 results/*
 !results/.gitkeep
+# Small text evidence logs are version-controlled (provenance for the paper).
+!results/verification/
+!results/phase2/
+# Downloaded patch archives: their reviewed content is committed, not the archive.
+cmwave_phase2_patch_*.zip
 external/
 *.egg-info/
 .ipynb_checkpoints/

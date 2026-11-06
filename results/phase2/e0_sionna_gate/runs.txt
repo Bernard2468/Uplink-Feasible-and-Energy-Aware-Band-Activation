@@ -1,0 +1,5 @@
+reference_28ghz exit=0 elapsed_s=326 args=''
+reference_28ghz_rerun exit=0 elapsed_s=294 args=''
+trial_3p5ghz_mu1 exit=0 elapsed_s=251 args='--centralFrequencyBand1=3.5e9 --numerologyBwp1=1'
+trial_7p2ghz_mu1 exit=0 elapsed_s=274 args='--centralFrequencyBand1=7.2e9 --numerologyBwp1=1'
+determinism: reference_28ghz output IDENTICAL on rerun

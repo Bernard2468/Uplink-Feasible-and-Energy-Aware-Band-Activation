@@ -1,0 +1,5 @@
+freqlog_3.5e9: scenes_created=26 scene_frequencies=[3.5e+09] expected=3500000000.0 match=yes
+freqlog_7.2e9: scenes_created=26 scene_frequencies=[7.2e+09] expected=7200000000.0 match=yes
+positions seen: 0:0:10 2.09425:2.35166:1.5 2.10782:2.07727:1.5
+reference_28ghz_lambdaBe4000: done
+E0b overall: PASSED

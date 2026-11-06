@@ -1,0 +1,3 @@
+rx=[2.09425, 2.35166, 1.5] d=9.06 m | LOS gain f1 -62.476 dB (FSPL -62.476), f2 -68.741 dB (FSPL -68.741) | LOS gap 6.265 dB (expected 6.265) | full-RT gap 6.073 dB [145/165 paths]
+rx=[2.10782, 2.07727, 1.5] d=9.00 m | LOS gain f1 -62.414 dB (FSPL -62.414), f2 -68.680 dB (FSPL -68.680) | LOS gap 6.265 dB (expected 6.265) | full-RT gap 6.086 dB [145/165 paths]
+FREQUENCY SCALING CHECK PASSED

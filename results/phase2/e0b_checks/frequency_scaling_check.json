@@ -1,0 +1,68 @@
+{
+  "sionna_rt": "1.2.0",
+  "scene": "simple_street_canyon_with_cars",
+  "tx": [
+    0.0,
+    0.0,
+    10.0
+  ],
+  "f1_hz": 3500000000.0,
+  "f2_hz": 7200000000.0,
+  "expected_los_gap_db": 6.265289041619856,
+  "tolerance_db": 0.01,
+  "links": [
+    {
+      "rx": [
+        2.09425,
+        2.35166,
+        1.5
+      ],
+      "distance_m": 9.06455668072631,
+      "f1": {
+        "free_space_gain_db": -62.476075488060516,
+        "los_only_gain_db": -62.47607607746503,
+        "los_only_paths": 1,
+        "los_minus_free_space_db": -5.894045145282689e-07,
+        "full_gain_db": -61.98260857379896,
+        "full_paths": 145
+      },
+      "f2": {
+        "free_space_gain_db": -68.74136452968037,
+        "los_only_gain_db": -68.74136412259445,
+        "los_only_paths": 1,
+        "los_minus_free_space_db": 4.07085920528516e-07,
+        "full_gain_db": -68.05547318871422,
+        "full_paths": 165
+      },
+      "los_gap_db": 6.265288045129417,
+      "full_gap_db": 6.072864614915254
+    },
+    {
+      "rx": [
+        2.10782,
+        2.07727,
+        1.5
+      ],
+      "distance_m": 9.000441978330842,
+      "f1": {
+        "free_space_gain_db": -62.41442083998024,
+        "los_only_gain_db": -62.41442244485232,
+        "los_only_paths": 1,
+        "los_minus_free_space_db": -1.6048720823391704e-06,
+        "full_gain_db": -61.92037333693146,
+        "full_paths": 145
+      },
+      "f2": {
+        "free_space_gain_db": -68.67970988160009,
+        "los_only_gain_db": -68.67971023417243,
+        "los_only_paths": 1,
+        "los_minus_free_space_db": -3.525723428765559e-07,
+        "full_gain_db": -68.0061626038473,
+        "full_paths": 165
+      },
+      "los_gap_db": 6.265287789320112,
+      "full_gap_db": 6.085789266915839
+    }
+  ],
+  "passed": true
+}

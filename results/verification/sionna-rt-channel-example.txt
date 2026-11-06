@@ -1,0 +1,12 @@
+
+--- Sionna-RT Channel Example ---
+
+  [t=0.000s]  SNR = 28.99 dB  |  Rx power = -93.46 dBm
+  [t=0.010s]  SNR = 28.70 dB  |  Rx power = -93.75 dBm
+
+[SUCCESS] Simulation completed successfully.
+  Computed 2 SNR sample(s), average SNR = 28.84 dB
+  Results written to snr-trace.txt
+
+Python executable: /home/dhopes/.venvs/cmwave/bin/python3
+Python version: 3.12.16 (main, Oct 26 2026, 15:28:01) [GCC 11.4.0]

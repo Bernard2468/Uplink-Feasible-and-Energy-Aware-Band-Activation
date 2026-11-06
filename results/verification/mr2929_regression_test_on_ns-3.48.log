@@ -1,0 +1,32 @@
+MR2929 regression test (ThreeGppReversedDirectionFieldPatternTest) against UNMODIFIED ns-3.48 model code
+ns-3 HEAD: d2add90b452d600cfb4859baed8e9ea633519447
+Fri Nov  6 17:47:03 GMT 2026
+Checking patch src/spectrum/test/three-gpp-channel-test-suite.cc...
+Applied patch src/spectrum/test/three-gpp-channel-test-suite.cc cleanly.
+--- model file unchanged vs ns-3.48? YES
+[5/5] Linking CXX shared library /home/dhopes/6g-external/ns-3-dev/build/lib/libns3.48-spectrum-test-default.so
+Finished executing the following commands:
+/home/dhopes/.venvs/cmwave/bin/cmake --build /home/dhopes/6g-external/ns-3-dev/cmake-cache -j 4
+--- running suite three-gpp-channel:
+Queue three-gpp-channel
+Launch utils/ns3.48-test-runner-default --test-name=three-gpp-channel --stop-on-failure --fullness=QUICK
+Synchronously execute "/home/dhopes/6g-external/ns-3-dev/build/utils/ns3.48-test-runner-default" --test-name=three-gpp-channel --stop-on-failure --fullness=QUICK --xml --tempdir=testpy-output/2026-11-06-17-47-28-CUT --out=testpy-output/2026-11-06-17-47-28-CUT/three-gpp-channel.xml
+Return code =  1
+stderr =  
+returncode = 1
+---------- begin standard out ----------
+
+---------- begin standard err ----------
+
+---------- end standard err ----------
+[1/1] [01;31mFAIL[0m: TestSuite three-gpp-channel
+0 of 1 tests passed (0 passed, 0 skipped, 1 failed, 0 crashed, 0 valgrind errors)
+List of FAILed tests:
+    three-gpp-channel
+--- restoring pristine ns-3.48 test file and rebuilding
+[0/2] Re-checking globbed directories...
+[1/2] Building CXX object src/spectrum/CMakeFiles/spectrum-test.dir/test/three-gpp-channel-test-suite.cc.o
+[2/2] Linking CXX shared library /home/dhopes/6g-external/ns-3-dev/build/lib/libns3.48-spectrum-test-default.so
+Finished executing the following commands:
+/home/dhopes/.venvs/cmwave/bin/cmake --build /home/dhopes/6g-external/ns-3-dev/cmake-cache -j 4
+tree clean vs ns-3.48: 0 modified files; HEAD d2add90b4

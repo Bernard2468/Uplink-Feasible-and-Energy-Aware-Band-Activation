@@ -1,0 +1,207 @@
+Setting operating frequency to 5e+08 Hz
+Setting max number of paths to 90
+Setting normalize delays to true
+Changing scenario to: simple_street_canyon_with_cars (built-in)
+Setting operating frequency to 7.2e+09 Hz
+RtPathSolverConfig set: maxDepth=1 los=true specular_reflection=false diffuse_reflection=false refraction=false diffraction=false edgeDiffraction=false synthetic_array=false seed=49
+Building scene for antenna pair (0, 1) and nodes (0, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Building scene for antenna pair (0, 2) and nodes (0, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 1) and nodes (0, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 2) and nodes (0, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Building scene for antenna pair (1, 2) and nodes (1, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.10782:2.07727:1.5 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (2, 1) and nodes (2, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.09425:2.35166:1.5 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (1, 0) and nodes (1, 0)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.10782:2.07727:1.5 rx@0:0:10
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 2) and nodes (0, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (2, 1) and nodes (2, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.09425:2.35166:1.5 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 1) and nodes (0, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 2) and nodes (0, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (1, 2) and nodes (1, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.10782:2.07727:1.5 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 1) and nodes (0, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 2) and nodes (0, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (2, 1) and nodes (2, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.09425:2.35166:1.5 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (1, 0) and nodes (1, 0)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.10782:2.07727:1.5 rx@0:0:10
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 2) and nodes (0, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (1, 2) and nodes (1, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.10782:2.07727:1.5 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 1) and nodes (0, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 2) and nodes (0, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (2, 1) and nodes (2, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.09425:2.35166:1.5 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 1) and nodes (0, 1)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.10782:2.07727:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 2) and nodes (0, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (1, 0) and nodes (1, 0)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.10782:2.07727:1.5 rx@0:0:10
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (1, 2) and nodes (1, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@2.10782:2.07727:1.5 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Cached channel matrix marked for update (stale or antenna changed)
+Building scene for antenna pair (0, 2) and nodes (0, 2)
+Loading Sionna RT scene: simple_street_canyon_with_cars mergeShapes=false
+Scene created: frequency=7.2e+09 tx@0:0:10 rx@2.09425:2.35166:1.5
+Using Sionna RT version: 1.2.0
+Path computation finished
+Number of generated paths: 1
+Flow 1 (1.0.0.2:49153 -> 7.0.0.2:1234) proto UDP
+  Tx Packets: 100
+  Tx Bytes:   12800
+  TxOffered:  10.240000 Mbps
+  Rx Bytes:   10240
+  Throughput: 8.192000 Mbps
+  Mean delay:  2.370531 ms
+  Mean jitter:  0.155000 ms
+  Rx Packets: 80
+Flow 2 (1.0.0.2:49154 -> 7.0.0.3:1235) proto UDP
+  Tx Packets: 100
+  Tx Bytes:   128000
+  TxOffered:  102.400000 Mbps
+  Rx Bytes:   108800
+  Throughput: 87.040000 Mbps
+  Mean delay:  3.347475 ms
+  Mean jitter:  0.134958 ms
+  Rx Packets: 85
+
+
+  Mean flow throughput: 47.616000
+  Mean flow delay: 2.859003

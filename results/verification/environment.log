@@ -1,0 +1,32 @@
+{
+  "purpose": "LOCAL SOFTWARE READINESS, NOT RADIO RESULTS",
+  "os": "Linux",
+  "os_release": "6.18.54.1-microsoft-standard-WSL2",
+  "architecture": "x86_64",
+  "python": "3.10.12",
+  "cpu_threads_os": 8,
+  "ram_total_gb": 9.7,
+  "disk_free_gb_project_fs": 98.4,
+  "is_wsl": true,
+  "executables": {
+    "git": true,
+    "g++": true,
+    "cmake": true,
+    "ninja": true,
+    "llvm-config": true,
+    "nvidia-smi": false
+  },
+  "python_packages": {
+    "numpy": null,
+    "scipy": null,
+    "sionna-rt": null,
+    "mitsuba": null,
+    "drjit": null,
+    "cppyy": null,
+    "pybind11": null,
+    "highspy": null,
+    "ortools": null
+  }
+}
+Saved /mnt/c/Users/FJ/Desktop/Uplink-Feasible and Energy-Aware Band Activation/results/environment_check.json
+No hostname, user account, IP address or location has been collected.

@@ -27,9 +27,16 @@ def main():
     hw = Energy()
     rows = []
     traces = []
+    # Triviality diagnostic: if the per-slot greedy oracle already equals the
+    # multi-slot DP optimum, switching costs do not couple the slots and the
+    # instance cannot discriminate between controllers.
+    greedy_equals_dp = []
     for seed in range(args.seeds):
         slots = create_synthetic_trace(seed=seed, nslots=args.slots)
-        for name, schedule in policies(slots, hw).items():
+        ps = policies(slots, hw)
+        greedy_equals_dp.append(ps['offline_clairvoyant_bound'] is not None and
+                                ps['threshold_current_slot_oracle'] == ps['offline_clairvoyant_bound'])
+        for name, schedule in ps.items():
             if schedule is None:
                 rows.append({'seed': seed, 'policy': name, 'energy_j': '',
                              'violations': '', 'violation_fraction': '', 'wake_events': '', 'feasible': False,
@@ -58,12 +65,28 @@ def main():
             'slots_per_seed': args.slots, 'initial_fr3_state': 'sleep',
             'energy_model': hw.__dict__, 'channel_model': 'none',
             'phy_mac_model': 'none', 'trace_source': 'synthetic_test_generator',
-            'policies': list(policies(create_synthetic_trace(0, 1), hw))}
+            'online_information_timing': 'decision_t_uses_only_observation_through_t_minus_1',
+            'oracle_information_timing': 'current_slot_realization_known',
+            'service_model_warning': 'aggregate slot-average capacity, not packet-level QoS',
+            'wake_payback_s': hw.wake_j / (hw.fr3_active_w - hw.fr3_sleep_w)
+                              if hw.fr3_active_w > hw.fr3_sleep_w else None,
+            'greedy_oracle_equals_dp_seeds': f'{sum(greedy_equals_dp)}/{len(greedy_equals_dp)}',
+            'triviality_warning': (
+                'per-slot greedy oracle equals the DP optimum on every seed: switching '
+                'costs are too small relative to slot_s to couple slots; this instance '
+                'cannot discriminate between controllers') if all(greedy_equals_dp) else None,
+            'policies': list(ps)}
     (outdir / 'run_manifest.json').write_text(json.dumps(meta, indent=2))
     print('SYNTHETIC ABSTRACT SOFTWARE TEST — NOT 6G MEASUREMENTS')
     print(f'Created {outdir / "results.csv"}')
     print(f'Created {outdir / "schedules.csv"}')
     print(f'Created {outdir / "run_manifest.json"}')
+    payback = meta['wake_payback_s']
+    payback_txt = 'n/a' if payback is None else f'{payback:.2f} s'
+    print(f"Greedy current-slot oracle == DP optimum on {meta['greedy_oracle_equals_dp_seeds']} seeds"
+          f" (wake payback {payback_txt} vs slot {hw.slot_s:.0f} s)")
+    if meta['triviality_warning']:
+        print('WARNING: ' + meta['triviality_warning'])
     for row in rows[:5]:
         print(row)
 

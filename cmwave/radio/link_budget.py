@@ -89,7 +89,10 @@ def uplink(loss_db, cfg: CarrierConfig) -> dict:
     noise = noise_dbm(b_alloc, cfg.nf_gnb_db)                          # (A,)
     snr = rx[:, None] - noise[None, :]                                 # (N, A)
     rate = mapped_se(snr, 'UL') * b_alloc[None, :]
-    best = np.argmax(rate, axis=1)                                     # first max -> smallest n
+    # First maximum -> smallest n. If no allocation has a rate, argmax is index 0
+    # (1 PRB, the most favourable SNR); best_n_prb is then reported as 0, while the
+    # evaluated bandwidth/noise/SNR all refer to that same 1-PRB allocation.
+    best = np.argmax(rate, axis=1)
     rows = np.arange(loss.size)
     rate_max = rate[rows, best]
     has_rate = rate_max > 0
@@ -97,6 +100,7 @@ def uplink(loss_db, cfg: CarrierConfig) -> dict:
             'snr_1prb_db': snr[:, 0], 'noise_1prb_dbm': np.full_like(loss, noise[0]),
             'snr_full_db': snr[:, -1], 'noise_full_dbm': np.full_like(loss, noise[-1]),
             'best_n_prb': np.where(has_rate, n_alloc[best], 0),
+            'eval_bw_hz': b_alloc[best], 'noise_eval_dbm': noise[best],
             'snr_best_db': snr[rows, best], 'rate_bps': rate_max,
             'rate_1prb_bps': rate[:, 0], 'rate_full_bps': rate[:, -1],
             'se_norm_bps_hz': rate_max / cfg.occupied_bw_hz,

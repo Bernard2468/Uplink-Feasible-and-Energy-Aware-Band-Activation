@@ -69,9 +69,9 @@ def evaluate_case(case, losses, thresholds):
         f = cfg.frequency_hz
         dl = lb.downlink(losses[f], cfg)
         ul = lb.uplink(losses[f], cfg)
-        best_bw = np.where(ul['best_n_prb'] > 0, ul['best_n_prb'], cfg.n_prb) * cfg.prb_bw_hz
-        ul['bandwidth_hz'] = best_bw
-        ul['noise_best_dbm'] = lb.noise_dbm(best_bw, cfg.nf_gnb_db)
+        # Bandwidth and noise of the SAME allocation as snr_best_db (module output).
+        ul['bandwidth_hz'] = ul['eval_bw_hz']
+        ul['noise_best_dbm'] = ul['noise_eval_dbm']
         t1, t2 = thresholds['F1_link_closure'], thresholds['F2_m2410_equivalent']
         dl['F1'] = dl['snr_db'] >= t1['DL_snr_db_min']
         ul['F1'] = ul['snr_1prb_db'] >= t1['UL_snr_1prb_db_min']

@@ -66,6 +66,15 @@ class LinkBudgetTests(unittest.TestCase):
         self.assertEqual(u['rate_bps'][0], 0.0)
         self.assertEqual(u['best_n_prb'][0], 0)
 
+    def test_reported_allocation_is_self_consistent(self):
+        # Regression for the first E1.3 run (L1 failure of 10 log10(N_PRB) dB on
+        # zero-rate uplink rows): SNR, noise and bandwidth must refer to one allocation.
+        u = lb.uplink([100.0, 140.0, 300.0], CFG)
+        np.testing.assert_allclose(u['snr_best_db'], u['rx_power_dbm'] - u['noise_eval_dbm'],
+                                   atol=1e-12)
+        np.testing.assert_allclose(u['noise_eval_dbm'], lb.noise_dbm(u['eval_bw_hz'], CFG.nf_gnb_db),
+                                   atol=1e-12)
+
     def test_config_validation(self):
         with self.assertRaises(ValueError):
             lb.CarrierConfig(3.5e9, 20e6, 30e3, 60, 44, 23, 5, 7, 0, 0)   # 60 PRB > 20 MHz

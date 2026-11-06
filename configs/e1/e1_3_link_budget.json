@@ -1,0 +1,91 @@
+{
+  "experiment": "E1.3 single-link budgets, uplink and downlink, 3.5 vs 7.2 GHz",
+  "status": "PRE-REGISTERED 2026-11-06, committed before the first run; values and checks are not changed after results are seen",
+  "scope": [
+    "outdoor UE positions and losses from E1.2 (geometry-conditioned TR 38.901 UMa, 200 shadowing realizations)",
+    "single isotropic element at both ends (0 dBi); antenna patterns and arrays are E1.4",
+    "single user per carrier, no interference: SNR, not SINR",
+    "no outdoor-to-indoor loss (E1.4)",
+    "rates are PHY rates while the direction's resources are in use (no TDD duty cycle, no control overhead); this matches the effective-bandwidth normalisation of ITU-R M.2410",
+    "propagation is reciprocal: uplink and downlink use the same total loss"
+  ],
+  "constants": {
+    "thermal_noise_dbm_per_hz": {"value": -174.0, "source": "ITU-R M.2412-0 Table 5(b)"},
+    "subcarriers_per_prb": {"value": 12, "source": "3GPP TS 38.211 (NR resource block)"}
+  },
+  "rate_mapping": {
+    "form": "SE = 0 if SNR < SNR_min; else min(alpha * log2(1 + SNR), Thr_max)  [bit/s/Hz]",
+    "DL": {"alpha": 0.6, "snr_min_db": -10.0, "thr_max": 4.4},
+    "UL": {"alpha": 0.4, "snr_min_db": -10.0, "thr_max": 2.0},
+    "source": "3GPP TR 36.942 V19.0.0 (ETSI TR 136 942 V19.0.0, 2025-10) Annex A.1 Table A.1; continuity and the inclusive SNR_min boundary confirmed by Table A.2",
+    "caveat": "E-UTRA coexistence baseline (64QAM 4/5 DL, 16QAM 3/4 UL caps); conservative for NR; to be calibrated against 5G-LENA in E1.5"
+  },
+  "downlink_model": "gNB total power spread uniformly over the occupied bandwidth N_PRB * 12 * SCS; noise over the same bandwidth with the UE noise figure; the UE is allocated all PRBs",
+  "uplink_model": "UE transmits its maximum power on n PRBs (n = 1..N_PRB); noise over n PRBs with the gNB noise figure; the reported uplink rate is the maximum over n of n * PRB_bw * SE(SNR(n)) (ties -> smallest n)",
+  "thresholds": {
+    "F1_link_closure": {"DL_snr_db_min": -10.0, "UL_snr_1prb_db_min": -10.0},
+    "F2_m2410_equivalent": {"DL_se_min": 2.25, "UL_se_norm_min": 1.5}
+  },
+  "feasibility_profiles": {
+    "F1_link_closure": {
+      "meaning": "the lowest code of the codeset can be decoded at all",
+      "DL": "SNR over the full allocation >= -10 dB",
+      "UL": "SNR on 1 PRB at maximum UE power >= -10 dB",
+      "source": "TR 36.942 Table A.1 SNIR_min (QPSK 1/8 DL, 1/5 UL)",
+      "primary": true
+    },
+    "F2_m2410_equivalent": {
+      "meaning": "single-link spectral efficiency that would leave each of 10 equally time-shared users at the IMT-2020 5th-percentile requirement",
+      "DL": "SE >= 2.25 bit/s/Hz",
+      "UL": "max uplink rate / occupied bandwidth >= 1.5 bit/s/Hz",
+      "derivation": "ITU-R M.2410-0 Table 1, Dense Urban-eMBB 5th-percentile user SE 0.225 (DL) / 0.15 (UL) bit/s/Hz, times 10 UEs per TRxP (ITU-R M.2412-0 Table 5(b), Dense Urban-eMBB Configuration A)",
+      "caveat": "DERIVED, not an ITU requirement: assumes equal time sharing and no interference; equivalent SNR 10.95 dB in both directions under the mapping above",
+      "primary": false
+    }
+  },
+  "cases": {
+    "main_eqbw20": {
+      "description": "equal 20 MHz channels (M.2412 Configuration A simulation bandwidth), M.2412 powers and noise figures at both carriers",
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0}
+      ]
+    },
+    "sens_nf_cfgB_at_7p2": {
+      "description": "as main, but 7.2 GHz noise figures from M.2412 Configuration B (BS 7 dB, UE 10 dB)",
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 7.0, "nf_ue_db": 10.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0}
+      ]
+    },
+    "sens_eqbw100": {
+      "description": "equal 100 MHz channels at the M.2412 power spectral density (44 dBm per 20 MHz -> 44 + 10 log10(5) = 50.99 dBm); UE power unchanged",
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 100e6, "scs_hz": 30e3, "n_prb": 273, "gnb_power_dbm": 50.98970004336019, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 100e6, "scs_hz": 30e3, "n_prb": 273, "gnb_power_dbm": 50.98970004336019, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0}
+      ]
+    }
+  },
+  "parameter_sources": {
+    "n_prb": "3GPP TS 38.101-1 (Rel-19) Table 5.3.2-1, SCS 30 kHz: 20 MHz -> 51, 100 MHz -> 273; applied unchanged at 7.2 GHz (ASSUMPTION: no 7.125-8.4 GHz band is specified)",
+    "powers_noise_figures": "ITU-R M.2412-0 Table 5(b) Dense Urban-eMBB Configuration A (4 GHz); ADAPTED to 3.5 GHz and ASSUMED at 7.2 GHz (docs/E1_PARAMETERS.md)"
+  },
+  "feasibility_classes_per_profile": {
+    "K1_both_carriers_both_directions": "3.5 DL, 3.5 UL, 7.2 DL and 7.2 UL all feasible",
+    "K2_7p2_dl_only_with_3p5_ul": "7.2 DL feasible, 7.2 UL not feasible, 3.5 UL feasible (7.2 GHz downlink usable only if the uplink is carried on 3.5 GHz)",
+    "K3_7p2_dl_without_any_ul": "7.2 DL feasible, 7.2 UL not feasible, 3.5 UL not feasible",
+    "K4_7p2_dl_not_feasible": "7.2 DL not feasible",
+    "K5_7p2_ul_without_dl": "7.2 DL not feasible but 7.2 UL feasible (expected empty; reported as a consistency signal)",
+    "note": "classes describe physical feasibility only; no 'beneficial', 'required' or 'energy-optimal' labels in E1"
+  },
+  "checks": {
+    "L1_identities": "every record: rx = tx + gains - loss; noise = -174 + 10 log10(B) + NF; SNR = rx - noise (abs error <= 1e-9 dB)",
+    "L2_reciprocity": "uplink and downlink records of the same link, carrier and realization use the same total loss",
+    "L3_frequency_offset": "main case: SNR(3.5) - SNR(7.2) = 20 log10(7.2/3.5) for DL (full band) and UL (1 PRB), every link and realization (abs error <= 1e-9 dB)",
+    "L4_direction_offset": "main case, per carrier: DL SNR - UL 1-PRB SNR is the same constant for every link and realization",
+    "L5_mapping": "mapped SE <= Shannon SE; 0 below -10 dB; <= Thr_max; non-decreasing in SNR (checked on a dense SNR grid)",
+    "L6_ul_allocation": "uplink maximum rate >= rate at 1 PRB and >= rate at full allocation, for every record",
+    "L7_monotone_frequency": "for each profile, direction, link and realization: feasible at 7.2 GHz implies feasible at 3.5 GHz (main case)",
+    "L8_hand_reference": "unit tests reproduce hand-computed budgets and TR 36.942 Table A.2 values"
+  }
+}

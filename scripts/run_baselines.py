@@ -54,7 +54,7 @@ def main():
                           for i, state in enumerate(schedule))
     for file, data in [('results.csv', rows), ('schedules.csv', traces)]:
         with (outdir / file).open('w', encoding='utf-8', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=list(data[0].keys()))
+            writer = csv.DictWriter(f, fieldnames=list(data[0].keys()), lineterminator='\n')
             writer.writeheader()
             writer.writerows(data)
     meta = {'data_classification': 'SYNTHETIC_ABSTRACT_SOFTWARE_SMOKE_TEST_ONLY',

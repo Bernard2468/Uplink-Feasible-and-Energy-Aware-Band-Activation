@@ -100,7 +100,8 @@ def main():
                         los=los.astype(np.uint8), gnb=tx)
     links_path = outdir / f'{args.site_id}_links.csv'
     with links_path.open('w', newline='', encoding='utf-8') as fh:
-        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+        # LF line endings: the repository stores LF, so hashes stay valid after a clone.
+        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()), lineterminator='\n')
         w.writeheader()
         w.writerows(rows)
 

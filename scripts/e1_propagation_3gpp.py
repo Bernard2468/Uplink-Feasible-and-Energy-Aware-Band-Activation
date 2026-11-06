@@ -19,6 +19,7 @@ import argparse
 import csv
 import gzip
 import hashlib
+import io
 import json
 import math
 import platform
@@ -122,13 +123,16 @@ def main():
                                    'rt_pathloss_db': pl_rt, 'uma_median_pathloss_db': pl_m,
                                    'rt_minus_uma_db': pl_rt - pl_m})
 
-    with gzip.open(outdir / 'realizations.csv.gz', 'wt', newline='', encoding='utf-8') as fh:
-        w = csv.DictWriter(fh, fieldnames=['site_id'] + list(rows[0].keys()))
+    # Byte-deterministic gzip (mtime 0, no embedded file name): reruns give identical files.
+    with open(outdir / 'realizations.csv.gz', 'wb') as raw, \
+            gzip.GzipFile(filename='', mode='wb', fileobj=raw, mtime=0) as gz, \
+            io.TextIOWrapper(gz, encoding='utf-8', newline='') as fh:
+        w = csv.DictWriter(fh, fieldnames=['site_id'] + list(rows[0].keys()), lineterminator='\n')
         w.writeheader()
         for r in rows:
             w.writerow({'site_id': args.site_id, **r})
     with (outdir / 'links_summary.csv').open('w', newline='', encoding='utf-8') as fh:
-        w = csv.writer(fh)
+        w = csv.writer(fh, lineterminator='\n')
         w.writerow(['site_id', 'ue_id', 'los_state', 'distance_2d_m', 'distance_3d_m',
                     'pathloss_db_f1', 'pathloss_db_f2', 'gap_db', 'shadowing_std_db'])
         for l in links:
@@ -147,6 +151,7 @@ def main():
         'site_id': args.site_id, 'geometry_manifest_sha256': sha256(gdir / f'{args.site_id}_manifest.json'),
         'links_csv_sha256': sha256(links_csv), 'carriers_hz': [f1, f2],
         'realizations': args.realizations, 'seed': args.seed,
+        'realizations_sha256': sha256(outdir / 'realizations.csv.gz'),
         'shadowing': {'std_db': uh.SF_STD_DB, 'corr_dist_m': uh.SF_CORR_DIST_M,
                       'multi_frequency': 'one normal variate per link shared by all carriers (TR 38.901 7.6.5)'},
         'departures_from_standard': ['LOS state from scene geometry, not Table 7.4.2-1',

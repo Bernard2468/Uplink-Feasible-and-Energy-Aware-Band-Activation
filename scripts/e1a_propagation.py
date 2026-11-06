@@ -228,7 +228,7 @@ def main():
               'los_gain_db', 'total_gain_db', 'strongest_gain_db', 'strongest_signature',
               'frac_power_diffraction', 'frac_power_transmission', 'rms_delay_spread_ns']
     with (outdir / 'links.csv').open('w', newline='', encoding='utf-8') as fh:
-        w = csv.DictWriter(fh, fieldnames=fields, extrasaction='ignore')
+        w = csv.DictWriter(fh, fieldnames=fields, extrasaction='ignore', lineterminator='\n')
         w.writeheader()
         w.writerows(rows)
 

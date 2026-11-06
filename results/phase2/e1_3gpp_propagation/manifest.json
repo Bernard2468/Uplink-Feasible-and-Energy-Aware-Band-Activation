@@ -1,18 +1,19 @@
 {
-  "generated_utc": "2026-11-06T23:24:30.809929+00:00",
+  "generated_utc": "2026-11-06T23:26:31.576264+00:00",
   "tool": "scripts/e1_propagation_3gpp.py",
   "model_version": "e1.2-uma-geometry-conditioned-v1",
   "python": "3.12.16",
   "numpy": "1.26.4",
   "site_id": "site_tx0",
-  "geometry_manifest_sha256": "8b57516374171ddf07dc89bec58f62e3fafdb05b06556d7774b50e76208d1557",
-  "links_csv_sha256": "59c563f46558b3d2b17865d87b28a2fdb118eebf65bc0bfb20ece7d61b1f0484",
+  "geometry_manifest_sha256": "be74a63a97e334ad5e8f6a21252b03289aa02626fb2e0b9ee5feea39163c6285",
+  "links_csv_sha256": "0cb4ab6223b415b19a58840188abf8fea6ef61c4d66432901231add3f94cfc82",
   "carriers_hz": [
     3500000000.0,
     7200000000.0
   ],
   "realizations": 200,
   "seed": 20261107,
+  "realizations_sha256": "f2e3ef18bf6c0b19f33f43af9f44c07d8b321e50d13ad19da42e8f31236505ea",
   "shadowing": {
     "std_db": {
       "LOS": 4.0,

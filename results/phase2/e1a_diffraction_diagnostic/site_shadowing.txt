@@ -1,0 +1,12 @@
+tx z=27.0  d2D 150-200 m: outdoor   860  LOS    9 ( 1.0%)  blocked within 15 m of gNB:  47.4% of blocked
+tx z=27.0  d2D 200-300 m: outdoor  1987  LOS    0 ( 0.0%)  blocked within 15 m of gNB:  51.2% of blocked
+tx z=27.0  d2D 300-450 m: outdoor  3682  LOS    0 ( 0.0%)  blocked within 15 m of gNB:  10.6% of blocked
+tx z=27.0  d2D 450-600 m: outdoor  3844  LOS    0 ( 0.0%)  blocked within 15 m of gNB:   0.0% of blocked
+tx z=30.0  d2D 150-200 m: outdoor   860  LOS   10 ( 1.2%)  blocked within 15 m of gNB:   0.0% of blocked
+tx z=30.0  d2D 200-300 m: outdoor  1987  LOS    0 ( 0.0%)  blocked within 15 m of gNB:   0.0% of blocked
+tx z=30.0  d2D 300-450 m: outdoor  3682  LOS    0 ( 0.0%)  blocked within 15 m of gNB:   0.0% of blocked
+tx z=30.0  d2D 450-600 m: outdoor  3844  LOS    0 ( 0.0%)  blocked within 15 m of gNB:   0.0% of blocked
+tx z=35.0  d2D 150-200 m: outdoor   860  LOS   10 ( 1.2%)  blocked within 15 m of gNB:   0.0% of blocked
+tx z=35.0  d2D 200-300 m: outdoor  1987  LOS    2 ( 0.1%)  blocked within 15 m of gNB:   0.0% of blocked
+tx z=35.0  d2D 300-450 m: outdoor  3682  LOS    1 ( 0.0%)  blocked within 15 m of gNB:   0.0% of blocked
+tx z=35.0  d2D 450-600 m: outdoor  3844  LOS   15 ( 0.4%)  blocked within 15 m of gNB:   0.0% of blocked

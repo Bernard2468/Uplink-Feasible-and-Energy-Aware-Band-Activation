@@ -1,0 +1,120 @@
+{
+  "C1_los_exactness": {
+    "passed": true,
+    "failures": []
+  },
+  "C2_all_links_have_paths": {
+    "passed": false,
+    "links_without_paths": [
+      {
+        "ue": "ue04",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue09",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue10",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue17",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue21",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue22",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue23",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue24",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue25",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue26",
+        "freq_hz": 3500000000.0
+      },
+      {
+        "ue": "ue04",
+        "freq_hz": 7200000000.0
+      },
+      {
+        "ue": "ue09",
+        "freq_hz": 7200000000.0
+      },
+      {
+        "ue": "ue10",
+        "freq_hz": 7200000000.0
+      },
+      {
+        "ue": "ue17",
+        "freq_hz": 7200000000.0
+      },
+      {
+        "ue": "ue21",
+        "freq_hz": 7200000000.0
+      },
+      {
+        "ue": "ue22",
+        "freq_hz": 7200000000.0
+      },
+      {
+        "ue": "ue23",
+        "freq_hz": 7200000000.0
+      },
+      {
+        "ue": "ue24",
+        "freq_hz": 7200000000.0
+      },
+      {
+        "ue": "ue25",
+        "freq_hz": 7200000000.0
+      },
+      {
+        "ue": "ue26",
+        "freq_hz": 7200000000.0
+      }
+    ],
+    "note": "reported, not a physics failure"
+  },
+  "C3_convergence_seed": {
+    "label": "MAIN vs other seed",
+    "links": 30,
+    "fraction_within_tol": 0.9333333333333333,
+    "median_abs_db": 3.65417075514074e-05,
+    "max_abs_db": 2.383460713355447,
+    "passed": true
+  },
+  "C3_convergence_rays": {
+    "label": "MAIN vs 3x rays",
+    "links": 32,
+    "fraction_within_tol": 0.84375,
+    "median_abs_db": 0.004569814273544637,
+    "max_abs_db": 5.77805041659559,
+    "passed": false
+  },
+  "C5_reciprocity": {
+    "label": "gNB->UE vs UE->gNB",
+    "links": 34,
+    "fraction_within_tol": 0.7058823529411765,
+    "median_abs_db": 0.0026556044255983124,
+    "max_abs_db": 22.704756462744626,
+    "passed": false
+  },
+  "C4_monotone_mechanisms": {
+    "passed": true,
+    "violations": []
+  }
+}

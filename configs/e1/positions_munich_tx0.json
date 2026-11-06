@@ -1,0 +1,550 @@
+{
+  "generated_utc": "2026-11-06T22:42:43.230849+00:00",
+  "tool": "scripts/e1a_select_positions.py",
+  "sionna_rt": "1.2.0",
+  "scene": "munich",
+  "scene_bbox_xy": [
+    [
+      -805.5836791992188,
+      -688.6006469726562
+    ],
+    [
+      669.8827514648438,
+      517.0350952148438
+    ]
+  ],
+  "gnb": {
+    "position": [
+      8.5,
+      21.0,
+      27.0
+    ],
+    "height_above_surface_below_m": 1.0,
+    "open_sky_above": true,
+    "note": "Sionna RT tutorial transmitter site; rooftop-mounted"
+  },
+  "selection": {
+    "ue_height_m": 1.5,
+    "grid_m": 4.0,
+    "clearance_m": 2.0,
+    "distance_bins_m": [
+      20,
+      50,
+      100,
+      200,
+      300,
+      450,
+      600
+    ],
+    "per_bin_and_class": 3,
+    "seed": 20261106,
+    "grid_points_in_annulus": 67186,
+    "outdoor_open_points": 30888,
+    "los_definition": "unobstructed straight segment UE->gNB in scene mesh"
+  },
+  "census": [
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "class": "LOS",
+      "candidates": 136
+    },
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "class": "NLOS",
+      "candidates": 77
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "class": "LOS",
+      "candidates": 419
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "class": "NLOS",
+      "candidates": 218
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "class": "LOS",
+      "candidates": 271
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "class": "NLOS",
+      "candidates": 1566
+    },
+    {
+      "bin_m": [
+        200,
+        300
+      ],
+      "class": "LOS",
+      "candidates": 0
+    },
+    {
+      "bin_m": [
+        200,
+        300
+      ],
+      "class": "NLOS",
+      "candidates": 3356
+    },
+    {
+      "bin_m": [
+        300,
+        450
+      ],
+      "class": "LOS",
+      "candidates": 0
+    },
+    {
+      "bin_m": [
+        300,
+        450
+      ],
+      "class": "NLOS",
+      "candidates": 9931
+    },
+    {
+      "bin_m": [
+        450,
+        600
+      ],
+      "class": "LOS",
+      "candidates": 0
+    },
+    {
+      "bin_m": [
+        450,
+        600
+      ],
+      "class": "NLOS",
+      "candidates": 14914
+    }
+  ],
+  "positions": [
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "geometric_class": "LOS",
+      "position": [
+        -3.5,
+        61.0,
+        1.5
+      ],
+      "d2d_m": 41.761,
+      "d3d_m": 48.931,
+      "id": "ue00"
+    },
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "geometric_class": "LOS",
+      "position": [
+        8.5,
+        41.0,
+        1.5
+      ],
+      "d2d_m": 20.0,
+      "d3d_m": 32.408,
+      "id": "ue01"
+    },
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "geometric_class": "LOS",
+      "position": [
+        16.5,
+        49.0,
+        1.5
+      ],
+      "d2d_m": 29.12,
+      "d3d_m": 38.707,
+      "id": "ue02"
+    },
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        -31.5,
+        45.0,
+        1.5
+      ],
+      "d2d_m": 46.648,
+      "d3d_m": 53.162,
+      "id": "ue03"
+    },
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        4.5,
+        -15.0,
+        1.5
+      ],
+      "d2d_m": 36.222,
+      "d3d_m": 44.297,
+      "id": "ue04"
+    },
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        44.5,
+        17.0,
+        1.5
+      ],
+      "d2d_m": 36.222,
+      "d3d_m": 44.297,
+      "id": "ue05"
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "geometric_class": "LOS",
+      "position": [
+        -15.5,
+        117.0,
+        1.5
+      ],
+      "d2d_m": 98.955,
+      "d3d_m": 102.187,
+      "id": "ue06"
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "geometric_class": "LOS",
+      "position": [
+        48.5,
+        97.0,
+        1.5
+      ],
+      "d2d_m": 85.884,
+      "d3d_m": 89.589,
+      "id": "ue07"
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "geometric_class": "LOS",
+      "position": [
+        68.5,
+        53.0,
+        1.5
+      ],
+      "d2d_m": 68.0,
+      "d3d_m": 72.624,
+      "id": "ue08"
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        -75.5,
+        -3.0,
+        1.5
+      ],
+      "d2d_m": 87.361,
+      "d3d_m": 91.007,
+      "id": "ue09"
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        24.5,
+        -27.0,
+        1.5
+      ],
+      "d2d_m": 50.596,
+      "d3d_m": 56.659,
+      "id": "ue10"
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        68.5,
+        -31.0,
+        1.5
+      ],
+      "d2d_m": 79.398,
+      "d3d_m": 83.392,
+      "id": "ue11"
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "geometric_class": "LOS",
+      "position": [
+        60.5,
+        113.0,
+        1.5
+      ],
+      "d2d_m": 105.679,
+      "d3d_m": 108.712,
+      "id": "ue12"
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "geometric_class": "LOS",
+      "position": [
+        84.5,
+        97.0,
+        1.5
+      ],
+      "d2d_m": 107.48,
+      "d3d_m": 110.464,
+      "id": "ue13"
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "geometric_class": "LOS",
+      "position": [
+        112.5,
+        93.0,
+        1.5
+      ],
+      "d2d_m": 126.491,
+      "d3d_m": 129.036,
+      "id": "ue14"
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        -175.5,
+        89.0,
+        1.5
+      ],
+      "d2d_m": 196.163,
+      "d3d_m": 197.814,
+      "id": "ue15"
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        32.5,
+        -151.0,
+        1.5
+      ],
+      "d2d_m": 173.666,
+      "d3d_m": 175.528,
+      "id": "ue16"
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        52.5,
+        -159.0,
+        1.5
+      ],
+      "d2d_m": 185.3,
+      "d3d_m": 187.046,
+      "id": "ue17"
+    },
+    {
+      "bin_m": [
+        200,
+        300
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        -211.5,
+        105.0,
+        1.5
+      ],
+      "d2d_m": 235.491,
+      "d3d_m": 236.868,
+      "id": "ue18"
+    },
+    {
+      "bin_m": [
+        200,
+        300
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        152.5,
+        -203.0,
+        1.5
+      ],
+      "d2d_m": 266.293,
+      "d3d_m": 267.511,
+      "id": "ue19"
+    },
+    {
+      "bin_m": [
+        200,
+        300
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        248.5,
+        53.0,
+        1.5
+      ],
+      "d2d_m": 242.124,
+      "d3d_m": 243.463,
+      "id": "ue20"
+    },
+    {
+      "bin_m": [
+        300,
+        450
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        -371.5,
+        37.0,
+        1.5
+      ],
+      "d2d_m": 380.337,
+      "d3d_m": 381.191,
+      "id": "ue21"
+    },
+    {
+      "bin_m": [
+        300,
+        450
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        36.5,
+        437.0,
+        1.5
+      ],
+      "d2d_m": 416.941,
+      "d3d_m": 417.72,
+      "id": "ue22"
+    },
+    {
+      "bin_m": [
+        300,
+        450
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        392.5,
+        37.0,
+        1.5
+      ],
+      "d2d_m": 384.333,
+      "d3d_m": 385.178,
+      "id": "ue23"
+    },
+    {
+      "bin_m": [
+        450,
+        600
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        292.5,
+        457.0,
+        1.5
+      ],
+      "d2d_m": 520.338,
+      "d3d_m": 520.963,
+      "id": "ue24"
+    },
+    {
+      "bin_m": [
+        450,
+        600
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        452.5,
+        -355.0,
+        1.5
+      ],
+      "d2d_m": 581.818,
+      "d3d_m": 582.376,
+      "id": "ue25"
+    },
+    {
+      "bin_m": [
+        450,
+        600
+      ],
+      "geometric_class": "NLOS",
+      "position": [
+        512.5,
+        325.0,
+        1.5
+      ],
+      "d2d_m": 588.585,
+      "d3d_m": 589.137,
+      "id": "ue26"
+    }
+  ]
+}

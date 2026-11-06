@@ -1,0 +1,409 @@
+{
+  "generated_utc": "2026-11-06T22:57:25.400867+00:00",
+  "tool": "scripts/e1a_propagation.py",
+  "python": "3.12.16",
+  "sionna_rt": "1.2.0",
+  "scene": "munich",
+  "positions_file": "configs/e1/positions_munich_tx0.json",
+  "gnb": [
+    8.5,
+    21.0,
+    27.0
+  ],
+  "n_ues": 27,
+  "antennas": "single isotropic element, V-pol, both ends",
+  "configs": {
+    "S0_los_only": {
+      "los": true,
+      "diffuse_reflection": false,
+      "edge_diffraction": false,
+      "max_depth": 0,
+      "specular_reflection": false,
+      "refraction": false,
+      "diffraction": false
+    },
+    "S1_specular": {
+      "los": true,
+      "diffuse_reflection": false,
+      "edge_diffraction": false,
+      "max_depth": 5,
+      "specular_reflection": true,
+      "refraction": false,
+      "diffraction": false
+    },
+    "S2_spec_diffr": {
+      "los": true,
+      "diffuse_reflection": false,
+      "edge_diffraction": false,
+      "max_depth": 5,
+      "specular_reflection": true,
+      "refraction": false,
+      "diffraction": true
+    },
+    "S3_spec_diffr_refr": {
+      "los": true,
+      "diffuse_reflection": false,
+      "edge_diffraction": false,
+      "max_depth": 5,
+      "specular_reflection": true,
+      "refraction": true,
+      "diffraction": true
+    }
+  },
+  "main_config": "S2_spec_diffr",
+  "runs": [
+    "S0",
+    "S1",
+    "S2",
+    "S3",
+    "S2_seed2",
+    "S2_3x_rays",
+    "S2_mast4m",
+    "S2_reverse",
+    "S2_wall0p2m",
+    "S2_wall0p3m",
+    "S2_wall0p5m"
+  ],
+  "timings": [
+    {
+      "run": "S0",
+      "freq_hz": 3500000000.0,
+      "solve_s": 1.75
+    },
+    {
+      "run": "S0",
+      "freq_hz": 7200000000.0,
+      "solve_s": 1.04
+    },
+    {
+      "run": "S1",
+      "freq_hz": 3500000000.0,
+      "solve_s": 4.78
+    },
+    {
+      "run": "S1",
+      "freq_hz": 7200000000.0,
+      "solve_s": 4.35
+    },
+    {
+      "run": "S2",
+      "freq_hz": 3500000000.0,
+      "solve_s": 5.69
+    },
+    {
+      "run": "S2",
+      "freq_hz": 7200000000.0,
+      "solve_s": 8.34
+    },
+    {
+      "run": "S3",
+      "freq_hz": 3500000000.0,
+      "solve_s": 6.19
+    },
+    {
+      "run": "S3",
+      "freq_hz": 7200000000.0,
+      "solve_s": 6.15
+    },
+    {
+      "run": "S2_seed2",
+      "freq_hz": 3500000000.0,
+      "solve_s": 3.25
+    },
+    {
+      "run": "S2_seed2",
+      "freq_hz": 7200000000.0,
+      "solve_s": 2.69
+    },
+    {
+      "run": "S2_3x_rays",
+      "freq_hz": 3500000000.0,
+      "solve_s": 13.97
+    },
+    {
+      "run": "S2_3x_rays",
+      "freq_hz": 7200000000.0,
+      "solve_s": 13.7
+    },
+    {
+      "run": "S2_mast4m",
+      "freq_hz": 3500000000.0,
+      "solve_s": 4.84
+    },
+    {
+      "run": "S2_mast4m",
+      "freq_hz": 7200000000.0,
+      "solve_s": 4.39
+    },
+    {
+      "run": "S2_reverse",
+      "freq_hz": 3500000000.0,
+      "solve_s": 76.71
+    },
+    {
+      "run": "S2_reverse",
+      "freq_hz": 7200000000.0,
+      "solve_s": 98.82
+    },
+    {
+      "run": "S2_wall0p2m",
+      "freq_hz": 3500000000.0,
+      "solve_s": 10.8
+    },
+    {
+      "run": "S2_wall0p2m",
+      "freq_hz": 7200000000.0,
+      "solve_s": 10.12
+    },
+    {
+      "run": "S2_wall0p3m",
+      "freq_hz": 3500000000.0,
+      "solve_s": 3.94
+    },
+    {
+      "run": "S2_wall0p3m",
+      "freq_hz": 7200000000.0,
+      "solve_s": 3.36
+    },
+    {
+      "run": "S2_wall0p5m",
+      "freq_hz": 3500000000.0,
+      "solve_s": 3.38
+    },
+    {
+      "run": "S2_wall0p5m",
+      "freq_hz": 7200000000.0,
+      "solve_s": 4.07
+    }
+  ],
+  "jobs": [
+    {
+      "out": "S0_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 5.6,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S0_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 4.6,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S1_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 9.0,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S1_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 8.8,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 9.9,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 12.9,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S3_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 10.4,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S3_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 10.6,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_seed2_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 7.3,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_seed2_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 6.8,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_3x_rays_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 18.4,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_3x_rays_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 18.1,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_mast4m_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 9.7,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_mast4m_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 8.9,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_reverse_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 83.1,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_reverse_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 106.6,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_wall0p2m_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 17.3,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_wall0p2m_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 14.8,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_wall0p3m_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 8.2,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_wall0p3m_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 6.6,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_wall0p5m_3.5GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 7.3,
+          "stderr_tail": []
+        }
+      ]
+    },
+    {
+      "out": "S2_wall0p5m_7.2GHz.npz",
+      "attempts": [
+        {
+          "returncode": 0,
+          "wall_s": 8.5,
+          "stderr_tail": []
+        }
+      ]
+    }
+  ],
+  "retries": 0,
+  "tolerances_db": {
+    "exact": 0.01,
+    "convergence": 0.5,
+    "fraction": 0.9
+  },
+  "all_checks_passed_excluding_C2": false,
+  "claims_scope": "propagation only (no antennas, powers, noise or rates)"
+}

@@ -96,6 +96,23 @@ to the LOS-only E0 runs, but each must be controlled in E1:
 6. **Cost.** Sionna RT is called per link and per `UpdatePeriod`, so runtime
    grows with the number of links times the number of updates.
 
+Found in sionna-rt 1.2.0 itself during E1a (apply to standalone Python AND to
+ns-3, which calls the same solver):
+
+7. **Only first-order diffraction** (`path_solvers/sb_candidate_generator.py`:
+   "Only first order diffraction is supported"), sampled with probability 0.2
+   per valid wedge. Paths needing two or more diffractions do not exist.
+8. **Wedges are detected within one mesh.** Edges where two different materials
+   meet (Munich: metal roofs, marble walls) are free edges and are diffracted
+   only with `edge_diffraction=True`.
+9. **Slab reflection is frequency-selective.** Reflection and transmission use
+   the ITU-R P.2040 single-layer slab model with the material thickness
+   (Munich default 0.1 m for every material), including internal multiple
+   reflections.
+10. **Process stability.** Repeated solves in one Python process aborted in
+    Dr.Jit's thread pool (`nanothread queue.cpp:357 remain == 1`); each solve
+    now runs in a fresh process.
+
 ## 4. Experiment E1: co-sited 3.5/7.2 GHz uplink/downlink feasibility (design)
 
 Question: with both layers on the same site, where is the 7.2 GHz layer usable
@@ -198,3 +215,67 @@ scene already yields 145 to 165 paths per link (counted with single elements
 in standalone Sionna RT), above the ns-3 default `MaxNumberOfPaths` of 90.
 Hazard 1 (section 3) is therefore expected to trigger in E1 unless the limit is
 raised and the warning is treated as a run failure.
+
+### E1a.1 propagation at fixed positions: CHECKS FAILED, cause identified (2026-11-06)
+
+Setup. Munich scene, gNB at the Sionna tutorial site (8.5, 21, 27) m, 1 m above
+a roof with open sky (verified by ray test). 27 outdoor UE positions at 1.5 m
+from `scripts/e1a_select_positions.py` (seed 20261106, 4 m grid, open sky,
+on ground, 2 m wall clearance; stratified by distance bin and geometric LOS),
+stored in `configs/e1/positions_munich_tx0.json`. Single isotropic elements.
+`scripts/e1a_propagation.py`, outputs in `results/phase2/e1a_propagation/`.
+
+Scene LOS statistics (all 30,888 open outdoor grid points vs TR 38.901 UMa,
+area-weighted per bin): 20-50 m 0.64 vs 0.78; 50-100 m 0.66 vs 0.46;
+100-200 m 0.15 vs 0.20; 200-300 m 0.00 vs 0.09; 300-450 m 0.00 vs 0.05;
+450-600 m 0.00 vs 0.035. Raising the gNB to 30 or 35 m removes rooftop
+self-shadowing but not the far-range NLOS (`site_shadowing.txt`): it is caused
+by the city geometry.
+
+Pre-registered checks: C1 (LOS exactness) PASS, C4 (monotone) PASS;
+C2 FAIL (10 of 18 NLOS positions without paths at one or both carriers),
+C3 FAIL with 3x rays (84% within 0.5 dB, max 5.8 dB), C5 reciprocity FAIL
+(71% within 0.5 dB, max 22.7 dB). Thresholds were not changed.
+
+Valid results (LOS links, 9 positions, converged):
+- Ray tracing agrees with the TR 38.901 UMa LOS median: mean residual +0.02 dB
+  (3.5 GHz) and -0.74 dB (7.2 GHz).
+- LOS frequency gap 3.5 -> 7.2 GHz (incoherent total gain): 5.50 dB mean with
+  the scene's 0.1 m walls, versus 6.31 / 6.47 / 6.20 dB with 0.2 / 0.3 / 0.5 m
+  walls (free space and TR 38.901: 6.27 dB). The 0.1 m slab makes 7.2 GHz
+  reflections relatively too strong (hazard 9): a scene-parameter artefact.
+
+Diagnosis of the NLOS failure (`scripts/e1a_diffraction_diagnostic.py`,
+`results/phase2/e1a_diffraction_diagnostic/`, 18 NLOS positions):
+
+| Variant (3.5 GHz unless noted) | NLOS links with paths |
+|---|---|
+| MAIN (edge diffraction off), z = 27 m, 1e6 rays | 8/18 |
+| + edge diffraction | 11/18 |
+| + edge diffraction, 4 m mast (z = 30 m) | 12/18 |
+| same with 5e6 rays (3.5 and 7.2 GHz) | 14/18 |
+
+Up to about 80 m, NLOS gains agree with the TR 38.901 UMa NLOS median within
+about 3 dB (ue03, ue11). Beyond about 150 m, every variant is 15 to 60 dB below
+the median or finds nothing, and results still change with the ray count.
+NLOS beyond 100 m covers about 96% of the open outdoor area of this site.
+Cause: hazards 7 and 8 (single diffraction; stochastic discovery of weak
+paths). Conclusion: with sionna-rt 1.2.0 on CPU, the path solver is not a
+valid propagation engine for street-level NLOS macro coverage at this site.
+The same applies to E1b, which uses the same solver inside ns-3 (NLOS UEs
+would receive no channel). Decision on the propagation engine: section 7.
+
+## 7. Open decision: propagation engine for E1 (2026-11-06)
+
+Recommended: geometry-aware 3GPP model as the main engine. TR 38.901 UMa path
+loss with the LOS/NLOS state of every location taken deterministically from
+the scene geometry (not drawn at random), shadow fading correlated across the
+two carriers, and frequency-dependent O2I loss; the same model in ns-3 for E1b
+(ThreeGpp channel with the MR !2929 fix). Sionna RT is kept where it is shown
+valid: site geometry and LOS map, converged LOS and near-NLOS links
+(validation), and the wall-thickness frequency-selectivity analysis.
+
+Alternative: keep ray tracing as the main engine, via a GPU (Colab), much
+larger ray counts and possibly sionna-rt 2.x. Not recommended without first
+showing convergence and multi-diffraction support; it also breaks version
+parity with ns-3.48, which is tested with sionna-rt 1.2.0.

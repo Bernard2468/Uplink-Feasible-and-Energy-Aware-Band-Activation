@@ -1,0 +1,33 @@
+{
+  "generated_utc": "2026-11-06T23:24:30.809929+00:00",
+  "tool": "scripts/e1_propagation_3gpp.py",
+  "model_version": "e1.2-uma-geometry-conditioned-v1",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "site_id": "site_tx0",
+  "geometry_manifest_sha256": "8b57516374171ddf07dc89bec58f62e3fafdb05b06556d7774b50e76208d1557",
+  "links_csv_sha256": "59c563f46558b3d2b17865d87b28a2fdb118eebf65bc0bfb20ece7d61b1f0484",
+  "carriers_hz": [
+    3500000000.0,
+    7200000000.0
+  ],
+  "realizations": 200,
+  "seed": 20261107,
+  "shadowing": {
+    "std_db": {
+      "LOS": 4.0,
+      "NLOS": 6.0
+    },
+    "corr_dist_m": {
+      "LOS": 37.0,
+      "NLOS": 50.0
+    },
+    "multi_frequency": "one normal variate per link shared by all carriers (TR 38.901 7.6.5)"
+  },
+  "departures_from_standard": [
+    "LOS state from scene geometry, not Table 7.4.2-1",
+    "gNB height 27 m (UMa nominal 25 m)"
+  ],
+  "scope": "outdoor large-scale propagation only; no antennas, powers, noise, O2I",
+  "all_checks_passed": true
+}

@@ -43,6 +43,40 @@ def ray_distance(mi_scene, origins, direction):
     return t
 
 
+def screen_grid(ms, tx, ue_height, grid_m, clearance_m, rmin, rmax):
+    """Open outdoor grid points around the gNB and their geometric LOS state.
+
+    Shared by position selection (E1a) and the frozen geometry mask (E1.1).
+    Returns (pts (N,3), d2d (N,), d3d (N,), los (N,) bool, n_grid_in_annulus).
+    """
+    bb = ms.bbox()
+    lo = np.array([bb.min[0], bb.min[1]], dtype=float)
+    hi = np.array([bb.max[0], bb.max[1]], dtype=float)
+    xs = np.arange(tx[0] - rmax, tx[0] + rmax + 1e-9, grid_m)
+    ys = np.arange(tx[1] - rmax, tx[1] + rmax + 1e-9, grid_m)
+    gx, gy = np.meshgrid(xs, ys, indexing='ij')
+    pts = np.stack([gx.ravel(), gy.ravel(), np.full(gx.size, ue_height)], axis=1)
+    d2d = np.hypot(pts[:, 0] - tx[0], pts[:, 1] - tx[1])
+    inside = ((d2d >= rmin) & (d2d < rmax)
+              & (pts[:, 0] > lo[0] + 10) & (pts[:, 0] < hi[0] - 10)
+              & (pts[:, 1] > lo[1] + 10) & (pts[:, 1] < hi[1] - 10))
+    pts, d2d = pts[inside], d2d[inside]
+    n_grid = len(pts)
+    open_sky = ~ray_hits(ms, pts, [0, 0, 1], np.inf)
+    t_down = ray_distance(ms, pts, [0, 0, -1])
+    on_ground = np.abs(t_down - ue_height) < 0.05
+    clear = np.ones(len(pts), dtype=bool)
+    for k in range(8):
+        a = k * math.pi / 4
+        clear &= ~ray_hits(ms, pts, [math.cos(a), math.sin(a), 0.0], clearance_m)
+    keep = open_sky & on_ground & clear
+    pts, d2d = pts[keep], d2d[keep]
+    vec = tx[None, :] - pts
+    dist = np.linalg.norm(vec, axis=1)
+    los = ~ray_hits(ms, pts, vec / dist[:, None], dist - 0.05)
+    return pts, d2d, dist, los, n_grid
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--scene', default='munich')
@@ -69,31 +103,9 @@ def main():
     if up_tx:
         raise SystemExit('gNB position is under or inside geometry')
 
-    rmax = args.bins[-1]
-    xs = np.arange(tx[0] - rmax, tx[0] + rmax + 1e-9, args.grid_m)
-    ys = np.arange(tx[1] - rmax, tx[1] + rmax + 1e-9, args.grid_m)
-    gx, gy = np.meshgrid(xs, ys, indexing='ij')
-    pts = np.stack([gx.ravel(), gy.ravel(), np.full(gx.size, args.ue_height)], axis=1)
-    d2d = np.hypot(pts[:, 0] - tx[0], pts[:, 1] - tx[1])
-    inside = ((d2d >= args.bins[0]) & (d2d < rmax)
-              & (pts[:, 0] > lo[0] + 10) & (pts[:, 0] < hi[0] - 10)
-              & (pts[:, 1] > lo[1] + 10) & (pts[:, 1] < hi[1] - 10))
-    pts, d2d = pts[inside], d2d[inside]
-    n_grid = len(pts)
-
-    open_sky = ~ray_hits(ms, pts, [0, 0, 1], np.inf)
-    t_down = ray_distance(ms, pts, [0, 0, -1])
-    on_ground = np.abs(t_down - args.ue_height) < 0.05
-    clear = np.ones(len(pts), dtype=bool)
-    for k in range(8):
-        a = k * math.pi / 4
-        clear &= ~ray_hits(ms, pts, [math.cos(a), math.sin(a), 0.0], args.clearance_m)
-    keep = open_sky & on_ground & clear
-    pts, d2d = pts[keep], d2d[keep]
-
-    vec = tx[None, :] - pts
-    dist = np.linalg.norm(vec, axis=1)
-    los = ~ray_hits(ms, pts, vec / dist[:, None], dist - 0.05)
+    pts, d2d, dist, los, n_grid = screen_grid(ms, tx, args.ue_height, args.grid_m,
+                                              args.clearance_m, args.bins[0], args.bins[-1])
+    n_open = len(pts)
 
     rng = np.random.default_rng(args.seed)
     chosen, census = [], []
@@ -123,13 +135,13 @@ def main():
         'selection': {'ue_height_m': args.ue_height, 'grid_m': args.grid_m,
                       'clearance_m': args.clearance_m, 'distance_bins_m': args.bins,
                       'per_bin_and_class': args.per_bin_class, 'seed': args.seed,
-                      'grid_points_in_annulus': n_grid, 'outdoor_open_points': int(keep.sum()),
+                      'grid_points_in_annulus': n_grid, 'outdoor_open_points': n_open,
                       'los_definition': 'unobstructed straight segment UE->gNB in scene mesh'},
         'census': census, 'positions': chosen,
     }
     with open(args.out, 'w', encoding='utf-8') as fh:
         json.dump(out, fh, indent=2)
-    print(f'grid {n_grid}, outdoor/open {int(keep.sum())}, LOS {int(los.sum())}; '
+    print(f'grid {n_grid}, outdoor/open {n_open}, LOS {int(los.sum())}; '
           f'gNB {below_tx:.2f} m above surface below')
     for c in census:
         print(f"  bin {c['bin_m']} {c['class']:4s}: {c['candidates']} candidates")

@@ -1,0 +1,160 @@
+{
+  "generated_utc": "2026-11-06T23:22:41.778150+00:00",
+  "tool": "scripts/e1_geometry.py",
+  "site_id": "site_tx0",
+  "scene": "munich",
+  "gnb_position_m": [
+    8.5,
+    21.0,
+    27.0
+  ],
+  "versions": {
+    "python": "3.12.16",
+    "sionna_rt": "1.2.0",
+    "mitsuba": "3.7.1",
+    "drjit": "1.2.0"
+  },
+  "positions_file": "configs/e1/positions_munich_tx0.json",
+  "positions_sha256": "125c0cbc8a04da79a5d77be20611fc3edca359ce7823e1821c83e999350282eb",
+  "grid": {
+    "ue_height_m": 1.5,
+    "grid_m": 4.0,
+    "clearance_m": 2.0,
+    "distance_bins_m": [
+      20,
+      50,
+      100,
+      200,
+      300,
+      450,
+      600
+    ]
+  },
+  "los_definition": "unobstructed straight segment UE->gNB in scene mesh",
+  "counts": {
+    "grid_points_in_annulus": 67186,
+    "open_outdoor_points": 30888,
+    "los_points": 826,
+    "fixed_positions": 27
+  },
+  "census": [
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "class": "LOS",
+      "points": 136
+    },
+    {
+      "bin_m": [
+        20,
+        50
+      ],
+      "class": "NLOS",
+      "points": 77
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "class": "LOS",
+      "points": 419
+    },
+    {
+      "bin_m": [
+        50,
+        100
+      ],
+      "class": "NLOS",
+      "points": 218
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "class": "LOS",
+      "points": 271
+    },
+    {
+      "bin_m": [
+        100,
+        200
+      ],
+      "class": "NLOS",
+      "points": 1566
+    },
+    {
+      "bin_m": [
+        200,
+        300
+      ],
+      "class": "LOS",
+      "points": 0
+    },
+    {
+      "bin_m": [
+        200,
+        300
+      ],
+      "class": "NLOS",
+      "points": 3356
+    },
+    {
+      "bin_m": [
+        300,
+        450
+      ],
+      "class": "LOS",
+      "points": 0
+    },
+    {
+      "bin_m": [
+        300,
+        450
+      ],
+      "class": "NLOS",
+      "points": 9931
+    },
+    {
+      "bin_m": [
+        450,
+        600
+      ],
+      "class": "LOS",
+      "points": 0
+    },
+    {
+      "bin_m": [
+        450,
+        600
+      ],
+      "class": "NLOS",
+      "points": 14914
+    }
+  ],
+  "files": {
+    "site_tx0_mask.npz": "d1cd5abd4ef71204ef3d80d591909ddb0042d622bc92897de132ed72c127a7c8",
+    "site_tx0_links.csv": "59c563f46558b3d2b17865d87b28a2fdb118eebf65bc0bfb20ece7d61b1f0484"
+  },
+  "checks": {
+    "G4_mask_reproducible": {
+      "passed": true
+    },
+    "G1_fixed_positions_los_state": {
+      "passed": true,
+      "mismatches": []
+    },
+    "G2_fixed_positions_on_grid": {
+      "passed": true,
+      "missing": []
+    },
+    "G3_census_matches": {
+      "passed": true,
+      "mismatches": []
+    }
+  },
+  "all_checks_passed": true
+}

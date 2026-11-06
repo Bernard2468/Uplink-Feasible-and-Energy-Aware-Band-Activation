@@ -1,0 +1,214 @@
+{
+  "checks": {
+    "P1_pathloss_reevaluation": {
+      "passed": true,
+      "mismatches": []
+    },
+    "P2_frequency_gap": {
+      "passed": true,
+      "violations": [],
+      "expected_gap_db": 6.265289041619856
+    },
+    "P3_shadowing_std": {
+      "passed": true,
+      "by_state": {
+        "LOS": {
+          "n": 1800,
+          "mean_db": 0.07666856824530464,
+          "std_db": 3.915285744971021,
+          "target_std_db": 4.0,
+          "passed": true
+        },
+        "NLOS": {
+          "n": 3600,
+          "mean_db": 0.141329829373998,
+          "std_db": 6.005970996219543,
+          "target_std_db": 6.0,
+          "passed": true
+        }
+      }
+    },
+    "P4_state_from_geometry": {
+      "passed": true
+    }
+  },
+  "all_checks_passed": true,
+  "reported_rt_comparison_validated_links": [
+    {
+      "ue": "ue00",
+      "state": "LOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 75.68082471973597,
+      "uma_median_pathloss_db": 76.05223042645513,
+      "rt_minus_uma_db": -0.37140570671915896
+    },
+    {
+      "ue": "ue00",
+      "state": "LOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 82.79890477915059,
+      "uma_median_pathloss_db": 82.31751946807498,
+      "rt_minus_uma_db": 0.4813853110756128
+    },
+    {
+      "ue": "ue01",
+      "state": "LOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 73.06358790187613,
+      "uma_median_pathloss_db": 72.11559202273136,
+      "rt_minus_uma_db": 0.94799587914477
+    },
+    {
+      "ue": "ue01",
+      "state": "LOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 78.66408304519344,
+      "uma_median_pathloss_db": 78.38088106435123,
+      "rt_minus_uma_db": 0.2832019808422075
+    },
+    {
+      "ue": "ue02",
+      "state": "LOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 74.81692076769339,
+      "uma_median_pathloss_db": 73.81277952950033,
+      "rt_minus_uma_db": 1.004141238193057
+    },
+    {
+      "ue": "ue02",
+      "state": "LOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 81.00540177538561,
+      "uma_median_pathloss_db": 80.07806857112018,
+      "rt_minus_uma_db": 0.9273332042654232
+    },
+    {
+      "ue": "ue03",
+      "state": "NLOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 95.898644823221,
+      "uma_median_pathloss_db": 91.85801975182437,
+      "rt_minus_uma_db": 4.040625071396633
+    },
+    {
+      "ue": "ue03",
+      "state": "NLOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 100.8964131473998,
+      "uma_median_pathloss_db": 98.12330879344424,
+      "rt_minus_uma_db": 2.77310435395556
+    },
+    {
+      "ue": "ue06",
+      "state": "LOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 82.85206904195915,
+      "uma_median_pathloss_db": 83.08809322257862,
+      "rt_minus_uma_db": -0.2360241806194665
+    },
+    {
+      "ue": "ue06",
+      "state": "LOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 88.36855683718211,
+      "uma_median_pathloss_db": 89.35338226419847,
+      "rt_minus_uma_db": -0.9848254270163608
+    },
+    {
+      "ue": "ue07",
+      "state": "LOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 81.66936010340896,
+      "uma_median_pathloss_db": 81.83099603901607,
+      "rt_minus_uma_db": -0.16163593560710865
+    },
+    {
+      "ue": "ue07",
+      "state": "LOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 86.91792901407848,
+      "uma_median_pathloss_db": 88.09628508063594,
+      "rt_minus_uma_db": -1.1783560665574555
+    },
+    {
+      "ue": "ue08",
+      "state": "LOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 80.34470619828836,
+      "uma_median_pathloss_db": 79.82512452577853,
+      "rt_minus_uma_db": 0.5195816725098297
+    },
+    {
+      "ue": "ue08",
+      "state": "LOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 86.41570208592037,
+      "uma_median_pathloss_db": 86.0904135673984,
+      "rt_minus_uma_db": 0.3252885185219725
+    },
+    {
+      "ue": "ue11",
+      "state": "NLOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 100.25356001964114,
+      "uma_median_pathloss_db": 99.49892238867739,
+      "rt_minus_uma_db": 0.7546376309637566
+    },
+    {
+      "ue": "ue11",
+      "state": "NLOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 108.61026015826276,
+      "uma_median_pathloss_db": 105.76421143029725,
+      "rt_minus_uma_db": 2.84604872796551
+    },
+    {
+      "ue": "ue12",
+      "state": "LOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 83.03321566705803,
+      "uma_median_pathloss_db": 83.67944799332082,
+      "rt_minus_uma_db": -0.6462323262627905
+    },
+    {
+      "ue": "ue12",
+      "state": "LOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 87.82293258921686,
+      "uma_median_pathloss_db": 89.94473703494069,
+      "rt_minus_uma_db": -2.121804445723825
+    },
+    {
+      "ue": "ue13",
+      "state": "LOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 83.44226774688141,
+      "uma_median_pathloss_db": 83.83220042616782,
+      "rt_minus_uma_db": -0.38993267928640307
+    },
+    {
+      "ue": "ue13",
+      "state": "LOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 88.42930052054595,
+      "uma_median_pathloss_db": 90.09748946778768,
+      "rt_minus_uma_db": -1.668188947241731
+    },
+    {
+      "ue": "ue14",
+      "state": "LOS",
+      "frequency_hz": 3500000000.0,
+      "rt_pathloss_db": 84.83964302265323,
+      "uma_median_pathloss_db": 85.31698569870471,
+      "rt_minus_uma_db": -0.47734267605147807
+    },
+    {
+      "ue": "ue14",
+      "state": "LOS",
+      "frequency_hz": 7200000000.0,
+      "rt_pathloss_db": 88.81504815321833,
+      "uma_median_pathloss_db": 91.58227474032458,
+      "rt_minus_uma_db": -2.7672265871062507
+    }
+  ]
+}

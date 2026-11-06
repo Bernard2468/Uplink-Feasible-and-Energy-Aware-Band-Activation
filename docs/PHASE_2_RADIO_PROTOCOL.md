@@ -265,9 +265,72 @@ valid propagation engine for street-level NLOS macro coverage at this site.
 The same applies to E1b, which uses the same solver inside ns-3 (NLOS UEs
 would receive no channel). Decision on the propagation engine: section 7.
 
-## 7. Open decision: propagation engine for E1 (2026-11-06)
+## 7. Decision: propagation engine for E1 (2026-11-06)
 
-Recommended: geometry-aware 3GPP model as the main engine. TR 38.901 UMa path
+**DECIDED (user, with independent concurrence): geometry-conditioned TR 38.901
+UMa as the primary large-scale propagation model; Sionna RT 1.2.0 retained,
+unchanged, for diagnostics and selected-link validation.** This is a
+methodological revision prompted by the E1a.1 failure of the NLOS path,
+convergence and reciprocity criteria (section 6). Those results are preserved
+unchanged in `results/phase2/e1a_propagation/` and
+`results/phase2/e1a_diffraction_diagnostic/`. Model sources and departures
+from the standard: `docs/E1_PARAMETERS.md`.
+
+Revised E1 sequence (each step gated by its own checks):
+
+- **E1.1 Freeze the geometry.** Munich scene, gNB (8.5, 21, 27) m, the 27
+  existing UE positions, and a deterministic LOS/NLOS mask over all open
+  outdoor grid points, with the geometry tool versions recorded. Both carriers
+  use the same geometry.
+- **E1.2 Propagation model.** TR 38.901 UMa path loss by geometric state;
+  shadow fading with UMa std, exponential spatial correlation (37 m LOS,
+  50 m NLOS, separate LOS and NLOS fields) and one shared normal variate per
+  link across carriers (clause 7.6.5). Shadowing is kept separate from the
+  deterministic geometry; ray-traced and 3GPP losses are never added for the
+  same mechanism.
+- **E1.3 Link budgets.** Outdoor, single element, equal bandwidth first; DL and
+  UL computed independently (noise = -174 + 10 log10(B) + NF of the receiver).
+  SINR only once interferers are modelled.
+- **E1.4 Antennas and deployment.** Antenna regimes A/B/C separately; then
+  TR 38.901 O2I loss and the M.2412 indoor share, with stated indoor geometry.
+- **E1.5 ns-3 validation.** Fixed-position UL and DL packet simulations with
+  the same channel states; tolerances fixed before comparison. ns-3 draws
+  shadowing independently per propagation-model instance (one per carrier):
+  E1.5 must disable ns-3 shadowing and impose the shared E1.2 values, or the
+  carriers get different random shadowing.
+
+Non-negotiable controls: single-site results are a demonstration, not a
+general macro-cell result (more sites in E1c); shared geometry and seeds across
+carriers; no "beneficial", "required" or "energy-optimal" labels in E1, which
+measures physical feasibility only.
+
+### E1.1 geometry frozen: PASSED (2026-11-06)
+
+`scripts/e1_geometry.py` -> `results/phase2/e1_geometry/` (mask .npz, links
+.csv, manifest with SHA-256 of every file). 30,888 open outdoor grid points
+(826 LOS) and the 27 fixed positions. Checks: G1 LOS state of the 27
+positions recomputed = stored; G2 all 27 lie on the grid; G3 per-bin census
+identical; G4 mask bit-identical on recomputation. The position-selection
+code was refactored into one shared function first; regenerating the
+positions reproduced the committed file exactly. ue04 and ue05 share a
+distance (36.22 m) by grid symmetry but are distinct points; no duplicates.
+
+### E1.2 propagation model: PASSED (2026-11-06)
+
+`cmwave/radio/uma_hybrid.py` (7 unit tests; 28/28 project tests pass) and
+`scripts/e1_propagation_3gpp.py` -> `results/phase2/e1_3gpp_propagation/`
+(200 realizations, seed 20261107). Checks: P1 path loss equals an independent
+re-evaluation of the TR 38.901 formulas; P2 the 3.5 -> 7.2 GHz gap is
+realization-independent and equals 6.2653 dB on all 27 links (all LOS links
+lie inside the breakpoint distance, about 607 m at 3.5 GHz); P3 pooled
+shadowing std 3.92 dB LOS (n=1800) and 6.01 dB NLOS (n=3600); P4 LOS state
+preserved. Reported: on the links where ray tracing was shown valid, ray
+tracing minus UMa median is +0.02 / -0.74 dB (LOS, n=9, 3.5 / 7.2 GHz) and
++2.40 / +2.81 dB (near-NLOS ue03 and ue11).
+
+### Original options considered
+
+Recommended (adopted): geometry-aware 3GPP model as the main engine. TR 38.901 UMa path
 loss with the LOS/NLOS state of every location taken deterministically from
 the scene geometry (not drawn at random), shadow fading correlated across the
 two carriers, and frequency-dependent O2I loss; the same model in ns-3 for E1b
@@ -275,7 +338,8 @@ two carriers, and frequency-dependent O2I loss; the same model in ns-3 for E1b
 valid: site geometry and LOS map, converged LOS and near-NLOS links
 (validation), and the wall-thickness frequency-selectivity analysis.
 
-Alternative: keep ray tracing as the main engine, via a GPU (Colab), much
-larger ray counts and possibly sionna-rt 2.x. Not recommended without first
+Alternative (not adopted): keep ray tracing as the main engine with much larger
+ray counts (a GPU only for speed; CPU ray tracing works) and possibly
+sionna-rt 2.x. Not recommended without first
 showing convergence and multi-diffraction support; it also breaks version
 parity with ns-3.48, which is tested with sionna-rt 1.2.0.

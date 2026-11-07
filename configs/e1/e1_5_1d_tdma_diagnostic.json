@@ -1,0 +1,60 @@
+{
+  "experiment": "E1.5.1-D: cause of the UL starvation under NrMacSchedulerTdmaRR in E1.5.1 run 4",
+  "status": "PRE-REGISTERED 2026-11-07, committed before the first diagnostic run; hypotheses, predictions, thresholds and decision rules are not changed after results are seen",
+  "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.1-D'",
+  "stack": {"ns3_commit": "d083a17a", "nr_commit": "cedceadd",
+            "program": "ns3/scratch/cmwave/e15-link-validation.cc, unchanged from E1.5.1 run 4 (SHA-256 5a62f17547fd3aafd7312ce349ec9bfa1a36bc156e69f03edf6aa622d014094e)"},
+  "reference_run": {"results": "results/phase2/e1_5_1_deterministic", "manifest_runs": ["f3p5_tdma", "f7p2_tdma"],
+                    "e1_5_1_config": "configs/e1/e1_5_1_deterministic.json (common settings reused unchanged)"},
+  "source_facts": [
+    "NrMacSchedulerUeInfoRR::CompareUeWeightsUl orders UEs by m_ulRBG.size(), the RBGs assigned in the CURRENT slot (nr-mac-scheduler-ue-info-rr.h). NrMacSchedulerTdmaRR uses it for UL; for DL it rotates an RNTI deque across slots (nr-mac-scheduler-tdma-rr.cc)",
+    "NrMacSchedulerTdma::AssignRBGTDMA stable-sorts the active-UE vector and gives one full-band symbol per iteration to the first UE whose TBS does not yet cover its buffer (nr-mac-scheduler-tdma.cc)",
+    "The active-UE vector is built by NrMacSchedulerNs3::ComputeActiveUe iterating m_ueMap, an unordered_map keyed by RNTI, grouped by beam; DirectPathBeamforming gives every UE the empty beam ID (ideal-beamforming-algorithm.cc), so there is one beam",
+    "A scheduling request only sets a 17-byte bootstrap grant as owed (m_srBytesPending, DoScheduleUlSr); the grant is served by the same ordered data scheduling (ComputeActiveUe adds m_srBytesPending to the UL buffer)",
+    "UL HARQ retransmissions are scheduled before new data (DoScheduleUl)"
+  ],
+  "hypotheses": {
+    "H1_saturation": "Under TDMA every UL grant spans all 51 RBs, so a UE's 23 dBm is spread over the whole band (full-band SNR = 1-PRB SNR - 17.1 dB). UEs with a low full-band SNR get MCS-0 TBs of at most 19 bytes that often fail; they stay backlogged and fill every UL slot",
+    "H2_fixed_order": "NrMacSchedulerTdmaRR keeps no UL memory across slots, so backlogged UEs are served in one fixed order (the m_ueMap iteration order), not in rotation",
+    "H3_starvation": "UEs late in that order receive no UL symbols, including the bootstrap grant owed after a scheduling request, whatever their link quality"
+  },
+  "definitions": {
+    "tdma_feasible": "full-band UL SNR >= -5 dB: cmwave.radio.link_budget.uplink(L, cfg)['snr_full_db'] with the E1.5.1 carrier configuration (23 dBm over 51 PRB, NF 5 dB, prescribed loss L)",
+    "steady_state_s": [0.5, 1.4],
+    "ul_scheduling_event": "one NrMacSchedulerNs3::DoScheduleUl call (log line 'Scheduling UL'); its time is the scheduling time",
+    "ul_data_event": "one NrMacSchedulerTdma::AssignRBGTDMA call for UL (log line 'Assigning RBG in UL, ..., # sym: N')",
+    "first_assignment_order": "within a UL data event, the order in which RNTIs receive their first 'Assigned 51 UL RBG (= 1 SYM)' symbol",
+    "epoch": "an interval between two consecutive scheduler UE insertions ('Creating user' log lines); only insertions can reorder an unordered_map (rehash), erasures cannot",
+    "backlogged": "in a UL scheduling event, the UE has a 'UE r UL LCG l bytes b' line with b > 0, or a bootstrap grant is owed to it ('Owing a ... grant to UE r', not yet followed by a UL symbol for r)",
+    "served_window": "a 100 ms window of [0.5, 1.4) s (9 windows) in which the UE has at least one non-corrupt distinct UL TB (one TB per (RNTI, time), attributed by RRC establishment as in E1.5.1)",
+    "scheduler_log": "NS_LOG=NrMacSchedulerTdma=debug|info|prefix_time|prefix_func:NrMacSchedulerNs3=debug|info|prefix_time|prefix_func (stderr; stored gzipped in raw/, git-ignored, SHA-256 in the manifest)"
+  },
+  "common": "identical to configs/e1/e1_5_1_deterministic.json 'common' (20 MHz, 51 RBs, 44/23 dBm, NF 5/7 dB, DL 20 Mbit/s in 1000-byte packets, UL 50 kbit/s in 100-byte packets, app start 0.4 s, end 1.4 s, DDDSU, RLF off)",
+  "runs": [
+    {"tag": "f7p2_tdma_rep", "frequency_hz": 7.2e9, "scheduler": "ns3::NrMacSchedulerTdmaRR", "ues": "all_36", "scheduler_log": true, "replicates": "f7p2_tdma"},
+    {"tag": "f3p5_tdma_rep", "frequency_hz": 3.5e9, "scheduler": "ns3::NrMacSchedulerTdmaRR", "ues": "all_36", "scheduler_log": true, "replicates": "f3p5_tdma"},
+    {"tag": "f7p2_tdma_feasible", "frequency_hz": 7.2e9, "scheduler": "ns3::NrMacSchedulerTdmaRR", "ues": "tdma_feasible", "scheduler_log": false},
+    {"tag": "f3p5_tdma_feasible", "frequency_hz": 3.5e9, "scheduler": "ns3::NrMacSchedulerTdmaRR", "ues": "tdma_feasible", "scheduler_log": false},
+    {"tag": "f7p2_tdmapf", "frequency_hz": 7.2e9, "scheduler": "ns3::NrMacSchedulerTdmaPF", "ues": "all_36", "scheduler_log": false},
+    {"tag": "f3p5_tdmapf", "frequency_hz": 3.5e9, "scheduler": "ns3::NrMacSchedulerTdmaPF", "ues": "all_36", "scheduler_log": false}
+  ],
+  "pf_attributes": "NR defaults, not set (FairnessIndex, LastAvgTPutWeight)",
+  "predictions": {
+    "P0_replication": "f7p2_tdma_rep and f3p5_tdma_rep: the command equals the run-4 command with only the run directory changed, and every output file except run.log is byte-identical (SHA-256) to run 4",
+    "P2_fixed_order": "f7p2_tdma_rep and f3p5_tdma_rep: within every epoch, the first-assignment orders of all steady-state UL data events are consistent with ONE total order (the precedence graph is acyclic)",
+    "P3_saturation": "f7p2_tdma_rep and f3p5_tdma_rep: in >= 95 % of steady-state UL data events every available symbol is assigned",
+    "P4_backlog_without_service": "f7p2_tdma_rep and f3p5_tdma_rep: every TDMA-feasible UE that failed V5 in run 4 at that carrier is backlogged in >= 90 % of steady-state UL scheduling events and receives a UL symbol in <= 1 % of steady-state UL data events",
+    "P5_no_saturation_no_starvation": "f7p2_tdma_feasible and f3p5_tdma_feasible: every UE is served in all 9 windows",
+    "P6_pf_memory": "f7p2_tdmapf and f3p5_tdmapf: every TDMA-feasible UE is served in all 9 windows"
+  },
+  "reported_not_tested": "per UE: distinct UL TBs, corrupt fraction, HARQ retransmissions, served windows; UL symbols spent on retransmissions; the first-assignment order; UEs that are not TDMA-feasible",
+  "decision_rules": {
+    "cause_established": "P2, P3 and P4 hold at both carriers -> H1-H3 are the recorded cause of the E1.5.1 TDMA failure; the E1.5 stop rule ('until the cause is found and recorded') is then satisfied. The E1.5.1 verdict stays FAILED",
+    "starvation_needs_saturation": "P5 holds at both carriers -> starvation under TdmaRR requires a UL saturated by UEs that full-band TDMA cannot serve",
+    "e1_5_4_scheduler": "P6 holds at both carriers -> NrMacSchedulerTdmaRR is not used for UL in any later stage; E1.5.4 realises the time share with NrMacSchedulerTdmaPF (its own pre-registration fixes the OFDMA counterpart). P6 fails -> E1.5.4 needs another time-share realisation, decided in a new pre-registration",
+    "any_failure": "a failed prediction is reported as failed, with its analysis; predictions are not re-run with changed thresholds",
+    "p0_failure": "if P0 fails, the non-determinism is reported and investigated; P2-P4 are still evaluated on the logged replication"
+  },
+  "v5_note": "E1.5.1 V5 required UL TBs from every UE with 1-PRB UL SNR >= -5 dB, also under TDMA. A TDMA grant always spans the full band, so for TDMA the requirement should use the full-band SNR. This does not change the E1.5.1 verdict: UEs with full-band UL SNR of 12.1-41.0 dB (7.2 GHz: ue00-ue14) and 18.4-39.5 dB (3.5 GHz: ue07-ue10) starved. Later stages state the scheduler-appropriate SNR in every coverage criterion",
+  "instrument_check": "before this commit, one 3-UE, 0.6 s TdmaRR run at 7.2 GHz (losses 100/120/135 dB; not a diagnostic configuration) checked the log line formats and volume (28,761 lines, 4.4 MB); it informs only the parser"
+}

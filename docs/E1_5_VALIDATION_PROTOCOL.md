@@ -263,10 +263,13 @@ Correction:
   re-analysis.
 
 Effect:
-- **No check result changes.** The verdict stays FAILED (V5 in both TDMA
+- **No pass/fail result changes.** The verdict stays FAILED (V5 in both TDMA
   runs, V2 in `f7p2_tdma`). The OFDMA runs still pass V5: every required UE
   has at least 119 (7.2 GHz) or 161 (3.5 GHz) distinct UL TBs, and at least
   28 DL TBs.
+- One V5 detail changes: at 3.5 GHz the TDMA UL failures are ue07-ue10, not
+  ue08-ue10 (ue07 has 7 distinct UL TBs, logged as 14 rows). At 7.2 GHz the
+  list is unchanged (ue00-ue14, sweep_130dB, sweep_140dB).
 - Error bounds are unchanged: a duplicate row has the same SNR as its TB.
 - UL TBs compared: 24,732, not 46,251. Per run: 5,881 / 7,068 / 5,274 / 6,509
   (f3p5_tdma / f3p5_ofdma / f7p2_tdma / f7p2_ofdma).
@@ -281,6 +284,89 @@ to one UE in every DL slot (1,201 of 1,201 TBs at 51 RBs at 3.5 GHz). Its DL
 comparator rotates an RNTI deque, so DL service rotates across slots, a
 time share. In UL the same scheduler compares RBGs assigned in the current
 slot and splits the band within each slot.
+
+### E1.5.1-D: TDMA UL starvation diagnostic (PRE-REGISTERED 2026-11-07)
+
+Config `configs/e1/e1_5_1d_tdma_diagnostic.json`, script
+`scripts/e1_5_1d_tdma_diagnostic.py`, tests `tests/test_e1_5_1d_diagnostic.py`.
+Committed before the first diagnostic run.
+
+Why now: E1.5.1 failed. The stop rule holds the sequence until the cause is
+found and recorded. E1.5.4 also needs a time-share scheduler that actually
+shares.
+
+**Source facts (NR `cedceadd`):**
+- UL TDMA RR ranks UEs by the RBGs assigned in the current slot only, so it
+  keeps no UL memory across slots. DL TDMA RR rotates an RNTI deque.
+- The TDMA loop gives one full-band symbol at a time to the first UE in a
+  stable-sorted vector. The vector follows the iteration order of `m_ueMap`,
+  an `unordered_map` keyed by RNTI. DirectPath beamforming puts every UE in
+  one beam.
+- A scheduling request only marks a 17-byte bootstrap grant as owed. That
+  grant is served by the same ordered data loop.
+- UL HARQ retransmissions are scheduled before new data.
+
+**Hypotheses:**
+- **H1, saturation.** TDMA grants span the full band, so the UE's 23 dBm is
+  spread over 51 RBs (full-band SNR = 1-PRB SNR - 17.1 dB). Weak UEs get
+  MCS-0 TBs of at most 19 bytes that often fail, stay backlogged, and fill
+  every UL slot.
+- **H2, fixed order.** Backlogged UEs are served in one fixed order, not in
+  rotation.
+- **H3, starvation.** UEs late in that order get no UL symbol, not even
+  their bootstrap grant, whatever their link quality.
+
+**Runs** (unchanged program, E1.5.1 common settings):
+
+| Tag | Carrier | Scheduler | UEs | Scheduler log |
+|---|---|---|---|---|
+| f7p2_tdma_rep, f3p5_tdma_rep | 7.2 / 3.5 GHz | TdmaRR | all 36 (replicates run 4) | yes |
+| f7p2_tdma_feasible, f3p5_tdma_feasible | 7.2 / 3.5 GHz | TdmaRR | TDMA-feasible only | no |
+| f7p2_tdmapf, f3p5_tdmapf | 7.2 / 3.5 GHz | TdmaPF | all 36 | no |
+
+Definitions:
+- **TDMA-feasible:** full-band UL SNR >= -5 dB. That is 25 UEs at 7.2 GHz
+  and 26 at 3.5 GHz.
+- **Steady state:** scheduling or air time in [0.5, 1.4) s.
+- **Served window:** a 100 ms window with at least one non-corrupt distinct
+  UL TB.
+
+**Predictions:**
+- **P0:** both replications reproduce every run-4 output file byte for byte.
+- **P2:** within each interval between scheduler UE insertions, all
+  steady-state UL data events are consistent with one total order
+  (acyclic precedence graph).
+- **P3:** in at least 95% of steady-state UL data events, every available
+  symbol is assigned.
+- **P4:** every TDMA-feasible UE that failed V5 in run 4 meets two
+  conditions:
+  - it is backlogged (UL buffer > 0, or a bootstrap grant owed) in at least
+    90% of steady-state UL scheduling events;
+  - it gets a UL symbol in at most 1% of steady-state UL data events.
+- **P5:** with only TDMA-feasible UEs, every UE is served in all 9 windows.
+- **P6:** under TdmaPF with all 36 UEs, every TDMA-feasible UE is served in
+  all 9 windows.
+
+**Decision rules:**
+- P2-P4 hold at both carriers: H1-H3 are the recorded cause, and the stop
+  rule is satisfied. E1.5.1 stays FAILED.
+- P6 holds at both carriers: TdmaRR is not used for UL in any later stage.
+  E1.5.4 realises the time share with TdmaPF; its own pre-registration fixes
+  the OFDMA counterpart.
+- Any failed prediction is reported as failed and analysed. Nothing is
+  re-run with changed thresholds.
+
+V5 lesson: V5 used the 1-PRB UL SNR for both schedulers. A TDMA grant always
+spans the full band, so for TDMA the full-band SNR applies. The E1.5.1
+verdict does not change: the starved UEs have full-band UL SNRs of
+12.1-41.0 dB (7.2 GHz) and 18.4-39.5 dB (3.5 GHz). Every later coverage
+criterion states the SNR that fits its scheduler.
+
+Instrument check, done before the pre-registration commit:
+- One 3-UE, 0.6 s TdmaRR run, not a diagnostic configuration, fixed the log
+  levels and confirmed the line formats and volume.
+- The parser reproduces the `grep` counts of that log exactly (480 UL
+  scheduling events, 58 UL data events, 329 symbols).
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

@@ -109,6 +109,32 @@ WriteRntiMap(NetDeviceContainer ueDevs, std::string path)
     }
 }
 
+// Amendment 1: RNTIs can change after attach, so every RRC connection
+// establishment is logged with its time; UL TBs are attributed by
+// (rnti, time) to the IMSI of the latest establishment of that RNTI.
+static std::ofstream g_rrc;
+
+static void
+ConnectionEstablished(uint64_t imsi, uint16_t cellId, uint16_t rnti)
+{
+    g_rrc << Simulator::Now().GetNanoSeconds() << ',' << imsi << ',' << cellId << ',' << rnti << '\n';
+}
+
+// Amendment 1: the UE learns the cell bandwidth only after attach, so its RB
+// count is read when the applications start, not at configuration time.
+static void
+WriteRbAfterAttach(NetDeviceContainer ueDevs, std::string path)
+{
+    std::ofstream out(path);
+    out << "ue_index,imsi,rnti,ue_rb_num\n";
+    for (uint32_t i = 0; i < ueDevs.GetN(); ++i)
+    {
+        auto dev = DynamicCast<NrUeNetDevice>(ueDevs.Get(i));
+        out << i << ',' << dev->GetImsi() << ',' << dev->GetRrc()->GetRnti() << ','
+            << NrHelper::GetUePhy(dev, 0)->GetRbNum() << '\n';
+    }
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -127,6 +153,8 @@ main(int argc, char* argv[])
     uint32_t packetSize = 1000;
     double appStart = 0.4;
     double simTime = 1.0;
+    std::string tddPattern = "DL|DL|DL|F|UL|DL|DL|DL|F|UL|"; // amendment 1 (DDDSU)
+    bool enableRlf = false;                                  // amendment 1
 
     CommandLine cmd(__FILE__);
     cmd.AddValue("frequency", "carrier frequency [Hz]", frequency);
@@ -144,6 +172,8 @@ main(int argc, char* argv[])
     cmd.AddValue("packetSize", "UDP payload [bytes]", packetSize);
     cmd.AddValue("appStart", "application start [s]", appStart);
     cmd.AddValue("simTime", "simulation end [s]", simTime);
+    cmd.AddValue("tddPattern", "gNB TDD slot pattern", tddPattern);
+    cmd.AddValue("enableRlf", "UE radio-link-failure detection", enableRlf);
     cmd.Parse(argc, argv);
     NS_ABORT_MSG_IF(lossFile.empty(), "--lossFile is required");
 
@@ -219,6 +249,8 @@ main(int argc, char* argv[])
     nrHelper->SetAttribute("RbOverhead", DoubleValue(rbOverhead));
     nrHelper->SetSchedulerTypeId(TypeId::LookupByName(scheduler));
     nrHelper->SetGnbPhyAttribute("Numerology", UintegerValue(numerology));
+    nrHelper->SetGnbPhyAttribute("Pattern", StringValue(tddPattern));
+    nrHelper->SetUePhyAttribute("EnableRlfDetection", BooleanValue(enableRlf));
     nrHelper->SetGnbPhyAttribute("TxPower", DoubleValue(gnbTxPower));
     nrHelper->SetGnbPhyAttribute("NoiseFigure", DoubleValue(nfGnb));
     nrHelper->SetGnbPhyAttribute(
@@ -300,6 +332,15 @@ main(int argc, char* argv[])
         ->GetSpectrumPhy()
         ->TraceConnectWithoutContext("RxPacketTraceGnb", MakeCallback(&UlTbTrace));
     Simulator::Schedule(Seconds(appStart - 0.05), &WriteRntiMap, ueDevs, std::string("e15_rnti_map.csv"));
+    g_rrc.open("e15_rrc_events.csv");
+    g_rrc << "time_ns,imsi,cell_id,rnti\n";
+    DynamicCast<NrGnbNetDevice>(gnbDevs.Get(0))
+        ->GetRrc()
+        ->TraceConnectWithoutContext("ConnectionEstablished", MakeCallback(&ConnectionEstablished));
+    Simulator::Schedule(Seconds(appStart),
+                        &WriteRbAfterAttach,
+                        ueDevs,
+                        std::string("e15_rb_after_attach.csv"));
 
     {
         auto gp = NrHelper::GetGnbPhy(gnbDevs.Get(0), 0);
@@ -316,6 +357,8 @@ main(int argc, char* argv[])
              << "gnb_noise_figure_db," << gp->GetNoiseFigure() << '\n'
              << "ue_noise_figure_db," << up->GetNoiseFigure() << '\n'
              << "scheduler," << scheduler << '\n'
+             << "tdd_pattern," << gp->GetPattern() << '\n'
+             << "enable_rlf," << enableRlf << '\n'
              << "n_ue," << nUe << '\n'
              << "app_start_s," << appStart << '\n'
              << "sim_time_s," << simTime << '\n';
@@ -344,6 +387,7 @@ main(int argc, char* argv[])
     }
     g_dlTb.close();
     g_ulTb.close();
+    g_rrc.close();
     Simulator::Destroy();
     return 0;
 }

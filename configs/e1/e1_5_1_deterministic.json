@@ -1,6 +1,25 @@
 {
   "experiment": "E1.5.1 deterministic received power and SNR: 5G-LENA v5.1 vs the Python link budget",
-  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; values, checks and tolerances are not changed after results are seen",
+  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; values, checks and tolerances are not changed after results are seen. AMENDED once after run 1 (see 'amendments'): instrument fixed, acceptance criteria V0-V5 and the 0.01 dB tolerance unchanged",
+  "amendments": [
+    {
+      "id": 1,
+      "date": "2026-11-07",
+      "trigger": "run 1 (code d67997d) crashed while writing validation.json (numpy.bool_ not JSON serializable); no check result was produced or seen",
+      "diagnosis_from_raw_files": "results/phase2/e1_5_1_deterministic/run1_failure_diagnostic.txt: (a) DL starved: NR default TDD pattern is all-flexible (F|F|...) and the saturating UL traffic took the slots (DL TBs got 2 OFDM symbols under TDMA and stopped after 7 ms under OFDMA: 307 / 6 DL TBs for 36 UEs); (b) RNTIs change after the single RNTI snapshot (re-attachment), so UL TBs cannot be attributed by that snapshot; (c) the UE RB count was read before the UE synchronised to the cell (reads 5)",
+      "defect": "instrument design (program and analysis), not 5G-LENA",
+      "changes": [
+        "TDD pattern DL|DL|DL|F|UL|DL|DL|DL|F|UL| (DDDSU) instead of the all-flexible default",
+        "UE radio-link-failure detection disabled (EnableRlfDetection = false): re-establishment is protocol behaviour, not under test in this SNR check",
+        "every RRC connection establishment logged (gNB RRC trace ConnectionEstablished: time, IMSI, RNTI); UL TBs attributed to the IMSI of the latest establishment of their RNTI at or before the TB",
+        "UE RB count read at application start (after attach); V3 requires every UE and the gNB to report 51",
+        "simulation end 1.4 s (1.0 s of traffic instead of 0.6 s)",
+        "check flags cast to bool and a NumPy-aware JSON encoder; the comparator tests now serialise the results and cover RNTI reuse"
+      ],
+      "unchanged": "losses, powers, noise figures, bandwidth, numerology, RbOverhead, schedulers, offered loads, the Python reference, acceptance criteria V0-V5 and the 0.01 dB tolerance",
+      "evidence_kept": "raw/run1_failed/ (local, git-ignored) and run1_failure_diagnostic.txt (committed)"
+    }
+  ],
   "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 4, E1.5.1 (acceptance criteria V1-V5 fixed there before this config)",
   "stack": {"ns3_commit": "d083a17a", "nr_commit": "cedceadd", "program": "ns3/scratch/cmwave/e15-link-validation.cc (installed copy SHA-256 must equal the repo copy)"},
   "channel": "MatrixPropagationLossModel with the prescribed loss per gNB-UE pair (symmetric), no ns-3 path loss, no shadowing, no fast fading, no building loss, no interference (single cell); isotropic 1x1 antennas at both ends",
@@ -11,7 +30,9 @@
     "gnb_tx_power_dbm": 44.0, "ue_tx_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0,
     "gnb_power_allocation": "UniformPowerAllocBw", "ue_power_allocation": "UniformPowerAllocUsed", "ul_power_control": false,
     "dl_rate_bps_per_ue": 20e6, "ul_rate_bps_per_ue": 2e6, "packet_size_bytes": 1000,
-    "app_start_s": 0.4, "sim_time_s": 1.0
+    "app_start_s": 0.4, "sim_time_s": 1.4,
+    "tdd_pattern": "DL|DL|DL|F|UL|DL|DL|DL|F|UL|",
+    "enable_rlf": false
   },
   "ues": {
     "links": "the 27 E1.2 links at their median loss (pathloss_db, zero shadowing) for the run's carrier",

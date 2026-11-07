@@ -33,7 +33,20 @@ from cmwave.radio import link_budget as lb  # noqa: E402
 
 PROGRAM = 'e15-link-validation'
 RUN_FILES = ('e15_dl_tb.csv', 'e15_ul_tb.csv', 'e15_dl_rxpower.csv', 'e15_rnti_map.csv',
-             'e15_run_info.csv', 'losses.csv', 'run.log')
+             'e15_rrc_events.csv', 'e15_rb_after_attach.csv', 'e15_run_info.csv', 'losses.csv', 'run.log')
+
+
+def json_default(o):
+    """NumPy scalars in check results (run 1 crashed on numpy.bool_)."""
+    if isinstance(o, np.bool_):
+        return bool(o)
+    if isinstance(o, np.integer):
+        return int(o)
+    if isinstance(o, np.floating):
+        return float(o)
+    if isinstance(o, Path):
+        return str(o)
+    raise TypeError(f'not JSON serializable: {type(o).__name__}')
 
 
 def sha256(path):
@@ -97,7 +110,8 @@ def run_one(conf, run, ns3, losses_by_ue, outdir):
             f'--nfGnb={c["nf_gnb_db"]!r}', f'--nfUe={c["nf_ue_db"]!r}', f'--lossFile={rundir / "losses.csv"}',
             f'--scheduler={run["scheduler"]}', f'--dlRate={c["dl_rate_bps_per_ue"]!r}',
             f'--ulRate={c["ul_rate_bps_per_ue"]!r}', f'--packetSize={c["packet_size_bytes"]}',
-            f'--appStart={c["app_start_s"]!r}', f'--simTime={c["sim_time_s"]!r}']
+            f'--appStart={c["app_start_s"]!r}', f'--simTime={c["sim_time_s"]!r}',
+            f"--tddPattern='{c['tdd_pattern']}'", f'--enableRlf={int(c["enable_rlf"])}']
     cmd = ['./ns3', 'run', '--no-build', f'--cwd={rundir}', ' '.join([PROGRAM] + args)]
     t0 = time.time()
     p = subprocess.run(cmd, cwd=ns3, capture_output=True, text=True)
@@ -139,9 +153,27 @@ def analyse(conf, run, meta, losses_by_ue):
                    and float(info['ue_tx_power_dbm']) == c['ue_tx_power_dbm']
                    and float(info['gnb_noise_figure_db']) == c['nf_gnb_db']
                    and float(info['ue_noise_figure_db']) == c['nf_ue_db'])}
-    v['V3_rb_count'] = {'gnb': int(info['gnb_rb_num']), 'ue': int(info['ue_rb_num']),
-                        'passed': int(info['gnb_rb_num']) == n_prb and int(info['ue_rb_num']) == n_prb}
-    rnti = {int(r['rnti']): int(r['ue_index']) for r in read_csv(d / 'e15_rnti_map.csv')}
+    # Amendment 1: UE RB counts are read after attach (at application start).
+    rb_after = read_csv(d / 'e15_rb_after_attach.csv')
+    ue_rb = sorted({int(r['ue_rb_num']) for r in rb_after})
+    v['V3_rb_count'] = {'gnb': int(info['gnb_rb_num']), 'ue_values_after_attach': ue_rb,
+                        'passed': int(info['gnb_rb_num']) == n_prb and ue_rb == [n_prb]
+                        and len(rb_after) == len(names)}
+    # Amendment 1: UL TBs are attributed by (rnti, time) to the IMSI of the latest
+    # RRC connection establishment of that RNTI at or before the TB.
+    ue_of_imsi = {int(r['imsi']): int(r['ue_index']) for r in rb_after}
+    estab = defaultdict(list)
+    for r in read_csv(d / 'e15_rrc_events.csv'):
+        estab[int(r['rnti'])].append((int(r['time_ns']), int(r['imsi'])))
+    for lst in estab.values():
+        lst.sort()
+
+    def ue_for(rnti_, t_ns):
+        best = None
+        for t, imsi in estab.get(rnti_, ()):
+            if t <= t_ns:
+                best = imsi
+        return ue_of_imsi.get(best) if best is not None else None
     dl = read_csv(d / 'e15_dl_tb.csv')
     ul = read_csv(d / 'e15_ul_tb.csv')
     per_ue = {i: {'name': names[i], 'loss_db': float(loss[i]), 'dl_snr_python_db': float(dl_py[i]),
@@ -163,14 +195,13 @@ def analyse(conf, run, meta, losses_by_ue):
         u['dl_corrupt'] += int(r['corrupt'])
         worst_dl = max(worst_dl, err)
     v['V1_dl_snr'] = {'tbs': len(dl), 'nonpositive_sinr_tbs': nonfinite, 'max_abs_error_db': worst_dl,
-                      'passed': len(dl) > 0 and nonfinite == 0 and worst_dl <= tol}
+                      'passed': bool(len(dl) > 0 and nonfinite == 0 and worst_dl <= tol)}
     worst_ul, unmapped, nonfinite = 0.0, 0, 0
     for r in ul:
-        rn = int(r['rnti'])
-        if rn not in rnti:
+        i = ue_for(int(r['rnti']), int(r['time_ns']))
+        if i is None:
             unmapped += 1
             continue
-        i = rnti[rn]
         s = float(r['sinr_lin'])
         if not s > 0:
             nonfinite += 1
@@ -187,7 +218,7 @@ def analyse(conf, run, meta, losses_by_ue):
         worst_ul = max(worst_ul, err)
     v['V2_ul_snr'] = {'tbs': len(ul), 'unmapped_rnti_tbs': unmapped, 'nonpositive_sinr_tbs': nonfinite,
                       'max_abs_error_db': worst_ul,
-                      'passed': len(ul) > 0 and unmapped == 0 and nonfinite == 0 and worst_ul <= tol}
+                      'passed': bool(len(ul) > 0 and unmapped == 0 and nonfinite == 0 and worst_ul <= tol)}
     worst4, missing4 = 0.0, []
     for r in read_csv(d / 'e15_dl_rxpower.csv'):
         i = int(r['ue_index'])
@@ -199,7 +230,7 @@ def analyse(conf, run, meta, losses_by_ue):
     need_dl = [i for i in per_ue if dl_py[i] >= -5.0]
     need_ul = [i for i in per_ue if ul1_py[i] >= -5.0]
     v['V4_dl_rx_power'] = {'max_abs_error_db': worst4, 'ues_without_samples': missing4,
-                           'passed': worst4 <= tol and not [i for i in missing4 if i in need_dl]}
+                           'passed': bool(worst4 <= tol and not [i for i in missing4 if i in need_dl])}
     short_dl = [per_ue[i]['name'] for i in need_dl if per_ue[i]['dl_tb'] < 10]
     short_ul = [per_ue[i]['name'] for i in need_ul if per_ue[i]['ul_tb'] < 10]
     v['V5_coverage'] = {'dl_required': len(need_dl), 'ul_required': len(need_ul),
@@ -246,15 +277,15 @@ def main():
         print(f"   DL max err {v['V1_dl_snr']['max_abs_error_db']:.2e} dB over {v['V1_dl_snr']['tbs']} TBs; "
               f"UL max err {v['V2_ul_snr']['max_abs_error_db']:.2e} dB over {v['V2_ul_snr']['tbs']} TBs", flush=True)
     passed = all(x['passed'] for v in validation.values() for x in v.values())
-    (outdir / 'validation.json').write_text(json.dumps({'per_run': validation, 'all_checks_passed': passed},
+    (outdir / 'validation.json').write_text(json.dumps({'per_run': validation, 'all_checks_passed': passed}, default=json_default,
                                                        indent=2), encoding='utf-8')
-    (outdir / 'summary.json').write_text(json.dumps(summary, indent=2, default=str), encoding='utf-8')
+    (outdir / 'summary.json').write_text(json.dumps(summary, indent=2, default=json_default), encoding='utf-8')
     manifest = {'generated_utc': datetime.now(timezone.utc).isoformat(), 'tool': 'scripts/e1_5_1_deterministic.py',
                 'git_head_at_run': args.git_head, 'python': platform.python_version(), 'numpy': np.__version__,
                 'config_sha256': sha256(args.config), 'program_sha256': prog_sha,
                 'ns3_commit': conf['stack']['ns3_commit'], 'nr_commit': conf['stack']['nr_commit'],
                 'e1_2_realizations_sha256': real_sha, 'runs': runs_meta, 'all_checks_passed': passed}
-    (outdir / 'manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+    (outdir / 'manifest.json').write_text(json.dumps(manifest, indent=2, default=json_default), encoding='utf-8')
     print('E1.5.1 DETERMINISTIC', 'PASSED' if passed else 'FAILED')
     sys.exit(0 if passed else 1)
 

@@ -1,0 +1,11 @@
+E1.5.1 run 1 (code d67997d), 2026-11-07: FAILED before validation was written
+1. Analysis crashed writing validation.json: TypeError: Object of type bool_ is not JSON serializable (numpy bool in a check flag). No check result was produced or seen.
+2. Instrument defects found by inspecting the raw files (no SNR comparison was computed):
+   f3p5_tdma: exit=0 runtime=20.6s DL_TBs=307 (UEs with DL TBs=30) UL_TBs=16012 distinct_UL_RNTIs=35 ue_rb_num_readback=5
+   f3p5_ofdma: exit=0 runtime=33.7s DL_TBs=6 (UEs with DL TBs=6) UL_TBs=52719 distinct_UL_RNTIs=36 ue_rb_num_readback=5
+   f7p2_tdma: exit=0 runtime=16.8s DL_TBs=330 (UEs with DL TBs=30) UL_TBs=15318 distinct_UL_RNTIs=35 ue_rb_num_readback=5
+   f7p2_ofdma: exit=0 runtime=29.8s DL_TBs=6 (UEs with DL TBs=6) UL_TBs=40258 distinct_UL_RNTIs=36 ue_rb_num_readback=5
+   a) DL starved: default TDD pattern F|F|...|F with saturating UL traffic; DL TBs got 2 OFDM symbols (TDMA) and stopped after 7 ms (OFDMA).
+   b) RNTIs change after the single RNTI snapshot at 0.35 s (e.g. UE index 5 receives TBs for RNTI 37 although RNTIs 1-36 were mapped): re-attachment (contention / RLF).
+   c) UE RB count read before the UE synchronised to the cell (reads 5).
+Raw files kept locally in raw/run1_failed/ (git-ignored).

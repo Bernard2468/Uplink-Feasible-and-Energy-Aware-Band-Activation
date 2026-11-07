@@ -151,6 +151,7 @@ main(int argc, char* argv[])
     double dlRateBps = 20e6;
     double ulRateBps = 2e6;
     uint32_t packetSize = 1000;
+    uint32_t ulPacketSize = 0; // amendment 2: 0 = same as packetSize
     double appStart = 0.4;
     double simTime = 1.0;
     std::string tddPattern = "DL|DL|DL|F|UL|DL|DL|DL|F|UL|"; // amendment 1 (DDDSU)
@@ -169,7 +170,8 @@ main(int argc, char* argv[])
     cmd.AddValue("scheduler", "MAC scheduler TypeId", scheduler);
     cmd.AddValue("dlRate", "DL offered load per UE [bit/s]", dlRateBps);
     cmd.AddValue("ulRate", "UL offered load per UE [bit/s]", ulRateBps);
-    cmd.AddValue("packetSize", "UDP payload [bytes]", packetSize);
+    cmd.AddValue("packetSize", "UDP payload [bytes] (DL, and UL unless ulPacketSize is set)", packetSize);
+    cmd.AddValue("ulPacketSize", "UL UDP payload [bytes]; 0 = packetSize", ulPacketSize);
     cmd.AddValue("appStart", "application start [s]", appStart);
     cmd.AddValue("simTime", "simulation end [s]", simTime);
     cmd.AddValue("tddPattern", "gNB TDD slot pattern", tddPattern);
@@ -199,6 +201,10 @@ main(int argc, char* argv[])
         }
     }
     const uint32_t nUe = losses.size();
+    if (ulPacketSize == 0)
+    {
+        ulPacketSize = packetSize;
+    }
     NS_ABORT_MSG_IF(nUe == 0, "no UEs in " << lossFile);
 
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));
@@ -305,8 +311,8 @@ main(int argc, char* argv[])
         clients.Add(dl.Install(remoteHost));
         UdpClientHelper ul(remoteHostAddr, ulPort);
         ul.SetAttribute("MaxPackets", UintegerValue(0xFFFFFFFF));
-        ul.SetAttribute("PacketSize", UintegerValue(packetSize));
-        ul.SetAttribute("Interval", TimeValue(Seconds(packetSize * 8.0 / ulRateBps)));
+        ul.SetAttribute("PacketSize", UintegerValue(ulPacketSize));
+        ul.SetAttribute("Interval", TimeValue(Seconds(ulPacketSize * 8.0 / ulRateBps)));
         clients.Add(ul.Install(ueNodes.Get(i)));
     }
     servers.Start(Seconds(appStart));
@@ -358,6 +364,10 @@ main(int argc, char* argv[])
              << "ue_noise_figure_db," << up->GetNoiseFigure() << '\n'
              << "scheduler," << scheduler << '\n'
              << "tdd_pattern," << gp->GetPattern() << '\n'
+             << "dl_rate_bps," << dlRateBps << '\n'
+             << "ul_rate_bps," << ulRateBps << '\n'
+             << "dl_packet_size," << packetSize << '\n'
+             << "ul_packet_size," << ulPacketSize << '\n'
              << "enable_rlf," << enableRlf << '\n'
              << "n_ue," << nUe << '\n'
              << "app_start_s," << appStart << '\n'

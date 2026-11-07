@@ -1,6 +1,6 @@
 {
   "experiment": "E1.5.1 deterministic received power and SNR: 5G-LENA v5.1 vs the Python link budget",
-  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; values, checks and tolerances are not changed after results are seen. AMENDED once after run 1 (see 'amendments'): instrument fixed, acceptance criteria V0-V5 and the 0.01 dB tolerance unchanged",
+  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; values, checks and tolerances are not changed after results are seen. AMENDED after run 1 and after run 3 (see 'amendments'): instrument fixed, acceptance criteria V0-V5 and the 0.01 dB tolerance unchanged",
   "amendments": [
     {
       "id": 1,
@@ -18,6 +18,20 @@
       ],
       "unchanged": "losses, powers, noise figures, bandwidth, numerology, RbOverhead, schedulers, offered loads, the Python reference, acceptance criteria V0-V5 and the 0.01 dB tolerance",
       "evidence_kept": "raw/run1_failed/ (local, git-ignored) and run1_failure_diagnostic.txt (committed)"
+    },
+    {
+      "id": 2,
+      "date": "2026-11-07",
+      "trigger": "run 3 (code 2534cb8; run 2 aborted at start on argument quoting) FAILED V2 in both TDMA runs and V5 in all four runs; V0, V1, V3, V4 passed in all runs",
+      "result_of_run_3": "every compared TB matched the Python reference: DL max |error| 3.0e-14 dB over 11,621 / 1,008 / 11,561 / 938 TBs, UL 2.9e-14 / 2.7e-14 / 2.4e-14 / 3.1e-14 dB over 13,312 / 23,287 / 12,923 / 17,868 TBs (f3p5_tdma / f3p5_ofdma / f7p2_tdma / f7p2_ofdma); validation_run3_failed_V2_V5.json",
+      "diagnosis": "the UL was overloaded (36 UEs x 2 Mbit/s offered on a 20 MHz DDDSU carrier). The schedulers starved a group of UEs in UL (TDMA: ue00-ue17 with 0-4 UL TBs while others had up to 1,562; OFDMA: other groups with 0 TBs) -> V5. Starved UEs fell back to random access: the 25 / 31 unattributed UL TBs carry new RNTIs 150-171 at t = 1.06 s that never completed RRC establishment (all 36 UEs were established once, RNTIs 1-36, at 18-45 ms) -> V2",
+      "defect": "instrument load setting (UL overload), not the radio model",
+      "changes": [
+        "UL offered load 50 kbit/s per UE (was 2 Mbit/s), in 100-byte UL packets (new program argument --ulPacketSize; DL unchanged: 20 Mbit/s in 1000-byte packets)"
+      ],
+      "unchanged": "everything else, including acceptance criteria V0-V5 (V5 still applies to every run) and the 0.01 dB tolerance",
+      "stop_rule": "if V2 or V5 fail again, E1.5.1 stays FAILED and the cause is analysed; no further load tuning without a new amendment",
+      "evidence_kept": "validation_run3_failed_V2_V5.json, manifest_run3_failed.json, summary_run3_failed.json.gz (committed); raw/run3_failed/ (local, git-ignored)"
     }
   ],
   "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 4, E1.5.1 (acceptance criteria V1-V5 fixed there before this config)",
@@ -29,7 +43,7 @@
     "rb_overhead_reason": "floor(20e6 x (1 - 0.073) / 360e3) = floor(51.5) = 51 RBs (TS 38.101-1 Table 5.3.2-1); the NR default 0.04 gives 53",
     "gnb_tx_power_dbm": 44.0, "ue_tx_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0,
     "gnb_power_allocation": "UniformPowerAllocBw", "ue_power_allocation": "UniformPowerAllocUsed", "ul_power_control": false,
-    "dl_rate_bps_per_ue": 20e6, "ul_rate_bps_per_ue": 2e6, "packet_size_bytes": 1000,
+    "dl_rate_bps_per_ue": 20e6, "ul_rate_bps_per_ue": 5e4, "packet_size_bytes": 1000, "ul_packet_size_bytes": 100,
     "app_start_s": 0.4, "sim_time_s": 1.4,
     "tdd_pattern": "DL|DL|DL|F|UL|DL|DL|DL|F|UL|",
     "enable_rlf": false

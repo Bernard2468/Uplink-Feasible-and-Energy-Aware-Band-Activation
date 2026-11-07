@@ -1,0 +1,249 @@
+{
+  "per_run": {
+    "f3p5_tdma": {
+      "V0_readback": {
+        "gnb_tx_power_dbm": 44.0,
+        "ue_tx_power_dbm": 23.0,
+        "gnb_noise_figure_db": 5.0,
+        "ue_noise_figure_db": 7.0,
+        "passed": true
+      },
+      "V3_rb_count": {
+        "gnb": 51,
+        "ue_values_after_attach": [
+          51
+        ],
+        "passed": true
+      },
+      "V1_dl_snr": {
+        "tbs": 11621,
+        "nonpositive_sinr_tbs": 0,
+        "max_abs_error_db": 3.019806626980426e-14,
+        "passed": true
+      },
+      "V2_ul_snr": {
+        "tbs": 13312,
+        "unmapped_rnti_tbs": 25,
+        "nonpositive_sinr_tbs": 0,
+        "max_abs_error_db": 2.930988785010413e-14,
+        "passed": false
+      },
+      "V4_dl_rx_power": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "ues_without_samples": [],
+        "passed": true
+      },
+      "V5_coverage": {
+        "dl_required": 34,
+        "ul_required": 34,
+        "dl_below_10_tbs": [],
+        "ul_below_10_tbs": [
+          "ue00",
+          "ue01",
+          "ue02",
+          "ue03",
+          "ue04",
+          "ue05",
+          "ue06",
+          "ue07",
+          "ue08",
+          "ue09",
+          "ue10",
+          "ue11",
+          "ue12",
+          "ue13",
+          "ue14",
+          "ue15",
+          "ue16",
+          "ue17",
+          "sweep_130dB",
+          "sweep_140dB"
+        ],
+        "passed": false
+      }
+    },
+    "f3p5_ofdma": {
+      "V0_readback": {
+        "gnb_tx_power_dbm": 44.0,
+        "ue_tx_power_dbm": 23.0,
+        "gnb_noise_figure_db": 5.0,
+        "ue_noise_figure_db": 7.0,
+        "passed": true
+      },
+      "V3_rb_count": {
+        "gnb": 51,
+        "ue_values_after_attach": [
+          51
+        ],
+        "passed": true
+      },
+      "V1_dl_snr": {
+        "tbs": 1008,
+        "nonpositive_sinr_tbs": 0,
+        "max_abs_error_db": 3.019806626980426e-14,
+        "passed": true
+      },
+      "V2_ul_snr": {
+        "tbs": 23287,
+        "unmapped_rnti_tbs": 0,
+        "nonpositive_sinr_tbs": 0,
+        "max_abs_error_db": 2.708944180085382e-14,
+        "passed": true
+      },
+      "V4_dl_rx_power": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "ues_without_samples": [],
+        "passed": true
+      },
+      "V5_coverage": {
+        "dl_required": 34,
+        "ul_required": 34,
+        "dl_below_10_tbs": [],
+        "ul_below_10_tbs": [
+          "ue06",
+          "ue07",
+          "ue08",
+          "ue09",
+          "ue10",
+          "ue24",
+          "ue25",
+          "ue26",
+          "sweep_80dB",
+          "sweep_90dB",
+          "sweep_100dB",
+          "sweep_110dB",
+          "sweep_120dB",
+          "sweep_140dB"
+        ],
+        "passed": false
+      }
+    },
+    "f7p2_tdma": {
+      "V0_readback": {
+        "gnb_tx_power_dbm": 44.0,
+        "ue_tx_power_dbm": 23.0,
+        "gnb_noise_figure_db": 5.0,
+        "ue_noise_figure_db": 7.0,
+        "passed": true
+      },
+      "V3_rb_count": {
+        "gnb": 51,
+        "ue_values_after_attach": [
+          51
+        ],
+        "passed": true
+      },
+      "V1_dl_snr": {
+        "tbs": 11561,
+        "nonpositive_sinr_tbs": 0,
+        "max_abs_error_db": 3.019806626980426e-14,
+        "passed": true
+      },
+      "V2_ul_snr": {
+        "tbs": 12923,
+        "unmapped_rnti_tbs": 31,
+        "nonpositive_sinr_tbs": 0,
+        "max_abs_error_db": 2.398081733190338e-14,
+        "passed": false
+      },
+      "V4_dl_rx_power": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "ues_without_samples": [],
+        "passed": true
+      },
+      "V5_coverage": {
+        "dl_required": 34,
+        "ul_required": 34,
+        "dl_below_10_tbs": [],
+        "ul_below_10_tbs": [
+          "ue00",
+          "ue01",
+          "ue02",
+          "ue03",
+          "ue04",
+          "ue05",
+          "ue06",
+          "ue07",
+          "ue08",
+          "ue09",
+          "ue10",
+          "ue11",
+          "ue12",
+          "ue13",
+          "ue14",
+          "ue15",
+          "ue16",
+          "ue17",
+          "ue18",
+          "ue19",
+          "sweep_130dB",
+          "sweep_140dB"
+        ],
+        "passed": false
+      }
+    },
+    "f7p2_ofdma": {
+      "V0_readback": {
+        "gnb_tx_power_dbm": 44.0,
+        "ue_tx_power_dbm": 23.0,
+        "gnb_noise_figure_db": 5.0,
+        "ue_noise_figure_db": 7.0,
+        "passed": true
+      },
+      "V3_rb_count": {
+        "gnb": 51,
+        "ue_values_after_attach": [
+          51
+        ],
+        "passed": true
+      },
+      "V1_dl_snr": {
+        "tbs": 938,
+        "nonpositive_sinr_tbs": 0,
+        "max_abs_error_db": 3.019806626980426e-14,
+        "passed": true
+      },
+      "V2_ul_snr": {
+        "tbs": 17868,
+        "unmapped_rnti_tbs": 0,
+        "nonpositive_sinr_tbs": 0,
+        "max_abs_error_db": 3.108624468950438e-14,
+        "passed": true
+      },
+      "V4_dl_rx_power": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "ues_without_samples": [],
+        "passed": true
+      },
+      "V5_coverage": {
+        "dl_required": 34,
+        "ul_required": 34,
+        "dl_below_10_tbs": [],
+        "ul_below_10_tbs": [
+          "ue02",
+          "ue03",
+          "ue04",
+          "ue05",
+          "ue06",
+          "ue07",
+          "ue08",
+          "ue09",
+          "ue10",
+          "ue22",
+          "ue23",
+          "ue24",
+          "ue25",
+          "ue26",
+          "sweep_80dB",
+          "sweep_90dB",
+          "sweep_100dB",
+          "sweep_110dB",
+          "sweep_120dB",
+          "sweep_140dB"
+        ],
+        "passed": false
+      }
+    }
+  },
+  "all_checks_passed": false
+}

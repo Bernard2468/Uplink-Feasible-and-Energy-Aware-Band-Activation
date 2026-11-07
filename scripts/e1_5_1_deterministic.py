@@ -110,6 +110,7 @@ def run_one(conf, run, ns3, losses_by_ue, outdir):
             f'--nfGnb={c["nf_gnb_db"]!r}', f'--nfUe={c["nf_ue_db"]!r}', f'--lossFile={rundir / "losses.csv"}',
             f'--scheduler={run["scheduler"]}', f'--dlRate={c["dl_rate_bps_per_ue"]!r}',
             f'--ulRate={c["ul_rate_bps_per_ue"]!r}', f'--packetSize={c["packet_size_bytes"]}',
+            f'--ulPacketSize={c["ul_packet_size_bytes"]}',
             f'--appStart={c["app_start_s"]!r}', f'--simTime={c["sim_time_s"]!r}',
             f'--tddPattern={c["tdd_pattern"]}', f'--enableRlf={int(c["enable_rlf"])}']
     cmd = ['./ns3', 'run', '--no-build', f'--cwd={rundir}', ' '.join([PROGRAM] + args)]

@@ -1,6 +1,18 @@
 {
   "experiment": "E1.5.2-0: antenna and beamforming conventions of ns-3.48 / 5G-LENA v5.1 against the E1.4 gain model, before any realised-gain measurement",
-  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; checks, thresholds and decision rules are not changed after results are seen",
+  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; checks, thresholds and decision rules are not changed after results are seen. AMENDED after run 1 (instrument only, see 'amendments')",
+  "amendments": [
+    {
+      "id": 1,
+      "date": "2026-11-07",
+      "trigger": "run 1 (code 6dd5b6a) aborted at the first mode-chan run: 'Attribute name=BearingAngle could not be set for this object: tid=ns3::UniformPlanarArray'. Only R0 had been evaluated (PASS); no other check result was produced",
+      "diagnosis": "UniformPlanarArray accepts BearingAngle only in [-pi, pi] (MakeDoubleChecker(-M_PI, M_PI), uniform-planar-array.cc); the program passed 270 deg = 4.71 rad. The smoke runs used 0, 45 and 90 deg only",
+      "defect": "program (instrument), not ns-3 or NR",
+      "changes": ["bearings are wrapped to [-180, 180) deg before they are set (270 deg -> -90 deg, the same orientation), in modes chan and nrfading"],
+      "unchanged": "every check, threshold, run and decision rule; the links files keep the E1.4 bearing values (30, 150, 270)",
+      "evidence_kept": "results/phase2/e1_5_2_0_conventions/run1_failure.txt"
+    }
+  ],
   "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.2-0'",
   "stack": {"ns3_commit": "d083a17a", "nr_commit": "cedceadd",
             "program": "ns3/scratch/cmwave/e15-link-validation.cc, modes chan and nrfading added; mode link (E1.5.1) unchanged and re-checked by R0"},

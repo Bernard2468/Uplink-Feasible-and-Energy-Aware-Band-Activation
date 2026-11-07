@@ -1,0 +1,17 @@
+E1.5.2-0 run 1 (code 6dd5b6a), 2026-11-07: aborted at the first mode-chan run; no check other than R0 evaluated.
+--- console
+R0 PASS
+n0_f3p5: exit 250, 0 s
+n0_f3p5 failed; see /home/dhopes/cmwave-runs/e1_5_2_0/n0_f3p5/run.log
+--- run.log of n0_f3p5
+cmd: ['./ns3', 'run', '--no-build', '--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/n0_f3p5', 'e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/n0_f3p5/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=1 --gnbCols=1 --gnbElement=iso --copies=20 --gnbRole=s --gnbWeights=dp']
+exit: 250
+runtime_s: 0.3
+--- stdout
+Command 'build/scratch/cmwave/ns3.48-e15-link-validation-default --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/n0_f3p5/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=1 --gnbCols=1 --gnbElement=iso --copies=20 --gnbRole=s --gnbWeights=dp' died with <Signals.SIGABRT: 6>.
+
+--- stderr
+msg="Attribute name=BearingAngle could not be set for this object: tid=ns3::UniformPlanarArray", +0.000000000s -1 file=/home/dhopes/6g-external/ns-3-dev/src/core/model/object-base.cc, line=228
+NS_FATAL, terminating
+terminate called without an active exception
+

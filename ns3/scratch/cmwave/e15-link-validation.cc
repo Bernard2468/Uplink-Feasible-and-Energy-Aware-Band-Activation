@@ -168,6 +168,20 @@ class CmwavePrescribedConditionModel : public ChannelConditionModel
 
 NS_OBJECT_ENSURE_REGISTERED(CmwavePrescribedConditionModel);
 
+// E1.5.2-0 amendment 1: UniformPlanarArray accepts BearingAngle only in
+// [-pi, pi]; bearings are wrapped to [-180, 180) deg (270 deg -> -90 deg, the
+// same orientation).
+static double
+BearingRad(double bearingDeg)
+{
+    double w = std::fmod(bearingDeg + 180.0, 360.0);
+    if (w < 0)
+    {
+        w += 360.0;
+    }
+    return (w - 180.0) * M_PI / 180.0;
+}
+
 static Ptr<UniformPlanarArray>
 MakeGnbArray(uint32_t rows, uint32_t cols, double bearingDeg, const std::string& element)
 {
@@ -176,7 +190,7 @@ MakeGnbArray(uint32_t rows, uint32_t cols, double bearingDeg, const std::string&
     upa->SetAttribute("NumColumns", UintegerValue(cols));
     upa->SetAttribute("AntennaHorizontalSpacing", DoubleValue(0.5));
     upa->SetAttribute("AntennaVerticalSpacing", DoubleValue(0.5));
-    upa->SetAttribute("BearingAngle", DoubleValue(bearingDeg * M_PI / 180.0));
+    upa->SetAttribute("BearingAngle", DoubleValue(BearingRad(bearingDeg)));
     upa->SetAttribute("DowntiltAngle", DoubleValue(0.0));
     if (element == "3gpp")
     {
@@ -579,7 +593,7 @@ RunNrFadingMode(const std::string& linksFile,
     nrHelper->SetGnbAntennaAttribute("NumColumns", UintegerValue(cols));
     nrHelper->SetGnbAntennaAttribute("AntennaHorizontalSpacing", DoubleValue(0.5));
     nrHelper->SetGnbAntennaAttribute("AntennaVerticalSpacing", DoubleValue(0.5));
-    nrHelper->SetGnbAntennaAttribute("BearingAngle", DoubleValue(bearingDeg * M_PI / 180.0));
+    nrHelper->SetGnbAntennaAttribute("BearingAngle", DoubleValue(BearingRad(bearingDeg)));
     nrHelper->SetGnbAntennaAttribute("DowntiltAngle", DoubleValue(0.0));
     nrHelper->SetGnbAntennaAttribute("AntennaElement",
                                      PointerValue(CreateObject<ThreeGppAntennaModel>()));

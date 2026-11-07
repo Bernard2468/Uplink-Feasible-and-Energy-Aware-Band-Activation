@@ -507,5 +507,16 @@ The first `nrfading` smoke run aborted with an ns-3 assertion. My condition
 model gave UE-UE pairs an order-dependent condition. It was fixed before
 the commit: UE-UE pairs now get a fixed NLOS/O2O condition.
 
+Amendment 1 (after run 1, instrument only):
+- **What happened.** Run 1 (`6dd5b6a`) stopped at the first `chan` run.
+  `UniformPlanarArray` accepts `BearingAngle` only in [-π, π], and the
+  program passed the 270° sector as 4.71 rad. The smoke runs had used only
+  0°, 45° and 90°.
+- **What was evaluated.** Only R0, which passed.
+- **The fix.** Bearings are wrapped to [-180°, 180°): 270° becomes -90°,
+  the same orientation.
+- **What did not change.** All checks and thresholds.
+- **Evidence.** `results/phase2/e1_5_2_0_conventions/run1_failure.txt`.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

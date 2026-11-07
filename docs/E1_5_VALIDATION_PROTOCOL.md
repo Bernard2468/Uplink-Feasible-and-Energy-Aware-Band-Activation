@@ -64,6 +64,19 @@ F3 is a prediction; E1.5.4 decides between F2 and F3.
 **Not tested here:** MCS, BLER, throughput (stage 3).
 
 ### E1.5.2 Antenna realisation
+
+Split on 2026-11-07, after reading the NR and ns-3 beamforming code (section 5):
+- **E1.5.2-0, conventions.** Deterministic gains vs E1.4, channel
+  normalisation, and the transmit/receive role of NR's DirectPath vector
+  under ns-3 #1314. Also tests that NR TB SINR equals the channel-level
+  computation.
+- **E1.5.2-1, gNB realised gain.** Measured with the instrument validated
+  by E1.5.2-0. Pre-registered after it.
+- **E1.5.2b, UE receive gain.** Needs a matched UE combiner if E1.5.2-0
+  confirms the receive-side mismatch.
+
+The original plan below still applies to E1.5.2-1.
+
 **Setup:**
 - TR 38.901 UMa fast fading in ns-3 (`ThreeGppSpectrumPropagationLossModel`).
 - Channel condition fixed to each link's geometric state.
@@ -423,6 +436,76 @@ Consequences, by the pre-registered decision rules:
   design and cannot be left to defaults.
 - E1.5.2 measures DL SNR, where the TDMA and OFDMA RR schedulers rotate
   correctly. It may use either one.
+
+### E1.5.2-0: antenna and beamforming conventions (PRE-REGISTERED 2026-11-07)
+
+Config `configs/e1/e1_5_2_0_conventions.json`, script
+`scripts/e1_5_2_0_conventions.py`, tests
+`tests/test_e1_5_2_0_conventions.py`. Committed before the first run.
+
+**Why.** E1.4 assumes ideal steering of the gNB array toward the
+geometric UE direction. Before measuring how much of that gain survives the
+TR 38.901 channel, the instrument itself must be right. Reading the code
+raised one specific doubt:
+- ns-3 commit `80c131f7f` (issue #1314, in our tree) conjugates the
+  receive-side weights: the effective channel is w_u^H H w_s.
+- NR's `CreateDirectPathBfv` returns the same e^{-j2π r·d}/√N form for the
+  gNB and the UE. NR updated only its realistic beamforming for #1314.
+- By that reading, DirectPath is matched on the transmit side "s" of the
+  stored channel matrix and anti-matched on the receive side "u".
+- Which antenna is "s" is set by the first direction in which the pair's
+  channel is generated.
+- The large-scale parameters do not depend on it: ns-3 assigns them in
+  node-ID order, and the gNB is node 0 in both new modes.
+
+**Instrument.** Two new modes of the project program; mode `link`
+(E1.5.1) is unchanged, which check R0 verifies:
+- `chan`: computes the gNB array gain in ns-3's TR 38.901 UMa channel
+  (`ThreeGppChannelModel` and `ThreeGppSpectrumPropagationLossModel`, the
+  objects 5G-LENA uses), without the NR stack. It uses 20 co-located UE
+  copies per link, which are independent realizations.
+- `nrfading`: the NR stack with the same fast fading, the imposed E1.2
+  loss and one gNB sector. After the run it recomputes every link's gain on
+  the same channel objects and records the gNB's role.
+
+Geometry: the 27 E1.1 links, the E1.4 serving sector, conditions from
+E1.1, all O2O. UE: one isotropic element.
+
+**Checks** (thresholds fixed now):
+
+| Check | Requirement |
+|---|---|
+| R0 | mode `link` rerun of E1.5.1 `f3p5_ofdma` byte-identical to run 4 |
+| A0 | ns-3 angles = Python within 1e-6 deg; DirectPath transmit-side array factor = 10 log10 N within 1e-6 dB; element + array gain = E1.4 gain within 0.01 dB (regimes A and B) |
+| N0 | isotropic gNB and UE: mean linear gain within ±0.25 dB of 0 dB, LOS and NLOS separately, both carriers |
+| B0.0 | every realization reports the requested gNB role |
+| B0.1 | role s, DirectPath: median LOS deficit (E1.4 gain - realised) <= 2 dB |
+| B0.2 | role u, conjugated DirectPath: median LOS deficit <= 2 dB |
+| B0.3 | role u, DirectPath: median LOS [realised(s) - realised(u)] >= 3 dB |
+| V0 | every NR DL TB: SINR = SNR_iso + gain recomputed on the same channel, within 0.01 dB; gNB is "s" for every link; >= 10 TBs per UE; frequency read back |
+
+B0 is evaluated at 3.5 and 7.2 GHz (regime A). V0 runs regimes A (3.5 and
+7.2 GHz) and B (7.2 GHz), one NR run per sector.
+
+**Decision rules:**
+- R0, A0, N0 and V0 pass: E1.5.2-1 may use mode `chan`, with NR spot
+  checks.
+- B0.1-B0.3 hold: the receive-side mismatch is established. Every later
+  configuration states which side each array is on, UE arrays use a
+  matched combiner, and the finding is written up for the 5G-LENA
+  maintainers. Filing it is the user's decision.
+- B0.3 fails: the code reading was wrong; recorded; no compensation is
+  used.
+- R0, A0, N0 or V0 fails: stop and diagnose.
+
+Instrument checks done before the commit (declared in the config):
+- the program was rebuilt (1 object, no warnings);
+- mode `link` reproduced run 4 byte for byte;
+- a synthetic 2-link smoke run of both modes passed.
+
+The first `nrfading` smoke run aborted with an ns-3 assertion. My condition
+model gave UE-UE pairs an order-dependent condition. It was fixed before
+the commit: UE-UE pairs now get a fixed NLOS/O2O condition.
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

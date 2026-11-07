@@ -1,0 +1,71 @@
+{
+  "experiment": "E1.5.2-0: antenna and beamforming conventions of ns-3.48 / 5G-LENA v5.1 against the E1.4 gain model, before any realised-gain measurement",
+  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; checks, thresholds and decision rules are not changed after results are seen",
+  "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.2-0'",
+  "stack": {"ns3_commit": "d083a17a", "nr_commit": "cedceadd",
+            "program": "ns3/scratch/cmwave/e15-link-validation.cc, modes chan and nrfading added; mode link (E1.5.1) unchanged and re-checked by R0"},
+  "source_facts": [
+    "ns-3 commit 80c131f7f (2026-02-12, issue #1314, in our ns-3 tree): the 3GPP long-term component is w_u^H H w_s, i.e. the receive-side weights are conjugated; H(u,s) of a ray carries exp(+j 2 pi r_A.d_u) exp(+j 2 pi r_D.d_s) (three-gpp-channel-model.cc)",
+    "NR CreateDirectPathBfv (beamforming-vector.cc) gives w = exp(-j 2 pi r.d) / sqrt(N) for BOTH the gNB and the UE (ideal-beamforming-algorithm.cc lines 381/387). It is matched (|w^T a|^2 = N) on the transmit side 's' and, by our reading, anti-matched on the receive side 'u'. NR fixed only its realistic beamforming for #1314 (NR 02da6eef, RELEASE_NOTES)",
+    "ns-3's own three-gpp-channel-example.cc uses sign -1 for the transmitter and +1 for the receiver",
+    "Which antenna is 's' is fixed when the channel matrix of a pair is first generated (ChannelMatrix::IsReverse); the reverse direction reuses the transposed long-term component",
+    "The large-scale parameters are assigned in canonical node-ID order (three-gpp-channel-model.cc GetChannel): the lower node ID gets the departure (BS-side) statistics. The gNB is node 0 in modes chan and nrfading",
+    "ThreeGppAntennaModel 'Outdoor' = TR 38.901 Table 7.3-1 element (8 dBi, 65/65 deg, SLA_V = A_max = 30 dB), identical to E1.4"
+  ],
+  "geometry": "configs/e1/positions_munich_tx0.json: gNB (8.5, 21.0, 27.0), the 27 UE positions at 1.5 m; LOS/NLOS = geometric_class (E1.1); all links O2O in E1.5.2-0",
+  "serving_sector": "E1.4 rule: cmwave.radio.antenna.gnb_gain_dbi (largest element gain; bearings 30/150/270 deg)",
+  "large_scale_loss": "E1.2 median path loss per link and carrier (nrfading only; mode chan applies no path loss)",
+  "carriers_hz": [3.5e9, 7.2e9],
+  "channel": "TR 38.901 UMa fast fading (ns-3 ThreeGppChannelModel, ThreeGppSpectrumPropagationLossModel), condition prescribed per link, 20 MHz, 30 kHz, 51 RBs, no blockage, UpdatePeriod 0",
+  "ue_antenna": "1x1 isotropic (E1.5.2-0 and E1.5.2-1 test the gNB term only)",
+  "copies": 20,
+  "rng": "ns-3 defaults (RngSeed 1, RngRun 1); spectrum model streams from 1000",
+  "chan_runs": [
+    {"tag": "n0_f3p5", "frequency_hz": 3.5e9, "rows": 1, "cols": 1, "element": "iso", "role": "s", "weights": "dp"},
+    {"tag": "n0_f7p2", "frequency_hz": 7.2e9, "rows": 1, "cols": 1, "element": "iso", "role": "s", "weights": "dp"},
+    {"tag": "a_f3p5_s_dp", "frequency_hz": 3.5e9, "rows": 8, "cols": 16, "element": "3gpp", "role": "s", "weights": "dp"},
+    {"tag": "a_f3p5_u_dp", "frequency_hz": 3.5e9, "rows": 8, "cols": 16, "element": "3gpp", "role": "u", "weights": "dp"},
+    {"tag": "a_f3p5_u_dpconj", "frequency_hz": 3.5e9, "rows": 8, "cols": 16, "element": "3gpp", "role": "u", "weights": "dpconj"},
+    {"tag": "a_f3p5_s_dpconj", "frequency_hz": 3.5e9, "rows": 8, "cols": 16, "element": "3gpp", "role": "s", "weights": "dpconj"},
+    {"tag": "a_f7p2_s_dp", "frequency_hz": 7.2e9, "rows": 8, "cols": 16, "element": "3gpp", "role": "s", "weights": "dp"},
+    {"tag": "a_f7p2_u_dp", "frequency_hz": 7.2e9, "rows": 8, "cols": 16, "element": "3gpp", "role": "u", "weights": "dp"},
+    {"tag": "a_f7p2_u_dpconj", "frequency_hz": 7.2e9, "rows": 8, "cols": 16, "element": "3gpp", "role": "u", "weights": "dpconj"},
+    {"tag": "a_f7p2_s_dpconj", "frequency_hz": 7.2e9, "rows": 8, "cols": 16, "element": "3gpp", "role": "s", "weights": "dpconj"},
+    {"tag": "b_f7p2_s_dp", "frequency_hz": 7.2e9, "rows": 16, "cols": 32, "element": "3gpp", "role": "s", "weights": "dp"}
+  ],
+  "nrfading_runs": {
+    "configs": [
+      {"tag": "a_f3p5", "frequency_hz": 3.5e9, "rows": 8, "cols": 16},
+      {"tag": "a_f7p2", "frequency_hz": 7.2e9, "rows": 8, "cols": 16},
+      {"tag": "b_f7p2", "frequency_hz": 7.2e9, "rows": 16, "cols": 32}
+    ],
+    "per_config": "one run per sector bearing (30, 150, 270 deg) with the UEs that sector serves",
+    "settings": {"scheduler": "ns3::NrMacSchedulerOfdmaRR", "dl_rate_bps_per_ue": 1e6, "packet_size_bytes": 1000,
+                 "app_start_s": 0.1, "sim_time_s": 0.4, "beamforming": "NR IdealBeamformingHelper, DirectPathBeamforming",
+                 "other": "E1.5.1 common settings (44 dBm, NF 5/7 dB, RbOverhead 0.073, numerology 1, DDDSU); no UL traffic"}
+  },
+  "checks": {
+    "R0_link_mode_unchanged": "mode link rerun of E1.5.1 f3p5_ofdma: all 8 output files byte-identical (SHA-256) to E1.5.1 run 4",
+    "A0_conventions": "every link, regimes A (8x16) and B (16x32): ns-3 angles equal the Python link_angles within 1e-6 deg; ns-3 transmit-side array factor of the NR DirectPath vector toward the geometric direction equals 10 log10(N) within 1e-6 dB; element gain + array factor equals the E1.4 gNB gain (gnb_gain_dbi, serving sector) within 0.01 dB",
+    "N0_normalisation": "isotropic gNB and UE: |10 log10(mean linear gain over all realizations)| <= 0.25 dB, separately for LOS and NLOS links, at each carrier",
+    "B0_0_roles": "every chan realization reports the gNB in the requested role (gnb_is_s = 1 for role s, 0 for role u)",
+    "B0_1_matched_s": "role s, NR DirectPath: median over LOS links of D = G_E1.4 - G_real <= 2 dB, at each carrier",
+    "B0_2_matched_u": "role u, conjugated NR DirectPath: median over LOS links of D <= 2 dB, at each carrier",
+    "B0_3_antimatched_u": "role u, NR DirectPath: median over LOS links of G_real(s, dp) - G_real(u, dp) >= 3 dB, at each carrier",
+    "V0_nr_identity": "every nrfading run: every DL TB has |10 log10(m_sinr) - (SNR_iso + 10 log10 g_direct)| <= 0.01 dB, with SNR_iso the E1.5.1-verified Python DL SNR and g_direct recomputed after the run on the same channel objects; the gNB is 's' for every link; every UE has >= 10 distinct DL TBs; channel-model frequency read back equals the carrier",
+    "definitions": "G_real(link) = 10 log10 of the mean over the copies of the linear gain; D uses the E1.4 gNB gain of the serving sector; TBs counted by key (erratum 1)"
+  },
+  "reported_not_tested": "per link: D for NLOS links; (s, dpconj); the deterministic receive-side array factor af_u of the NR DirectPath vector; realised gain of regime B",
+  "decision_rules": {
+    "instrument_valid": "R0, A0, N0 and V0 pass -> mode chan reproduces 5G-LENA's DL SINR and its antenna conventions equal E1.4's; E1.5.2-1 may use mode chan for many realizations, with nrfading spot checks",
+    "rx_side_mismatch_established": "B0_1-B0_3 hold at both carriers -> an array on the receive side 'u' of the stored channel matrix needs the conjugated DirectPath vector. Every later configuration states which side each array is on; UE arrays (E1.5.2b) use a matched combiner; the finding is written up for the 5G-LENA maintainers (filing is the user's decision)",
+    "reading_wrong": "B0_3 fails -> the code reading was wrong; recorded; no compensation is used",
+    "stop": "R0, A0, N0 or V0 fails -> stop and diagnose before E1.5.2-1",
+    "no_rerun": "a failed check is not re-run with a changed threshold"
+  },
+  "instrument_checks_before_commit": [
+    "program rebuilt through scripts/e1_5_install_ns3_program.sh (1 object, no warnings)",
+    "mode link rerun of E1.5.1 f3p5_ofdma with the first build of the new program: 8/8 files byte-identical to run 4 (repeated as R0 with the final build)",
+    "modes chan and nrfading smoke-run on a synthetic 2-link geometry (gNB (0,0,25), UEs (100,0,1.5) LOS and (0,150,1.5) NLOS; isotropic element in chan; role s only): output formats and run time. The first nrfading smoke run aborted (ns-3 assert numCluster <= m_alpha.size()) because the prescribed condition of UE-UE pairs depended on the argument order; fixed (UE-UE pairs: fixed NLOS O2O) before this commit"
+  ]
+}

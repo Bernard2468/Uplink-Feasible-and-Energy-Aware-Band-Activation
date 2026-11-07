@@ -11,6 +11,18 @@
       "changes": ["bearings are wrapped to [-180, 180) deg before they are set (270 deg -> -90 deg, the same orientation), in modes chan and nrfading"],
       "unchanged": "every check, threshold, run and decision rule; the links files keep the E1.4 bearing values (30, 150, 270)",
       "evidence_kept": "results/phase2/e1_5_2_0_conventions/run1_failure.txt"
+    },
+    {
+      "id": 2,
+      "date": "2026-11-07",
+      "trigger": "run 2 (code 58872cc): R0, A0, N0, B0.0-B0.3 PASS; V0 FAILED in all 9 nrfading runs (max |error| 35-67 dB)",
+      "diagnosis": "scripts/e1_5_2_0_run2_v0_diagnostic.py, output in run2_V0_diagnostic.txt: the 217 DL TBs that span the full band and are alone in their slot match the channel-level gain within 3.2e-14 dB; the 4,282 others are OFDMA TBs co-scheduled in the same symbols on partial bands (errors -53.7 to +13.2 dB, 1st-99th percentile), many decoded at MCS 28 although their reported SINR is ~50 dB below the full-band value. V0 compares each TB with the full-band gain of the UE's own beam, which presumes one UE per transmission over the full band. Under NrMacSchedulerOfdmaRR with DirectPath beams (every UE has the empty beam ID, so the scheduler treats all UEs as one beam), that premise does not hold",
+      "defect": "instrument (V0's premise not met by the OFDMA DL scheduler), not the channel-level computation",
+      "changes": ["nrfading runs use ns3::NrMacSchedulerTdmaRR (DL TDMA: every TB spans the full band and one UE per symbol group; its DL round robin rotates, E1.5.1 / E1.5.1-D)"],
+      "unchanged": "V0's criterion and tolerance (every DL TB within 0.01 dB), every other check, run and threshold",
+      "prediction_before_run_3": "every DL TB spans 51 RBs and V0 passes in all 9 nrfading runs; R0, A0, N0 and B0 reproduce run 2 (same seeds)",
+      "open_item": "the meaning of the reported SINR of OFDMA TBs co-scheduled under DirectPath beams (all UEs share the empty beam ID) is diagnosed before any multi-UE stage (E1.5.4)",
+      "evidence_kept": "validation_run2_failed_V0.json, manifest_run2_failed_V0.json, summary_run2.json.gz, run2_V0_diagnostic.txt (committed); raw/run2_failed/ (local, git-ignored)"
     }
   ],
   "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.2-0'",
@@ -52,7 +64,7 @@
       {"tag": "b_f7p2", "frequency_hz": 7.2e9, "rows": 16, "cols": 32}
     ],
     "per_config": "one run per sector bearing (30, 150, 270 deg) with the UEs that sector serves",
-    "settings": {"scheduler": "ns3::NrMacSchedulerOfdmaRR", "dl_rate_bps_per_ue": 1e6, "packet_size_bytes": 1000,
+    "settings": {"scheduler": "ns3::NrMacSchedulerTdmaRR", "scheduler_before_amendment_2": "ns3::NrMacSchedulerOfdmaRR", "dl_rate_bps_per_ue": 1e6, "packet_size_bytes": 1000,
                  "app_start_s": 0.1, "sim_time_s": 0.4, "beamforming": "NR IdealBeamformingHelper, DirectPathBeamforming",
                  "other": "E1.5.1 common settings (44 dBm, NF 5/7 dB, RbOverhead 0.073, numerology 1, DDDSU); no UL traffic"}
   },

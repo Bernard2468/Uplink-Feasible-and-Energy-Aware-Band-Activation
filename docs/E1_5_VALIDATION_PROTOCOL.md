@@ -518,5 +518,29 @@ Amendment 1 (after run 1, instrument only):
 - **What did not change.** All checks and thresholds.
 - **Evidence.** `results/phase2/e1_5_2_0_conventions/run1_failure.txt`.
 
+Amendment 2 (after run 2):
+- **What happened.** Run 2 (`58872cc`) passed R0, A0, N0 and B0.0-B0.3,
+  and failed V0 in all 9 NR runs, with errors up to 35-67 dB.
+- **Diagnosis** (`scripts/e1_5_2_0_run2_v0_diagnostic.py`):
+  - The 217 DL TBs that span the full band and are alone in their slot
+    match the channel-level gain within 3.2e-14 dB.
+  - The other 4,282 are OFDMA TBs co-scheduled in the same symbols on
+    partial bands. Their errors span -53.7 to +13.2 dB, and many decode at
+    MCS 28 although their reported SINR is about 50 dB below the full-band
+    value.
+  - V0 presumes one UE per transmission over the full band.
+    `NrMacSchedulerOfdmaRR` with DirectPath beams breaks that premise:
+    every UE has the empty beam ID, so the scheduler treats them all as one
+    beam.
+- **The fix.** The NR runs use `NrMacSchedulerTdmaRR`. Its DL gives every
+  TB the full band and one UE per symbol group, and its DL round robin
+  rotates.
+- **What did not change.** The V0 criterion, its tolerance and every other
+  check.
+- **Prediction stated before run 3:** every DL TB spans 51 RBs, V0 passes,
+  and the other checks reproduce run 2.
+- **Open item before E1.5.4:** what the reported SINR of co-scheduled OFDMA
+  TBs under DirectPath means.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

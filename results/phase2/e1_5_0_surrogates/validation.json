@@ -1,0 +1,64 @@
+{
+  "S1_v16_reproduction": {
+    "differing_fractions": 0,
+    "passed": true
+  },
+  "S2_v19_scope": {
+    "differing_fractions_in_unchanged_states": 0,
+    "differing_fractions_in_indoor_high": 425,
+    "passed": true
+  },
+  "S3_v19_e14_checks": {
+    "passed": true
+  },
+  "S4_f3_allocation": {
+    "16.1.0": {
+      "allocation_violations": 0,
+      "passed": true
+    },
+    "19.5.0": {
+      "allocation_violations": 0,
+      "passed": true
+    }
+  },
+  "S5_f3_dominance": {
+    "16.1.0": {
+      "f2_yes_f3_no_ul_records": 0,
+      "violations_of_proved_bound": 0,
+      "passed": true
+    },
+    "19.5.0": {
+      "f2_yes_f3_no_ul_records": 0,
+      "violations_of_proved_bound": 0,
+      "passed": true
+    }
+  },
+  "S6_f3_partition": {
+    "16.1.0": {
+      "exclusive_and_exhaustive": true,
+      "k6_shared": 0,
+      "passed": true
+    },
+    "19.5.0": {
+      "exclusive_and_exhaustive": true,
+      "k6_shared": 0,
+      "passed": true
+    }
+  },
+  "v16_e14_checks_all_pass": true,
+  "pl_tw_used_db": {
+    "16.1.0": {
+      "low_3.5GHz": 12.69750345954387,
+      "low_7.2GHz": 13.659470044167355,
+      "high_3.5GHz": 26.849786400945717,
+      "high_7.2GHz": 31.4616311672335
+    },
+    "19.5.0": {
+      "low_3.5GHz": 12.69750345954387,
+      "low_7.2GHz": 13.659470044167355,
+      "high_3.5GHz": 27.499288920143755,
+      "high_7.2GHz": 32.42960168703797
+    }
+  },
+  "all_checks_passed": true
+}

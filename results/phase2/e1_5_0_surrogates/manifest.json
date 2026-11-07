@@ -1,0 +1,14 @@
+{
+  "generated_utc": "2026-11-07T10:06:59.920275+00:00",
+  "tool": "scripts/e1_5_0_surrogates.py",
+  "git_head_at_run": "cefc4828b1ad7725d36fed14ab1099c6f0f83269",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "config_sha256": "c86903f3f459b94b77b1a02d2f9bb0c5235ec72bb0f4ef2364fcfd9361cb3300",
+  "e1_4_config_sha256": "6102c71a0a5e6e3a78c4caf95f838ee48d7a280ddc91b19c65de8a23ce6712c0",
+  "e1_4_manifest_sha256": "b016fdde322ec30eda64f290c7ce94a83ffb43db2fe05073e3708c9fd4c55932",
+  "outputs_sha256": {
+    "summary.json": "4e431bc9dbd6fe14b0fff0417569dae3bf3ec12b91b15b1f8414b366edb8cd95"
+  },
+  "all_checks_passed": true
+}

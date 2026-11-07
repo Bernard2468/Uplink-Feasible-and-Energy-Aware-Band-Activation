@@ -102,5 +102,45 @@ For each E1.4 class:
 
 Reported by frequency, distance, LOS/NLOS, antenna regime and indoor state.
 
-## 5. Order and stop rules
+## 5. Results log
+
+### E1.5.0: PASSED (2026-11-07)
+Pre-registration `cefc482`; run from that commit (23 s); checks S1-S6 pass.
+Files: `results/phase2/e1_5_0_surrogates/`.
+- S1: the V16.1.0 evaluation reproduces every fraction of the committed E1.4
+  summary exactly.
+- S2: V19.5.0 changes no fraction outside the high-loss states (425 changed
+  fractions, all in `indoor_high`).
+- S5: no record is UL-feasible under F2 but not under F3; zero violations of
+  the proved bound.
+
+Part A, TR 38.901 V19.5.0. High-loss wall loss is 27.50 / 32.43 dB (V16.1.0:
+26.85 / 31.46 dB).
+- In high-loss buildings K4 rises by 1.2-1.4 points and K1 falls by
+  1.6 points (A, B, C, F2).
+- In the M.2412 mix every class moves by 0.3 points or less.
+- Decision, by the rule fixed before the run: V16.1.0 remains the frozen
+  baseline of E1.2-E1.4, and V19.5.0 is the reference from E1c onward.
+
+Part B, multiple-access surrogate (M.2412 mix, V16.1.0):
+
+| Regime | UL feasible 3.5 / 7.2 GHz, F2 -> F3 | K1, F2 -> F3 | K2, F2 -> F3 | K3, F2 -> F3 | K4 |
+|---|---|---|---|---|---|
+| R0 isotropic | 0.349 / 0.243 -> 0.481 / 0.380 | 0.243 -> 0.380 | 0.106 -> 0.096 | 0.150 -> 0.023 | 0.501 |
+| A equal elements | 0.702 / 0.592 -> 0.832 / 0.732 | 0.592 -> 0.732 | 0.110 -> 0.100 | 0.206 -> 0.076 | 0.092 |
+| B equal aperture | 0.702 / 0.682 -> 0.832 / 0.808 | 0.682 -> 0.808 | 0.020 -> 0.023 | 0.246 -> 0.116 | 0.052 |
+| C vendor configuration | 0.598 / 0.534 -> 0.737 / 0.678 | 0.534 -> 0.678 | 0.064 -> 0.060 | 0.359 -> 0.219 | 0.044 |
+
+Interpretation:
+- The service-level class "DL works but no UL meets the service level" (K3)
+  depends strongly on the multiple-access assumption. Under OFDMA sharing it
+  shrinks by 12.7-14.0 points in every regime.
+- The cross-band class K2 changes by at most 1 point.
+- The multiple-access assumption is therefore the largest open uncertainty
+  in the E1.4 service-level results: larger than the antenna regime or the
+  TR 38.901 version. E1.5.4 must decide it with real NR schedulers.
+- Until then, K3 under F2 is an upper bound, and K3 under F3 is the analytic
+  value for full-buffer equal-share OFDMA.
+
+## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

@@ -393,7 +393,7 @@ SINR); no O2I loss; E-UTRA-era rate mapping (E1.5 calibrates); F2 is a derived
 equivalence, not an ITU requirement; the 6.27 dB carrier gap is a model
 assumption.
 
-### E1.4 antenna regimes and O2I deployment: PRE-REGISTERED (2026-11-07)
+### E1.4 antenna regimes and O2I deployment: PASSED after amendment 1 (2026-11-07)
 
 Pre-registration: `configs/e1/e1_4_antennas_o2i.json`, `cmwave/radio/antenna.py`,
 `cmwave/radio/o2i.py`, the optional per-link gain in `cmwave/radio/link_budget.py`
@@ -426,6 +426,97 @@ Stated before the run (analytic, not pass criteria): carrier SNR offset
 6.27 dB (A, outdoor), 0.24 dB (B and C, outdoor), +0.96 / +4.61 dB more for
 low / high-loss buildings; DL minus full-band UL SNR 19.00 dB (R0), 25.02 dB
 (A, B), 34.02 / 37.03 dB (C at 3.5 / 7.2 GHz).
+
+Run history. Pre-registration committed in 7f3d402. Run 1 FAILED check N8 in
+every case: classes K1-K4 did not cover all outcomes. Every uncovered outcome
+lay in the carrier-independent sensitivity states, where 7.2 GHz can be the
+better carrier on a realization (7.2 GHz DL and UL feasible, 3.5 GHz UL not);
+there were none in the four shared states or the mixes. This was a defect of
+the pre-registered class list, not of the code. Amendment 1 (bfff84b) adds
+class K6 (7.2 GHz DL and UL feasible while 3.5 GHz is not feasible in both
+directions) and makes N8 stricter: K1, K2, K3, K4, K6 must partition every
+outcome AND K6 must be 0 in the shared states. Nothing else changed; K1-K5 are
+identical in both runs. Kept: `validation_run1_failed_N8.json`,
+`run1_partition_diagnostic.txt`.
+
+Run 2 (code bfff84b, 45 s): all checks N1-N10 PASS in all 9 cases. Highlights:
+- R0 reproduces E1.3 on all 21,600 records (SNR within 5e-10 dB, no flag
+  mismatch, identical class fractions).
+- Carrier offsets equal the pre-stated values within 7e-14 dB.
+- K6 = 0 in every shared state; 335-650 outcomes per case in the independent
+  states.
+- A second run is byte-identical. Raw records (1,166,400 rows) are in `raw/`
+  (git-ignored, SHA-256 in `manifest.json`).
+
+Files: `results/phase2/e1_4_antennas_o2i/`.
+
+Results, M.2412 deployment mix (20% in-car, 64% low-loss, 16% high-loss
+indoor), fractions of link-realizations:
+
+| Case | Profile | DL 3.5 | UL 3.5 | DL 7.2 | UL 7.2 | K1 | K2 | K3 | K4 |
+|---|---|---|---|---|---|---|---|---|---|
+| R0 isotropic | F2 | 0.597 | 0.349 | 0.499 | 0.243 | 0.243 | 0.106 | 0.150 | 0.501 |
+| A equal elements | F1 | 0.999 | 0.994 | 0.992 | 0.976 | 0.976 | 0.016 | 0.000 | 0.008 |
+| A equal elements | F2 | 0.962 | 0.702 | 0.908 | 0.592 | 0.592 | 0.110 | 0.206 | 0.092 |
+| B equal aperture | F1 | 0.999 | 0.994 | 0.997 | 0.989 | 0.989 | 0.005 | 0.003 | 0.003 |
+| B equal aperture | F2 | 0.962 | 0.702 | 0.948 | 0.682 | 0.682 | 0.020 | 0.246 | 0.052 |
+| C vendor configuration | F1 | 0.999 | 0.994 | 0.998 | 0.989 | 0.989 | 0.005 | 0.003 | 0.002 |
+| C vendor configuration | F2 | 0.968 | 0.598 | 0.956 | 0.534 | 0.534 | 0.064 | 0.359 | 0.044 |
+
+K5 and K6 are 0 in every row. Per deployment state under F2, K2 is:
+- regime A: 7.9% outdoor, 8.6% in-car, 10.4% indoor low-loss, 16.9% indoor
+  high-loss;
+- regime B: 0.3%, 0.4%, 1.2% and 7.1%.
+
+By distance under F2 (mix), K3 is the largest class beyond 300 m in every
+regime (A 54.9 / 52.7%, B 67.5 / 68.6%, C 82.1 / 78.5% at 300-450 / 450-600 m)
+and already at 200-300 m in A (37.5%) and C (69.0%). In B at 200-300 m, K1
+leads (50.2%, K3 41.3%).
+
+Sensitivities (M.2412 mix, F2; shifts are relative to the parent case):
+- S1, UE 1 Rx instead of 4 (relative to A): K1 and K2 unchanged; K3 drops
+  from 20.6 to 14.6% and K4 rises from 9.2 to 15.1%. The UE receive array
+  helps only the DL.
+- S2, 43 dBm at 7.2 GHz (75 dBm e.i.r.p. per 100 MHz): K3 drops from 35.9 to
+  29.0% and K4 rises from 4.4 to 11.2%.
+- S3, 4.5 dB NLOS beamforming loss: K1 drops from 53.4 to 48.2%.
+- S4, fixed 4-element subarrays: K1 drops to 49.2%.
+- S5, sectors rotated 60 deg: K1 drops from 59.2 to 56.1% (orientation
+  effect of about 3 points).
+- Independent O2I variates per carrier change the indoor classes by up to
+  6.4 points. B indoor low-loss K2 rises from 1.2 to 7.5%, and K6 appears
+  (1.4-5.6%). The near-zero K2 of regime B therefore depends on fully correlated
+  building loss across carriers.
+
+What E1.4 shows:
+1. With realistic arrays, link closure (F1) holds for 97.6-98.9% of
+   outcomes on all four links.
+2. At the M.2410-equivalent service level (F2), the 7.2 GHz DL is feasible
+   for 91-96% of outcomes, but the UL meets F2 for only 60-70% at 3.5 GHz
+   and 53-68% at 7.2 GHz. The binding constraint is the UE uplink on BOTH
+   carriers.
+3. The outcome where a 3.5 GHz UL makes an otherwise infeasible 7.2 GHz
+   carrier usable (K2) is 2-11% of the mix, depending on the antenna regime.
+   It nearly vanishes under equal aperture outdoors (the 6.02 dB array gain
+   cancels 6.02 of the 6.27 dB gap). Under equal aperture it survives
+   mainly in high-loss buildings, because wall loss grows with frequency.
+4. The larger class is K3: the 7.2 GHz DL works but no UL meets F2 on either
+   carrier (21-36%). It grows when the DL/UL asymmetry grows (UE 4-8 Rx;
+   53 dBm gNB in C), and F2 normalises the UL by bandwidth, so the 200 MHz
+   carrier in C must carry twice the absolute UL rate. Band choice cannot
+   remove K3; it is set by the UE power, building loss and distance.
+
+What E1.4 does NOT show (stated with every use of these numbers):
+- The fractions are over 27 distance-stratified positions, not area-weighted
+  (E1c).
+- Ideal beamforming and MRC are upper bounds (E1.5 measures the realised
+  gain).
+- No interference (SNR, not SINR).
+- Indoor UEs are on the ground floor only.
+- Regime C is a vendor evaluation configuration, adapted from 7 to 7.2 GHz.
+- F2 is a derived equivalence.
+- The 6.27 dB outdoor gap and the fully correlated O2I variates are model
+  assumptions; the second is tested by the independent-variate sensitivity.
 
 ### Original options considered
 

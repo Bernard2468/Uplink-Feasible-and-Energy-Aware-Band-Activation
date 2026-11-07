@@ -25,7 +25,7 @@ def write(path, header, rows):
         w.writerows(rows)
 
 
-def make_run(d, dl_offset_db=0.0, rb_num=51):
+def make_run(d, dl_offset_db=0.0, rb_num=51, ul_dup=None):
     names = list(LOSSES)
     write(d / 'e15_run_info.csv', ['key', 'value'],
           [['gnb_rb_num', rb_num], ['ue_rb_num', rb_num], ['gnb_tx_power_dbm', 44.0], ['ue_tx_power_dbm', 23.0],
@@ -53,6 +53,13 @@ def make_run(d, dl_offset_db=0.0, rb_num=51):
     # RNTI-reuse case: at t = 8 ns RNTI 99 belongs to UE 2 (sweep_160dB), not UE 0.
     snr99 = 23 - LOSSES['sweep_160dB'] - (-174 + 10 * math.log10(1 * 360e3) + 5)
     ul.append([-1, 99, 8, 10 ** (snr99 / 10), 0, 1, 0, 10, 1, 0, 12, 1, 1.0])
+    if ul_dup == 'identical':      # one row per packet of the burst (erratum 1)
+        ul = [r for r in ul for _ in range(2)]
+        dl = dl + dl[:5]
+    elif ul_dup == 'conflicting':
+        bad = list(ul[0])
+        bad[5] = bad[5] + 1        # same RNTI and time, different RB count
+        ul.append(bad)
     write(d / 'e15_dl_tb.csv', hdr, dl)
     write(d / 'e15_ul_tb.csv', hdr, ul)
     write(d / 'e15_dl_rxpower.csv', ['ue_index', 'n_rb_samples', 'min_rb_power_dbm', 'max_rb_power_dbm'], rp)
@@ -76,6 +83,21 @@ class ComparatorTests(unittest.TestCase):
             self.assertEqual(v['V2_ul_snr']['unmapped_rnti_tbs'], 0)
             self.assertTrue(v['V2_ul_snr']['passed'])
             json.dumps({'v': v, 'per_ue': per_ue}, default=e151.json_default)   # run 1 crashed here
+
+    def test_packet_rows_count_once_per_tb(self):
+        with tempfile.TemporaryDirectory() as t:
+            v, per_ue, _ = e151.analyse(CONF, RUN, make_run(Path(t), ul_dup='identical'), LOSSES)
+            self.assertEqual(v['V2_ul_snr']['tbs'], 37)
+            self.assertEqual(v['V2_ul_snr']['trace_rows'], 74)
+            self.assertEqual(v['V1_dl_snr']['tbs'], 36)
+            self.assertEqual(v['V1_dl_snr']['trace_rows'], 41)
+            self.assertEqual(per_ue[2]['ul_tb'], 13)
+            self.assertEqual(per_ue[0]['dl_tb'], 12)
+
+    def test_conflicting_rows_for_one_tb_are_rejected(self):
+        with tempfile.TemporaryDirectory() as t:
+            with self.assertRaises(SystemExit):
+                e151.analyse(CONF, RUN, make_run(Path(t), ul_dup='conflicting'), LOSSES)
 
     def test_small_dl_error_fails(self):
         with tempfile.TemporaryDirectory() as t:

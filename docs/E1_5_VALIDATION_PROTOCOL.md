@@ -195,12 +195,14 @@ Verdict: **FAILED** under the pre-registered criteria (V5 in both TDMA runs,
 V2 in `f7p2_tdma`). Per the stop rule, no further amendment is made to make
 it pass.
 
-What run 4 establishes (every compared TB, all four runs):
+What run 4 establishes (every compared TB, all four runs; counts corrected by
+erratum 1 below):
 - **DL:** 31,100 TBs compared. |5G-LENA SNR - Python SNR| <= 3.1e-14 dB, and
   the received power per RB agrees within 2.9e-14 dB.
-- **UL:** 46,251 TBs compared, |error| <= 3.6e-14 dB. The OFDMA runs cover
-  32-36 distinct allocation sizes from 1 to 51 RBs, so the "UE power spread
-  over the allocated RBs" model is confirmed at every allocation size.
+- **UL:** 24,732 distinct TBs compared (46,251 trace rows), |error| <=
+  3.6e-14 dB. The OFDMA runs cover 32-36 distinct allocation sizes from 1 to
+  51 RBs, so the "UE power spread over the allocated RBs" model is confirmed
+  at every allocation size.
 - **Configuration readback:** 51 RBs at the gNB and every UE; powers and
   noise figures as configured.
 - **Coverage:** at both carriers, every link with SNR >= -5 dB is compared
@@ -215,8 +217,9 @@ power or noise accounting.
 
 Why TDMA fails:
 - With 36 UEs, 5G-LENA's `NrMacSchedulerTdmaRR` starves a fixed group of UEs
-  in UL even at 1.8 Mbit/s total offered load. At 7.2 GHz, ue00-ue14 get 0-8
-  UL TBs although their UL SNR is 29-58 dB, while ue20 gets 1,328.
+  in UL even at 1.8 Mbit/s total offered load. At 7.2 GHz, ue00-ue14 get 0-4
+  distinct UL TBs although their 1-PRB UL SNR is 29-58 dB, while ue20 gets
+  664 (corrected by erratum 1; first reported as 0-8 and 1,328 trace rows).
 - The starved UEs then fall back to random access (2 TBs with RNTIs 135/136
   without RRC establishment -> V2).
 - `NrMacSchedulerOfdmaRR` serves every UE.
@@ -230,6 +233,54 @@ Implications:
   (a dedicated diagnostic varying UE count, positions and beam grouping).
 - The DL MCS-vs-SNR data in `summary.json` (e.g. MCS 28 at >= ~20 dB, 14 at
   7.8 dB, 4 at -1.6 dB) are an input to E1.5.3, not a result of E1.5.1.
+
+#### E1.5.1 erratum 1 (2026-11-07): trace rows are packets, not TBs
+
+Found while starting the TDMA diagnostic, after the results commit `ed58ddc`.
+
+Defect:
+- `NrSpectrumPhy::ProcessReceivedPacketBurst` (NR `cedceadd`,
+  `nr-spectrum-phy.cc` lines 1806-1846) fires `RxPacketTraceGnb` /
+  `RxPacketTraceUe` once per non-empty packet of the received burst, each
+  time with the fields of the TB that carried it.
+- A UL TB that carries two MAC packets (for example data and a buffer status
+  report) therefore appears twice, with identical fields. 5,591 + 5,799 +
+  4,903 + 5,226 UL TBs appear twice in run 4; no DL TB does.
+- The analysis counted rows. That inflated the UL TB counts and the UL TB
+  counts used by V5.
+
+Correction:
+- `scripts/e1_5_1_deterministic.py` keeps one row per TB, keyed by
+  (RNTI, time) in UL and (UE, RNTI, time) in DL. A UE has at most one TB per
+  slot and direction at rank 1.
+- Rows that share a key must agree in every field, otherwise the analysis
+  stops. None disagreed.
+- Two new tests cover this.
+- Run 4 was re-analysed with `--reanalyse`, without a new simulation. Every
+  raw file was first checked against its SHA-256 in the run-4 manifest.
+- The first-reported files are kept: `validation_run4_as_first_reported.json`
+  and `summary_run4_as_first_reported.json.gz`. `manifest.json` records the
+  re-analysis.
+
+Effect:
+- **No check result changes.** The verdict stays FAILED (V5 in both TDMA
+  runs, V2 in `f7p2_tdma`). The OFDMA runs still pass V5: every required UE
+  has at least 119 (7.2 GHz) or 161 (3.5 GHz) distinct UL TBs, and at least
+  28 DL TBs.
+- Error bounds are unchanged: a duplicate row has the same SNR as its TB.
+- UL TBs compared: 24,732, not 46,251. Per run: 5,881 / 7,068 / 5,274 / 6,509
+  (f3p5_tdma / f3p5_ofdma / f7p2_tdma / f7p2_ofdma).
+- The run-3 UL counts quoted in amendment 2 of the config (13,312 / 23,287 /
+  12,923 / 17,868) are trace rows, not TBs. The config is not edited: its
+  SHA-256 is pinned in the run manifests.
+
+Rule from now on: every E1.5 analysis counts TBs by key, never by trace rows.
+
+Observation for E1.5.4: in DL, `NrMacSchedulerOfdmaRR` gave the whole band
+to one UE in every DL slot (1,201 of 1,201 TBs at 51 RBs at 3.5 GHz). Its DL
+comparator rotates an RNTI deque, so DL service rotates across slots, a
+time share. In UL the same scheduler compares RBGs assigned in the current
+slot and splits the band within each slot.
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

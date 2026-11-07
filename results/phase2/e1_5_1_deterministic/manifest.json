@@ -103,5 +103,19 @@
       }
     }
   ],
-  "all_checks_passed": false
+  "all_checks_passed": false,
+  "all_checks_passed_as_first_reported": false,
+  "reanalysis": {
+    "generated_utc": "2026-11-07T15:12:35.631306+00:00",
+    "git_head": "0ed9ec2ae684f351f0ab1e18eb75c92734e0c324",
+    "tool_sha256": "72ec445a5e38c846921427fdd310b527d94ece0e37e7de31acba73ad62d793fd",
+    "python": "3.12.16",
+    "numpy": "1.26.4",
+    "reason": "erratum 1: one TB per (RNTI, time); the RxPacketTrace sources fire once per packet of the received burst (docs/E1_5_VALIDATION_PROTOCOL.md, E1.5.1 erratum 1)",
+    "raw_files_verified_against_recorded_sha256": true,
+    "first_reported": [
+      "validation_run4_as_first_reported.json",
+      "summary_run4_as_first_reported.json.gz"
+    ]
+  }
 }

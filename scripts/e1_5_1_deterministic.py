@@ -91,6 +91,28 @@ def read_csv(path):
         return list(csv.DictReader(fh))
 
 
+# Erratum 1: NrSpectrumPhy::ProcessReceivedPacketBurst (NR cedceadd, nr-spectrum-phy.cc
+# lines 1806-1846) fires RxPacketTraceGnb/Ue once per non-empty PACKET of the received
+# burst, with the fields of the TB that carried it. A TB with two MAC packets (e.g. data
+# and a BSR) therefore appears twice. A UE has at most one TB per slot and direction
+# (rank 1), so (RNTI, time) identifies the TB; rows sharing it must agree in every field.
+DL_TB_KEY = ('ue_index', 'rnti', 'time_ns')
+UL_TB_KEY = ('rnti', 'time_ns')
+
+
+def unique_tbs(rows, key):
+    """Return (one row per TB, number of trace rows); conflicting duplicates are an error."""
+    seen = {}
+    for r in rows:
+        k = tuple(r[f] for f in key)
+        if k in seen:
+            if seen[k] != r:
+                raise SystemExit(f'trace rows with the same TB key {k} differ: {seen[k]} vs {r}')
+            continue
+        seen[k] = r
+    return list(seen.values()), len(rows)
+
+
 def run_one(conf, run, ns3, losses_by_ue, outdir):
     c = conf['common']
     tag = run['tag']
@@ -175,8 +197,8 @@ def analyse(conf, run, meta, losses_by_ue):
             if t <= t_ns:
                 best = imsi
         return ue_of_imsi.get(best) if best is not None else None
-    dl = read_csv(d / 'e15_dl_tb.csv')
-    ul = read_csv(d / 'e15_ul_tb.csv')
+    dl, dl_rows = unique_tbs(read_csv(d / 'e15_dl_tb.csv'), DL_TB_KEY)
+    ul, ul_rows = unique_tbs(read_csv(d / 'e15_ul_tb.csv'), UL_TB_KEY)
     per_ue = {i: {'name': names[i], 'loss_db': float(loss[i]), 'dl_snr_python_db': float(dl_py[i]),
                   'ul_snr_1prb_python_db': float(ul1_py[i]), 'dl_tb': 0, 'ul_tb': 0,
                   'dl_max_abs_err_db': None, 'ul_max_abs_err_db': None, 'dl_mcs': Counter(), 'ul_mcs': Counter(),
@@ -195,7 +217,8 @@ def analyse(conf, run, meta, losses_by_ue):
         u['dl_mcs'][int(r['mcs'])] += 1
         u['dl_corrupt'] += int(r['corrupt'])
         worst_dl = max(worst_dl, err)
-    v['V1_dl_snr'] = {'tbs': len(dl), 'nonpositive_sinr_tbs': nonfinite, 'max_abs_error_db': worst_dl,
+    v['V1_dl_snr'] = {'tbs': len(dl), 'trace_rows': dl_rows, 'nonpositive_sinr_tbs': nonfinite,
+                      'max_abs_error_db': worst_dl,
                       'passed': bool(len(dl) > 0 and nonfinite == 0 and worst_dl <= tol)}
     worst_ul, unmapped, nonfinite = 0.0, 0, 0
     for r in ul:
@@ -217,7 +240,8 @@ def analyse(conf, run, meta, losses_by_ue):
         u['ul_rb'][n] += 1
         u['ul_corrupt'] += int(r['corrupt'])
         worst_ul = max(worst_ul, err)
-    v['V2_ul_snr'] = {'tbs': len(ul), 'unmapped_rnti_tbs': unmapped, 'nonpositive_sinr_tbs': nonfinite,
+    v['V2_ul_snr'] = {'tbs': len(ul), 'trace_rows': ul_rows, 'unmapped_rnti_tbs': unmapped,
+                      'nonpositive_sinr_tbs': nonfinite,
                       'max_abs_error_db': worst_ul,
                       'passed': bool(len(ul) > 0 and unmapped == 0 and nonfinite == 0 and worst_ul <= tol)}
     worst4, missing4 = 0.0, []
@@ -249,12 +273,22 @@ def main():
     ap.add_argument('--outdir', default=str(ROOT / 'results/phase2/e1_5_1_deterministic'))
     ap.add_argument('--ns3-dir', default=str(Path.home() / '6g-external/ns-3-dev'))
     ap.add_argument('--git-head', default=None)
+    ap.add_argument('--reanalyse', action='store_true',
+                    help='no simulation: recompute validation/summary from the raw files of the run recorded in '
+                         'manifest.json, after checking every raw file against its recorded SHA-256')
     args = ap.parse_args()
     conf = json.loads(Path(args.config).read_text(encoding='utf-8'))
     ns3 = Path(args.ns3_dir)
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
-    prog_sha = check_stack(conf, ns3)
+    if args.reanalyse:
+        recorded = json.loads((outdir / 'manifest.json').read_text(encoding='utf-8'))
+        if sha256(args.config) != recorded['config_sha256']:
+            raise SystemExit('config changed since the recorded run')
+        prog_sha = recorded['program_sha256']
+        recorded_runs = {r['tag']: r for r in recorded['runs']}
+    else:
+        prog_sha = check_stack(conf, ns3)
     med, real_sha = median_losses()
     sweep = conf['ues']['sweep_losses_db']
 
@@ -265,7 +299,15 @@ def main():
         losses_by_ue.update({f'sweep_{int(x)}dB': float(x) for x in sweep})
         if len(losses_by_ue) != conf['ues']['total_per_run']:
             raise SystemExit('unexpected UE count')
-        meta = run_one(conf, run, ns3, losses_by_ue, outdir)
+        if args.reanalyse:
+            rec = recorded_runs[run['tag']]
+            d = outdir / 'raw' / run['tag']
+            for fname, h in rec['raw_sha256'].items():
+                if sha256(d / fname) != h:
+                    raise SystemExit(f'raw file differs from the recorded run: {d / fname}')
+            meta = dict(rec, names=list(losses_by_ue), dir=d)
+        else:
+            meta = run_one(conf, run, ns3, losses_by_ue, outdir)
         runs_meta.append({k: meta[k] for k in ('tag', 'exit_code', 'runtime_s', 'cmd', 'raw_sha256')})
         print(f"{run['tag']}: exit {meta['exit_code']}, {meta['runtime_s']:.0f} s", flush=True)
         if meta['exit_code'] != 0:
@@ -281,11 +323,24 @@ def main():
     (outdir / 'validation.json').write_text(json.dumps({'per_run': validation, 'all_checks_passed': passed}, default=json_default,
                                                        indent=2), encoding='utf-8')
     (outdir / 'summary.json').write_text(json.dumps(summary, indent=2, default=json_default), encoding='utf-8')
-    manifest = {'generated_utc': datetime.now(timezone.utc).isoformat(), 'tool': 'scripts/e1_5_1_deterministic.py',
-                'git_head_at_run': args.git_head, 'python': platform.python_version(), 'numpy': np.__version__,
-                'config_sha256': sha256(args.config), 'program_sha256': prog_sha,
-                'ns3_commit': conf['stack']['ns3_commit'], 'nr_commit': conf['stack']['nr_commit'],
-                'e1_2_realizations_sha256': real_sha, 'runs': runs_meta, 'all_checks_passed': passed}
+    if args.reanalyse:
+        manifest = dict(recorded)
+        manifest['all_checks_passed_as_first_reported'] = recorded['all_checks_passed']
+        manifest['all_checks_passed'] = passed
+        manifest['reanalysis'] = {
+            'generated_utc': datetime.now(timezone.utc).isoformat(), 'git_head': args.git_head,
+            'tool_sha256': sha256(Path(__file__)), 'python': platform.python_version(), 'numpy': np.__version__,
+            'reason': 'erratum 1: one TB per (RNTI, time); the RxPacketTrace sources fire once per packet of the '
+                      'received burst (docs/E1_5_VALIDATION_PROTOCOL.md, E1.5.1 erratum 1)',
+            'raw_files_verified_against_recorded_sha256': True,
+            'first_reported': ['validation_run4_as_first_reported.json', 'summary_run4_as_first_reported.json.gz']}
+    else:
+        manifest = {'generated_utc': datetime.now(timezone.utc).isoformat(),
+                    'tool': 'scripts/e1_5_1_deterministic.py',
+                    'git_head_at_run': args.git_head, 'python': platform.python_version(), 'numpy': np.__version__,
+                    'config_sha256': sha256(args.config), 'program_sha256': prog_sha,
+                    'ns3_commit': conf['stack']['ns3_commit'], 'nr_commit': conf['stack']['nr_commit'],
+                    'e1_2_realizations_sha256': real_sha, 'runs': runs_meta, 'all_checks_passed': passed}
     (outdir / 'manifest.json').write_text(json.dumps(manifest, indent=2, default=json_default), encoding='utf-8')
     print('E1.5.1 DETERMINISTIC', 'PASSED' if passed else 'FAILED')
     sys.exit(0 if passed else 1)

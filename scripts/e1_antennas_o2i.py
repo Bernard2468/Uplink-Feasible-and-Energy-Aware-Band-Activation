@@ -47,6 +47,22 @@ FIELDS = ['case', 'regime', 'state', 'site_id', 'ue_id', 'realization', 'frequen
           'rate_bps', 'feasible_F1_link_closure', 'feasible_F2_m2410_equivalent']
 
 
+K6 = 'K6_7p2_both_without_3p5_both'
+PARTITION = ('K1_both_carriers_both_directions', 'K2_7p2_dl_only_with_3p5_ul', 'K3_7p2_dl_without_any_ul',
+             'K4_7p2_dl_not_feasible', K6)
+
+
+def classes14(res, f1, f2, profile):
+    """E1.3 classes K1-K5 plus K6 (amendment 1): 7.2 GHz DL and UL feasible while
+    3.5 GHz is not feasible in both directions. K1, K2, K3, K4, K6 partition all
+    outcomes; K6 can occur only when 7.2 GHz is the better carrier on a link."""
+    k = e13.classes(res, f1, f2, profile)
+    d35, u35 = res[f1]['DL'][profile], res[f1]['UL'][profile]
+    d72, u72 = res[f2]['DL'][profile], res[f2]['UL'][profile]
+    k[K6] = d72 & u72 & ~(d35 & u35)
+    return k
+
+
 def tw_independent(model, fc_hz):
     """Re-typed TR 38.901 Table 7.4.3-2 (independent of cmwave.radio.o2i), for N5/N6."""
     f = fc_hz / 1e9
@@ -396,14 +412,20 @@ def run_checks(cname, case, out, states, geo, tw_used, e13_ref, e13_summary):
         same = np.max(np.abs(resid[f1] - resid[f2])) <= TOL and np.max(np.abs(st['sf'][f1] - st['sf'][f2])) <= TOL
         ok6 &= bool(same) if not state.endswith('_indep') else bool(not same)
     c['N6_o2i_components'] = {'max_abs_wall_loss_error_db': float(e6), 'passed': bool(ok6)}
-    # N8 partition (mix weights are checked once, globally)
-    part = True
+    # N8 partition, amendment 1 (mix weights are checked once, globally): K1, K2,
+    # K3, K4, K6 mutually exclusive and exhaustive in every state; K6 = 0 in the
+    # shared-variate states, implied by the non-negative carrier offsets (N5).
+    part, k6_shared, k6_indep = True, 0, 0
     for state in STATES:
         for p in ('F1', 'F2'):
-            k = e13.classes(out[state], f1, f2, p)
-            part &= bool(np.all(k['K1_both_carriers_both_directions'] | k['K2_7p2_dl_only_with_3p5_ul']
-                                | k['K3_7p2_dl_without_any_ul'] | k['K4_7p2_dl_not_feasible']))
-    c['N8_partition'] = {'passed': part}
+            k = classes14(out[state], f1, f2, p)
+            part &= bool(np.all(np.sum([k[name] for name in PARTITION], axis=0) == 1))
+            if state in SHARED_STATES:
+                k6_shared += int(np.sum(k[K6]))
+            else:
+                k6_indep += int(np.sum(k[K6]))
+    c['N8_partition'] = {'exclusive_and_exhaustive': part, 'k6_outcomes_shared_states': k6_shared,
+                         'k6_outcomes_independent_states': k6_indep, 'passed': bool(part and k6_shared == 0)}
     # N10 uplink allocation
     ok10 = all(np.all(out[s][f]['UL']['rate_bps'] >= out[s][f]['UL']['rate_1prb_bps'] - 1e-6)
                and np.all(out[s][f]['UL']['rate_bps'] >= out[s][f]['UL']['rate_full_bps'] - 1e-6)
@@ -454,7 +476,7 @@ def summarise(cname, case, out, geo, bins, mixes):
     for state in STATES:
         st = {}
         for p in ('F1', 'F2'):
-            k = e13.classes(out[state], f1, f2, p)
+            k = classes14(out[state], f1, f2, p)
             prof = {'feasible_fraction': {f'{d}_{f/1e9:.1f}GHz': float(np.mean(out[state][f][d][p]))
                                           for f in freqs for d in ('DL', 'UL')},
                     'class_fraction': {name: float(np.mean(v)) for name, v in k.items()},

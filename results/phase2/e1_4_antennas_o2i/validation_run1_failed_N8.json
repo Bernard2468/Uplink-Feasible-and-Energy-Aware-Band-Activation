@@ -1,0 +1,501 @@
+{
+  "per_case": {
+    "R0_isotropic_e13": {
+      "N1_identities": {
+        "max_abs_error_db": 0.0,
+        "passed": true
+      },
+      "N2_reciprocity": {
+        "max_abs_error_db": 0.0,
+        "passed": true
+      },
+      "N3_e13_reproduction": {
+        "records_compared": 21600,
+        "max_abs_snr_error_db": 4.999798353111373e-10,
+        "max_abs_rate_error_bps": 9.313225746154785e-10,
+        "flag_mismatches": 0,
+        "class_fractions_identical": true,
+        "passed": true
+      },
+      "N4_gain_bounds": {
+        "max_gain_minus_nominal_db": 0.0,
+        "passed": true
+      },
+      "N5_carrier_offsets": {
+        "per_state": {
+          "outdoor": {
+            "expected_dl_db": 6.265289041619856,
+            "expected_ul_1prb_db": 6.265289041619856,
+            "max_abs_error_db": 3.8191672047105385e-14
+          },
+          "in_car": {
+            "expected_dl_db": 6.265289041619856,
+            "expected_ul_1prb_db": 6.265289041619856,
+            "max_abs_error_db": 5.240252676230739e-14
+          },
+          "indoor_low": {
+            "expected_dl_db": 7.22725562624334,
+            "expected_ul_1prb_db": 7.22725562624334,
+            "max_abs_error_db": 5.062616992290714e-14
+          },
+          "indoor_high": {
+            "expected_dl_db": 10.877133807907637,
+            "expected_ul_1prb_db": 10.877133807907637,
+            "max_abs_error_db": 6.039613253960852e-14
+          }
+        },
+        "passed": true
+      },
+      "N6_o2i_components": {
+        "max_abs_wall_loss_error_db": 0.0,
+        "passed": true
+      },
+      "N8_partition": {
+        "passed": false
+      },
+      "N10_ul_allocation": {
+        "passed": true
+      }
+    },
+    "A_equal_elements": {
+      "N1_identities": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N2_reciprocity": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N4_gain_bounds": {
+        "max_gain_minus_nominal_db": -0.019561903250963297,
+        "passed": true
+      },
+      "N5_carrier_offsets": {
+        "per_state": {
+          "outdoor": {
+            "expected_dl_db": 6.265289041619856,
+            "expected_ul_1prb_db": 6.265289041619856,
+            "max_abs_error_db": 3.8191672047105385e-14
+          },
+          "in_car": {
+            "expected_dl_db": 6.265289041619856,
+            "expected_ul_1prb_db": 6.265289041619856,
+            "max_abs_error_db": 5.240252676230739e-14
+          },
+          "indoor_low": {
+            "expected_dl_db": 7.22725562624334,
+            "expected_ul_1prb_db": 7.22725562624334,
+            "max_abs_error_db": 5.773159728050814e-14
+          },
+          "indoor_high": {
+            "expected_dl_db": 10.877133807907637,
+            "expected_ul_1prb_db": 10.877133807907637,
+            "max_abs_error_db": 6.039613253960852e-14
+          }
+        },
+        "passed": true
+      },
+      "N6_o2i_components": {
+        "max_abs_wall_loss_error_db": 0.0,
+        "passed": true
+      },
+      "N8_partition": {
+        "passed": false
+      },
+      "N10_ul_allocation": {
+        "passed": true
+      }
+    },
+    "B_equal_aperture": {
+      "N1_identities": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N2_reciprocity": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N4_gain_bounds": {
+        "max_gain_minus_nominal_db": -0.019561903250963297,
+        "passed": true
+      },
+      "N5_carrier_offsets": {
+        "per_state": {
+          "outdoor": {
+            "expected_dl_db": 0.2446891283402275,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 4.1744385725905886e-14
+          },
+          "in_car": {
+            "expected_dl_db": 0.2446891283402275,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 5.595524044110789e-14
+          },
+          "indoor_low": {
+            "expected_dl_db": 1.2066557129637117,
+            "expected_ul_1prb_db": 1.2066557129637117,
+            "max_abs_error_db": 6.838973831690964e-14
+          },
+          "indoor_high": {
+            "expected_dl_db": 4.856533894628009,
+            "expected_ul_1prb_db": 4.856533894628009,
+            "max_abs_error_db": 6.306066779870889e-14
+          }
+        },
+        "passed": true
+      },
+      "N6_o2i_components": {
+        "max_abs_wall_loss_error_db": 0.0,
+        "passed": true
+      },
+      "N8_partition": {
+        "passed": false
+      },
+      "N10_ul_allocation": {
+        "passed": true
+      }
+    },
+    "C_deployment": {
+      "N1_identities": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N2_reciprocity": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N4_gain_bounds": {
+        "max_gain_minus_nominal_db": -0.019561903250963297,
+        "passed": true
+      },
+      "N5_carrier_offsets": {
+        "per_state": {
+          "outdoor": {
+            "expected_dl_db": 0.2446891283402275,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 4.1744385725905886e-14
+          },
+          "in_car": {
+            "expected_dl_db": 0.2446891283402275,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 5.595524044110789e-14
+          },
+          "indoor_low": {
+            "expected_dl_db": 1.2066557129637117,
+            "expected_ul_1prb_db": 1.2066557129637117,
+            "max_abs_error_db": 5.417888360170764e-14
+          },
+          "indoor_high": {
+            "expected_dl_db": 4.856533894628009,
+            "expected_ul_1prb_db": 4.856533894628009,
+            "max_abs_error_db": 6.306066779870889e-14
+          }
+        },
+        "passed": true
+      },
+      "N6_o2i_components": {
+        "max_abs_wall_loss_error_db": 0.0,
+        "passed": true
+      },
+      "N8_partition": {
+        "passed": false
+      },
+      "N10_ul_allocation": {
+        "passed": true
+      }
+    },
+    "S1_A_ue1rx": {
+      "N1_identities": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N2_reciprocity": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N4_gain_bounds": {
+        "max_gain_minus_nominal_db": -0.019561903250963297,
+        "passed": true
+      },
+      "N5_carrier_offsets": {
+        "per_state": {
+          "outdoor": {
+            "expected_dl_db": 6.265289041619856,
+            "expected_ul_1prb_db": 6.265289041619856,
+            "max_abs_error_db": 3.8191672047105385e-14
+          },
+          "in_car": {
+            "expected_dl_db": 6.265289041619856,
+            "expected_ul_1prb_db": 6.265289041619856,
+            "max_abs_error_db": 5.240252676230739e-14
+          },
+          "indoor_low": {
+            "expected_dl_db": 7.22725562624334,
+            "expected_ul_1prb_db": 7.22725562624334,
+            "max_abs_error_db": 5.773159728050814e-14
+          },
+          "indoor_high": {
+            "expected_dl_db": 10.877133807907637,
+            "expected_ul_1prb_db": 10.877133807907637,
+            "max_abs_error_db": 6.039613253960852e-14
+          }
+        },
+        "passed": true
+      },
+      "N6_o2i_components": {
+        "max_abs_wall_loss_error_db": 0.0,
+        "passed": true
+      },
+      "N8_partition": {
+        "passed": false
+      },
+      "N10_ul_allocation": {
+        "passed": true
+      }
+    },
+    "S2_C_7p2_43dbm": {
+      "N1_identities": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N2_reciprocity": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N4_gain_bounds": {
+        "max_gain_minus_nominal_db": -0.019561903250963297,
+        "passed": true
+      },
+      "N5_carrier_offsets": {
+        "per_state": {
+          "outdoor": {
+            "expected_dl_db": 10.244689128340228,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 4.1744385725905886e-14
+          },
+          "in_car": {
+            "expected_dl_db": 10.244689128340228,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 5.595524044110789e-14
+          },
+          "indoor_low": {
+            "expected_dl_db": 11.206655712963713,
+            "expected_ul_1prb_db": 1.2066557129637117,
+            "max_abs_error_db": 5.417888360170764e-14
+          },
+          "indoor_high": {
+            "expected_dl_db": 14.85653389462801,
+            "expected_ul_1prb_db": 4.856533894628009,
+            "max_abs_error_db": 6.306066779870889e-14
+          }
+        },
+        "passed": true
+      },
+      "N6_o2i_components": {
+        "max_abs_wall_loss_error_db": 0.0,
+        "passed": true
+      },
+      "N8_partition": {
+        "passed": false
+      },
+      "N10_ul_allocation": {
+        "passed": true
+      }
+    },
+    "S3_C_nlos_bf_loss": {
+      "N1_identities": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N2_reciprocity": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N4_gain_bounds": {
+        "max_gain_minus_nominal_db": -0.019561903250963297,
+        "passed": true
+      },
+      "N5_carrier_offsets": {
+        "per_state": {
+          "outdoor": {
+            "expected_dl_db": 0.2446891283402275,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 4.1744385725905886e-14
+          },
+          "in_car": {
+            "expected_dl_db": 0.2446891283402275,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 5.595524044110789e-14
+          },
+          "indoor_low": {
+            "expected_dl_db": 1.2066557129637117,
+            "expected_ul_1prb_db": 1.2066557129637117,
+            "max_abs_error_db": 5.417888360170764e-14
+          },
+          "indoor_high": {
+            "expected_dl_db": 4.856533894628009,
+            "expected_ul_1prb_db": 4.856533894628009,
+            "max_abs_error_db": 6.306066779870889e-14
+          }
+        },
+        "passed": true
+      },
+      "N6_o2i_components": {
+        "max_abs_wall_loss_error_db": 0.0,
+        "passed": true
+      },
+      "N8_partition": {
+        "passed": false
+      },
+      "N10_ul_allocation": {
+        "passed": true
+      }
+    },
+    "S4_C_subarray": {
+      "N1_identities": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N2_reciprocity": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N4_gain_bounds": {
+        "max_gain_minus_nominal_db": -0.32873833134723185,
+        "passed": true
+      },
+      "N5_carrier_offsets": {
+        "per_state": {
+          "outdoor": {
+            "expected_dl_db": 0.2446891283402275,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 4.1744385725905886e-14
+          },
+          "in_car": {
+            "expected_dl_db": 0.2446891283402275,
+            "expected_ul_1prb_db": 0.2446891283402275,
+            "max_abs_error_db": 5.595524044110789e-14
+          },
+          "indoor_low": {
+            "expected_dl_db": 1.2066557129637117,
+            "expected_ul_1prb_db": 1.2066557129637117,
+            "max_abs_error_db": 6.838973831690964e-14
+          },
+          "indoor_high": {
+            "expected_dl_db": 4.856533894628009,
+            "expected_ul_1prb_db": 4.856533894628009,
+            "max_abs_error_db": 6.306066779870889e-14
+          }
+        },
+        "passed": true
+      },
+      "N6_o2i_components": {
+        "max_abs_wall_loss_error_db": 0.0,
+        "passed": true
+      },
+      "N8_partition": {
+        "passed": false
+      },
+      "N10_ul_allocation": {
+        "passed": true
+      }
+    },
+    "S5_A_sectors_rot60": {
+      "N1_identities": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N2_reciprocity": {
+        "max_abs_error_db": 2.842170943040401e-14,
+        "passed": true
+      },
+      "N4_gain_bounds": {
+        "max_gain_minus_nominal_db": -0.07325603961401228,
+        "passed": true
+      },
+      "N5_carrier_offsets": {
+        "per_state": {
+          "outdoor": {
+            "expected_dl_db": 6.265289041619856,
+            "expected_ul_1prb_db": 6.265289041619856,
+            "max_abs_error_db": 4.529709940470639e-14
+          },
+          "in_car": {
+            "expected_dl_db": 6.265289041619856,
+            "expected_ul_1prb_db": 6.265289041619856,
+            "max_abs_error_db": 5.240252676230739e-14
+          },
+          "indoor_low": {
+            "expected_dl_db": 7.22725562624334,
+            "expected_ul_1prb_db": 7.22725562624334,
+            "max_abs_error_db": 5.062616992290714e-14
+          },
+          "indoor_high": {
+            "expected_dl_db": 10.877133807907637,
+            "expected_ul_1prb_db": 10.877133807907637,
+            "max_abs_error_db": 6.039613253960852e-14
+          }
+        },
+        "passed": true
+      },
+      "N6_o2i_components": {
+        "max_abs_wall_loss_error_db": 0.0,
+        "passed": true
+      },
+      "N8_partition": {
+        "passed": false
+      },
+      "N10_ul_allocation": {
+        "passed": true
+      }
+    }
+  },
+  "global": {
+    "N7_draw_statistics": {
+      "n_per_variate": 5400,
+      "per_variate": {
+        "d2d_in_m": {
+          "mean": 8.322777283119205,
+          "std": 5.9193443755378325,
+          "passed": true
+        },
+        "x_p": {
+          "mean": 0.005921998137857398,
+          "std": 0.9952082888939899,
+          "passed": true
+        },
+        "x_sf": {
+          "mean": 0.014548509339468876,
+          "std": 0.9985961184152493,
+          "passed": true
+        },
+        "x_car": {
+          "mean": -0.014510809553153252,
+          "std": 1.007004302078846,
+          "passed": true
+        },
+        "x_p_2": {
+          "mean": -0.013760963506191281,
+          "std": 0.9918439856742646,
+          "passed": true
+        },
+        "x_sf_2": {
+          "mean": 0.015022342580174776,
+          "std": 0.9927106098659012,
+          "passed": true
+        }
+      },
+      "passed": true
+    },
+    "N8_mix_weights": {
+      "passed": true
+    },
+    "N9_mapping": {
+      "passed": true
+    },
+    "N3_present": {
+      "passed": true
+    }
+  },
+  "all_checks_passed": false
+}

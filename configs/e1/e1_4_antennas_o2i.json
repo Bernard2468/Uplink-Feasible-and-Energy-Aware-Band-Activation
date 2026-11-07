@@ -1,6 +1,18 @@
 {
   "experiment": "E1.4 antenna regimes and outdoor-to-indoor deployment, uplink and downlink, 3.5 vs 7.2 GHz",
-  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; values, checks and tolerances are not changed after results are seen",
+  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; values, checks and tolerances are not changed after results are seen. AMENDED once after run 1 (see 'amendments'): class taxonomy completed, no value, threshold or tolerance changed",
+  "amendments": [
+    {
+      "id": 1,
+      "date": "2026-11-07",
+      "trigger": "run 1 (code 7f3d402) failed check N8 in every case: K1-K4 do not cover all outcomes",
+      "diagnosis": "every uncovered outcome lies in the sensitivity states indoor_low_indep / indoor_high_indep (F1: 211 + 950, F2: 1766 + 1565 of 48600 per state, all cases pooled); pattern: 7.2 GHz DL and UL feasible while the 3.5 GHz UL (and possibly DL) is not. With carrier-independent O2I variates, 7.2 GHz can be the better carrier on a realization, an outcome the E1.3 classes never needed. Zero uncovered outcomes in the four shared-variate states (and therefore in both mixes)",
+      "defect": "pre-registration design: class list not exhaustive for the independent-variate sensitivity; not a code error",
+      "change": "add class K6_7p2_both_without_3p5_both = 7.2 DL and 7.2 UL feasible and NOT (3.5 DL and 3.5 UL feasible); N8 now requires K1, K2, K3, K4, K6 to be mutually exclusive and exhaustive in every state AND K6 = 0 in the shared-variate states (strictly stronger; implied by the non-negative carrier offsets of N5)",
+      "unchanged": "all parameters, thresholds, tolerances, states, mixes, draws and every other check; K1-K5 values are identical before and after the amendment",
+      "evidence_kept": "results/phase2/e1_4_antennas_o2i/validation_run1_failed_N8.json and run1_partition_diagnostic.txt"
+    }
+  ],
   "scope": [
     "same 27 links and 200 shadowing realizations as E1.2/E1.3 (geometry-conditioned TR 38.901 UMa, hash-checked inputs)",
     "single user per carrier, no interference: SNR, not SINR; rate mapping, feasibility profiles F1/F2 and classes K1-K5 exactly as E1.3",
@@ -65,7 +77,10 @@
     "F1_link_closure": {"DL_snr_db_min": -10.0, "UL_snr_1prb_db_min": -10.0},
     "F2_m2410_equivalent": {"DL_se_min": 2.25, "UL_se_norm_min": 1.5}
   },
-  "thresholds_note": "identical to configs/e1/e1_3_link_budget.json; F2 is normalised by the occupied bandwidth, so in case C the 200 MHz carrier needs twice the absolute UL rate of the 100 MHz carrier (stated with every C result)",
+  "classes_added_by_amendment_1": {
+    "K6_7p2_both_without_3p5_both": "7.2 DL and 7.2 UL feasible while 3.5 GHz is not feasible in both directions (possible only when 7.2 GHz is the better carrier on a link; expected only in the independent-variate sensitivity states)"
+  },
+  "thresholds_note":"identical to configs/e1/e1_3_link_budget.json; F2 is normalised by the occupied bandwidth, so in case C the 200 MHz carrier needs twice the absolute UL rate of the 100 MHz carrier (stated with every C result)",
   "cases": {
     "R0_isotropic_e13": {
       "regime": "reference",
@@ -169,7 +184,7 @@
     "N5_carrier_offsets": "states outdoor, in_car, indoor_low, indoor_high: SNR(3.5) - SNR(7.2) equals the analytic offset from the case parameters, for DL (full band) and UL (1 PRB), every record (abs error <= 1e-9 dB); analytic DL offset = dP_gNB - 10 log10(B1/B2) - dNF_UE + dG_nominal + 10 log10(n_rx1/n_rx2) + 20 log10(f2/f1) + [PL_tw(f2) - PL_tw(f1)]; UL offset = dP_UE - 10 log10(PRB1/PRB2) - dNF_gNB + dG_nominal + 20 log10(f2/f1) + [PL_tw(f2) - PL_tw(f1)]",
     "N6_o2i_components": "PL_tw used equals an independent re-evaluation of Table 7.4.3-2 (abs error <= 1e-9 dB); PL_in = 0.5 d2D-in; 0 <= d2D-in <= 25 m; shared variates identical across carriers in shared states and different in independent states",
     "N7_draw_statistics": "n = 5400 per variate: d2D-in mean within 4 x 5.8926/sqrt(n) of 8.3333 m and std within 4/sqrt(2n) (relative) of 5.8926 m; each standard-normal variate: |mean| <= 4/sqrt(n) and |std - 1| <= 4/sqrt(2n)",
-    "N8_partition_and_mix": "K1-K4 cover every outcome of every case, state and profile; mix weights are non-negative and sum to 1",
+    "N8_partition_and_mix": "AMENDMENT 1: K1, K2, K3, K4 and K6 are mutually exclusive and cover every outcome of every case, state and profile, and K6 = 0 in the shared-variate states; mix weights are non-negative and sum to 1 (original text: 'K1-K4 cover every outcome of every case, state and profile')",
     "N9_mapping": "as E1.3 L5 (mapped SE <= Shannon; 0 below -10 dB; <= Thr_max; non-decreasing)",
     "N10_ul_allocation": "as E1.3 L6 (uplink maximum rate >= rate at 1 PRB and at full allocation)",
     "L8_unit_tests": "unit tests reproduce hand-computed element, subarray and O2I values (tests/test_antenna.py, tests/test_o2i.py)"

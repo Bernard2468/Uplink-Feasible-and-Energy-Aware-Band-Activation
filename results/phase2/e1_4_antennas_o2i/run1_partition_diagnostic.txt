@@ -1,0 +1,24 @@
+E1.4 run 1 (code 7f3d402): outcomes outside K1-K4, from raw/records.csv.gz of run 1
+command: python scripts/e1_4_partition_diagnostic.py results/phase2/e1_4_antennas_o2i/raw/records.csv.gz
+state, profile: outcomes outside K1-K4 / total (all cases pooled)
+  in_car             F1:      0 / 48600
+  in_car             F2:      0 / 48600
+  indoor_high        F1:      0 / 48600
+  indoor_high        F2:      0 / 48600
+  indoor_high_indep  F1:    950 / 48600
+  indoor_high_indep  F2:   1565 / 48600
+  indoor_low         F1:      0 / 48600
+  indoor_low         F2:      0 / 48600
+  indoor_low_indep   F1:    211 / 48600
+  indoor_low_indep   F2:   1766 / 48600
+  outdoor            F1:      0 / 48600
+  outdoor            F2:      0 / 48600
+patterns:
+   ('indoor_high_indep', 'F1', 'd35=0 u35=0 d72=1 u72=1') 248
+   ('indoor_high_indep', 'F1', 'd35=1 u35=0 d72=1 u72=1') 702
+   ('indoor_high_indep', 'F2', 'd35=0 u35=0 d72=1 u72=1') 23
+   ('indoor_high_indep', 'F2', 'd35=1 u35=0 d72=1 u72=1') 1542
+   ('indoor_low_indep', 'F1', 'd35=0 u35=0 d72=1 u72=1') 117
+   ('indoor_low_indep', 'F1', 'd35=1 u35=0 d72=1 u72=1') 94
+   ('indoor_low_indep', 'F2', 'd35=0 u35=0 d72=1 u72=1') 8
+   ('indoor_low_indep', 'F2', 'd35=1 u35=0 d72=1 u72=1') 1758

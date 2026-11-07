@@ -178,5 +178,58 @@ Not re-run: the 121 regression suites. Their test libraries were not
 rebuilt, and a rebuild of the libraries from the same sources and options
 does not change the code under test.
 
+### E1.5.1: FAILED as pre-registered (coverage, TDMA only); SNR identity established (2026-11-07)
+
+Run history (all evidence kept in `results/phase2/e1_5_1_deterministic/`):
+
+| Run | Code | Outcome |
+|---|---|---|
+| 1 | d67997d | Crashed writing validation.json (numpy.bool_). No result. Raw files showed instrument defects: DL starved by the all-flexible TDD default, RNTI churn, UE RB count read before attach |
+| amendment 1 | 2d8cd06 | TDD DDDSU, RLF off, time-resolved RNTI attribution, RB count after attach, 1.0 s traffic |
+| 2 | 2d8cd06 | Aborted at start: literal quotes around the TDD pattern; fixed in 2534cb8 |
+| 3 | 2534cb8 | V0/V1/V3/V4 PASS; V2 FAIL (TDMA), V5 FAIL (all). UL overload (36 x 2 Mbit/s) starved UEs, which fell back to random access |
+| amendment 2 | 75d3eee | UL load 50 kbit/s per UE (100-byte packets); stop rule: another V2/V5 failure keeps the stage FAILED |
+| 4 (final) | 75d3eee | OFDMA runs (3.5 and 7.2 GHz): V0-V5 all PASS. TDMA runs: V5 FAIL in both, V2 FAIL at 7.2 GHz |
+
+Verdict: **FAILED** under the pre-registered criteria (V5 in both TDMA runs,
+V2 in `f7p2_tdma`). Per the stop rule, no further amendment is made to make
+it pass.
+
+What run 4 establishes (every compared TB, all four runs):
+- **DL:** 31,100 TBs compared. |5G-LENA SNR - Python SNR| <= 3.0e-14 dB, and
+  the received power per RB agrees within 2.9e-14 dB.
+- **UL:** 46,251 TBs compared, |error| <= 3.6e-14 dB. The OFDMA runs cover
+  32-36 distinct allocation sizes from 1 to 51 RBs, so the "UE power spread
+  over the allocated RBs" model is confirmed at every allocation size.
+- **Configuration readback:** 51 RBs at the gNB and every UE; powers and
+  noise figures as configured.
+- **Coverage:** at both carriers, every link with SNR >= -5 dB is compared
+  in both directions in the OFDMA runs (V5 PASS there).
+- **Range:** losses 72-160 dB, SNR from +66 dB down to -21.6 dB. Links
+  below -5 dB still deliver DL TBs.
+
+Consequence: the E1.3/E1.4 power, noise and SNR model is exactly the one
+5G-LENA uses for a prescribed loss. Any E1.4 vs 5G-LENA difference in later
+stages must come from fading, beamforming, MCS/HARQ or scheduling, not from
+power or noise accounting.
+
+Why TDMA fails:
+- With 36 UEs, 5G-LENA's `NrMacSchedulerTdmaRR` starves a fixed group of UEs
+  in UL even at 1.8 Mbit/s total offered load. At 7.2 GHz, ue00-ue14 get 0-8
+  UL TBs although their UL SNR is 29-58 dB, while ue20 gets 1,328.
+- The starved UEs then fall back to random access (2 TBs with RNTIs 135/136
+  without RRC establishment -> V2).
+- `NrMacSchedulerOfdmaRR` serves every UE.
+- This is recorded as an open observation, not yet as a 5G-LENA defect: the
+  cause is not identified. Candidate: symbol-per-beam allocation with one
+  beam per UE position.
+
+Implications:
+- E1.5.2 SNR and beamforming measurements use `NrMacSchedulerOfdmaRR`.
+- Before E1.5.4 uses TDMA results, the TDMA UL starvation must be explained
+  (a dedicated diagnostic varying UE count, positions and beam grouping).
+- The DL MCS-vs-SNR data in `summary.json` (e.g. MCS 28 at >= ~20 dB, 14 at
+  7.8 dB, 4 at -1.6 dB) are an input to E1.5.3, not a result of E1.5.1.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

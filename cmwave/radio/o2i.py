@@ -25,12 +25,21 @@ import math
 
 import numpy as np
 
-MATERIAL_LOSS_DB = {             # (a, b): L = a + b * f_GHz, Table 7.4.3-1
+MATERIAL_LOSS_DB = {             # (a, b): L = a + b * f_GHz, Table 7.4.3-1 (V16.1.0)
     'standard_glass': (2.0, 0.2),
     'irr_glass': (23.0, 0.3),
     'concrete': (5.0, 4.0),
     'wood': (4.85, 0.12),
 }
+# TR 38.901 V19.5.0 (2026-09) Table 7.4.3-1: IRR glass updated by the Release 19
+# study on channel modelling for 7-24 GHz (note 2); plywood added (SMa only).
+# Every other O2I value used here (Table 7.4.3-2, car loss, O2I sigma_SF) is unchanged.
+MATERIAL_LOSS_DB_BY_VERSION = {
+    '16.1.0': MATERIAL_LOSS_DB,
+    '19.5.0': {'standard_glass': (2.0, 0.2), 'irr_glass': (25.4, 0.11), 'concrete': (5.0, 4.0),
+               'wood': (4.85, 0.12), 'plywood': (1.03, 0.17)},
+}
+DEFAULT_TR38901_VERSION = '16.1.0'   # E1.2-E1.4 baseline
 PL_NPI_DB = 5.0                  # Table 7.4.3-2 (non-perpendicular incidence term)
 BUILDING_MODELS = {              # Table 7.4.3-2
     'low': {'mix': (('standard_glass', 0.3), ('concrete', 0.7)), 'sigma_p_db': 4.4},
@@ -44,19 +53,19 @@ O2I_SF_STD_DB = 7.0              # Table 7.5-6 Part-1, UMa, O2I column
 O2I_SF_CORR_DIST_M = 7.0         # Table 7.5-6 Part-1, UMa, O2I column
 
 
-def material_loss_db(material: str, fc_hz: float) -> float:
-    a, b = MATERIAL_LOSS_DB[material]
+def material_loss_db(material: str, fc_hz: float, version: str = DEFAULT_TR38901_VERSION) -> float:
+    a, b = MATERIAL_LOSS_DB_BY_VERSION[version][material]
     return a + b * fc_hz / 1e9
 
 
-def wall_loss_db(model: str, fc_hz: float) -> float:
-    """PL_tw of the low- or high-loss building model at carrier fc_hz."""
+def wall_loss_db(model: str, fc_hz: float, version: str = DEFAULT_TR38901_VERSION) -> float:
+    """PL_tw of the low- or high-loss building model at carrier fc_hz (TR 38.901 version)."""
     if not 0.5e9 <= fc_hz <= 100e9:
         raise ValueError('TR 38.901 is specified for 0.5-100 GHz')
     mix = BUILDING_MODELS[model]['mix']
     if abs(sum(p for _, p in mix) - 1.0) > 1e-12:
         raise ValueError('material proportions must sum to 1')
-    s = sum(p * 10.0 ** (-material_loss_db(m, fc_hz) / 10.0) for m, p in mix)
+    s = sum(p * 10.0 ** (-material_loss_db(m, fc_hz, version) / 10.0) for m, p in mix)
     return PL_NPI_DB - 10.0 * math.log10(s)
 
 

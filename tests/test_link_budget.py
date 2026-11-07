@@ -93,6 +93,26 @@ class LinkBudgetTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             lb.uplink([120.0], CFG, gain_db=[np.nan])
 
+    def test_uplink_allocation_cap(self):
+        # E1.5.0 OFDMA-share surrogate: best allocation restricted to n <= n_max.
+        losses = [100.0, 125.0, 140.0, 300.0]
+        full = lb.uplink(losses, CFG)
+        cap = lb.uplink(losses, CFG, n_max_prb=5)
+        self.assertTrue(np.all(cap['best_n_prb'] <= 5))
+        self.assertTrue(np.all(cap['rate_bps'] <= full['rate_bps'] + 1e-9))
+        for i, loss in enumerate(losses):
+            rx = 23.0 - loss
+            want = max(n * 360e3 * float(lb.mapped_se(rx - (-174 + 10 * math.log10(n * 360e3) + 5), 'UL'))
+                       for n in range(1, 6))
+            self.assertAlmostEqual(cap['rate_bps'][i], want, delta=1e-6)
+        # full-band fields keep their meaning under a cap
+        np.testing.assert_allclose(cap['snr_full_db'], full['snr_full_db'], atol=1e-12)
+        np.testing.assert_allclose(cap['rate_full_bps'], full['rate_full_bps'], atol=1e-6)
+        same = lb.uplink(losses, CFG, n_max_prb=51)
+        np.testing.assert_array_equal(same['rate_bps'], full['rate_bps'])
+        with self.assertRaises(ValueError):
+            lb.uplink(losses, CFG, n_max_prb=52)
+
     def test_config_validation(self):
         with self.assertRaises(ValueError):
             lb.CarrierConfig(3.5e9, 20e6, 30e3, 60, 44, 23, 5, 7, 0, 0)   # 60 PRB > 20 MHz

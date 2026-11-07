@@ -104,11 +104,18 @@ def downlink(loss_db, cfg: CarrierConfig, gain_db=None) -> dict:
             'antenna_gain_db': gain}
 
 
-def uplink(loss_db, cfg: CarrierConfig, gain_db=None) -> dict:
-    """gain_db: optional per-link UE transmit + gNB receive gain [dB]."""
+def uplink(loss_db, cfg: CarrierConfig, gain_db=None, n_max_prb=None) -> dict:
+    """gain_db: optional per-link UE transmit + gNB receive gain [dB].
+
+    n_max_prb: optional cap on the allocation (E1.5.0 OFDMA-share surrogate: one
+    user's continuous share of the carrier). None = all N_PRB (E1.3/E1.4). The
+    normalised SE is always rate / occupied bandwidth of the whole carrier.
+    """
     loss = np.asarray(loss_db, dtype=float)
     g = _link_gain(gain_db, loss, cfg)
-    n_alloc = np.arange(1, cfg.n_prb + 1)
+    if n_max_prb is not None and not 1 <= int(n_max_prb) <= cfg.n_prb:
+        raise ValueError('n_max_prb must lie in [1, N_PRB]')
+    n_alloc = np.arange(1, (cfg.n_prb if n_max_prb is None else int(n_max_prb)) + 1)
     b_alloc = n_alloc * cfg.prb_bw_hz                                  # (A,)
     rx = cfg.ue_power_dbm + cfg.gain_ue_dbi + cfg.gain_gnb_dbi - loss  # (N,)
     if g is not None:
@@ -123,14 +130,20 @@ def uplink(loss_db, cfg: CarrierConfig, gain_db=None) -> dict:
     rows = np.arange(loss.size)
     rate_max = rate[rows, best]
     has_rate = rate_max > 0
+    if n_max_prb is None:            # unchanged E1.3/E1.4 path
+        snr_full, noise_full, rate_full = snr[:, -1], noise[-1], rate[:, -1]
+    else:                            # capped: full-band quantities computed explicitly
+        noise_full = noise_dbm(cfg.occupied_bw_hz, cfg.nf_gnb_db)
+        snr_full = rx - noise_full
+        rate_full = mapped_se(snr_full, 'UL') * cfg.occupied_bw_hz
     return {'tx_power_dbm': np.full_like(loss, cfg.ue_power_dbm), 'rx_power_dbm': rx,
             'snr_1prb_db': snr[:, 0], 'noise_1prb_dbm': np.full_like(loss, noise[0]),
-            'snr_full_db': snr[:, -1], 'noise_full_dbm': np.full_like(loss, noise[-1]),
+            'snr_full_db': snr_full, 'noise_full_dbm': np.full_like(loss, noise_full),
             'best_n_prb': np.where(has_rate, n_alloc[best], 0),
             'eval_bw_hz': b_alloc[best], 'noise_eval_dbm': noise[best],
             'snr_best_db': snr[rows, best], 'rate_bps': rate_max,
-            'rate_1prb_bps': rate[:, 0], 'rate_full_bps': rate[:, -1],
+            'rate_1prb_bps': rate[:, 0], 'rate_full_bps': rate_full,
             'se_norm_bps_hz': rate_max / cfg.occupied_bw_hz,
-            'shannon_rate_full_bps': shannon_se(snr[:, -1]) * cfg.occupied_bw_hz,
+            'shannon_rate_full_bps': shannon_se(snr_full) * cfg.occupied_bw_hz,
             'antenna_gain_db': (np.full_like(loss, cfg.gain_gnb_dbi + cfg.gain_ue_dbi)
                                 if g is None else g.copy())}

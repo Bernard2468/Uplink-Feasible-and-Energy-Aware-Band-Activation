@@ -63,13 +63,15 @@ def classes14(res, f1, f2, profile):
     return k
 
 
-def tw_independent(model, fc_hz):
-    """Re-typed TR 38.901 Table 7.4.3-2 (independent of cmwave.radio.o2i), for N5/N6."""
+def tw_independent(model, fc_hz, version='16.1.0'):
+    """Re-typed TR 38.901 Table 7.4.3-2 (independent of cmwave.radio.o2i), for N5/N6.
+    V19.5.0 differs only in the IRR glass loss (25.4 + 0.11 f instead of 23 + 0.3 f)."""
     f = fc_hz / 1e9
+    irr = {'16.1.0': 23 + 0.3 * f, '19.5.0': 25.4 + 0.11 * f}[version]
     if model == 'low':
         s = 0.3 * 10 ** (-(2 + 0.2 * f) / 10) + 0.7 * 10 ** (-(5 + 4 * f) / 10)
     else:
-        s = 0.7 * 10 ** (-(23 + 0.3 * f) / 10) + 0.3 * 10 ** (-(5 + 4 * f) / 10)
+        s = 0.7 * 10 ** (-irr / 10) + 0.3 * 10 ** (-(5 + 4 * f) / 10)
     return 5 - 10 * math.log10(s)
 
 
@@ -168,6 +170,7 @@ def build_states(conf, gman, links, prop):
     states['in_car'] = {'pl_b': pl_out, 'pen': {f: car for f in freqs}, 'sf': {f: sf_out for f in freqs},
                         'd_in': zeros, 'd2': d2_out, 'zenith': zen_out}
     tw_used = {}
+    version = conf.get('o2i_tr38901_version', o2i.DEFAULT_TR38901_VERSION)
     for state, model in BUILDING.items():
         indep = state.endswith('_indep')
         sig = o2i.sigma_p_db(model)
@@ -175,7 +178,7 @@ def build_states(conf, gman, links, prop):
         for k, f in enumerate(freqs):
             xp = v['x_p_2'] if (indep and k == 1) else v['x_p']
             xs = v['x_sf_2'] if (indep and k == 1) else v['x_sf']
-            tw_used[(model, f)] = o2i.wall_loss_db(model, f)
+            tw_used[(model, f)] = o2i.wall_loss_db(model, f, version)
             pen[f] = tw_used[(model, f)] + o2i.indoor_loss_db(d_in) + sig * xp
             sf[f] = o2i.O2I_SF_STD_DB * xs
         states[state] = {'pl_b': pl_in_b, 'pen': pen, 'sf': sf, 'd_in': d_in, 'd2': d2_in_tot,
@@ -189,7 +192,7 @@ def build_states(conf, gman, links, prop):
             raise SystemExit('outdoor component sum != E1.2 total loss')
     geo = {'keys': keys, 'freqs': freqs, 'los': los, 'd2_out': d2_out, 'rr': rr, 'jj': jj,
            'h_bs': h_bs, 'h_ut': h_ut, 'gnb': g, 'xy': np.column_stack([x, y]), 'dz': dz,
-           'az': az}
+           'az': az, 'o2i_version': version}
     return states, geo, draws, v, tw_used
 
 
@@ -292,7 +295,7 @@ def median_rows(cname, case, conf, geo, links, bins, thresholds):
             else:
                 pl = np.array([uh.deterministic_pathloss_db(a, math.hypot(a, x1 - x2), f, x1, x2, s)
                                for a, x1, x2, s in zip(d2i, hb, hu, los)])
-                st['loss'][f] = (pl + o2i.wall_loss_db(BUILDING[state], f)
+                st['loss'][f] = (pl + o2i.wall_loss_db(BUILDING[state], f, geo['o2i_version'])
                                  + float(o2i.indoor_loss_db(d_med)))
         g = {'keys': [(0, l['ue_id']) for l in links], 'freqs': freqs, 'los': los}
         res = evaluate(case, {s: st for s in STATES}, g, thresholds)[state]
@@ -394,7 +397,7 @@ def run_checks(cname, case, out, states, geo, tw_used, e13_ref, e13_summary):
                - (ca.nf_gnb_db - cb.nf_gnb_db) + d_gnom + gap)
     n5 = {}
     for state in SHARED_STATES:
-        dtw = (tw_independent(BUILDING[state], f2) - tw_independent(BUILDING[state], f1)
+        dtw = (tw_independent(BUILDING[state], f2, geo['o2i_version']) - tw_independent(BUILDING[state], f1, geo['o2i_version'])
                if state in BUILDING else 0.0)
         r1, r2 = out[state][f1], out[state][f2]
         e_dl = float(np.max(np.abs(r1['DL']['snr_db'] - r2['DL']['snr_db'] - (dl_base + dtw))))
@@ -403,7 +406,7 @@ def run_checks(cname, case, out, states, geo, tw_used, e13_ref, e13_summary):
                      'max_abs_error_db': max(e_dl, e_ul)}
     c['N5_carrier_offsets'] = {'per_state': n5, 'passed': all(v['max_abs_error_db'] <= TOL for v in n5.values())}
     # N6 O2I components
-    e6 = max(abs(tw_used[(m, f)] - tw_independent(m, f)) for m in ('low', 'high') for f in freqs)
+    e6 = max(abs(tw_used[(m, f)] - tw_independent(m, f, geo['o2i_version'])) for m in ('low', 'high') for f in freqs)
     ok6 = e6 <= TOL
     for state, model in BUILDING.items():
         st = states[state]

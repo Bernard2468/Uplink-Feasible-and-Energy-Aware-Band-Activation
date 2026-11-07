@@ -44,6 +44,19 @@ class O2ITests(unittest.TestCase):
         with self.assertRaises(ValueError):
             o2i.indoor_distance_m(1.2, 0.5)
 
+    def test_tr38901_v19_irr_glass(self):
+        # V19.5.0 Table 7.4.3-1: L_IRR = 25.4 + 0.11 f (Release 19, 7-24 GHz study); rest unchanged.
+        self.assertAlmostEqual(o2i.material_loss_db('irr_glass', 7.2e9, '19.5.0'), 25.4 + 0.792, places=12)
+        for f in (3.5e9, 7.2e9):
+            self.assertEqual(o2i.wall_loss_db('low', f, '19.5.0'), o2i.wall_loss_db('low', f))
+            fg = f / 1e9
+            want = 5 - 10 * math.log10(0.7 * 10 ** (-(25.4 + 0.11 * fg) / 10)
+                                       + 0.3 * 10 ** (-(5 + 4 * fg) / 10))
+            self.assertAlmostEqual(o2i.wall_loss_db('high', f, '19.5.0'), want, places=12)
+        self.assertAlmostEqual(o2i.wall_loss_db('high', 3.5e9, '19.5.0'), 27.50, delta=0.01)
+        self.assertAlmostEqual(o2i.wall_loss_db('high', 7.2e9, '19.5.0'), 32.43, delta=0.01)
+        self.assertEqual(o2i.wall_loss_db('high', 3.5e9), o2i.wall_loss_db('high', 3.5e9, '16.1.0'))
+
     def test_constants(self):
         self.assertEqual(o2i.sigma_p_db('low'), 4.4)
         self.assertEqual(o2i.sigma_p_db('high'), 6.5)

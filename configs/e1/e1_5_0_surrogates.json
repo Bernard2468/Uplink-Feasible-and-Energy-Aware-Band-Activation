@@ -1,0 +1,44 @@
+{
+  "experiment": "E1.5.0 analytic pre-checks before packet-level validation: (A) TR 38.901 V19.5.0 O2I sensitivity, (B) multiple-access surrogate for the per-user uplink service level",
+  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; values, checks and tolerances are not changed after results are seen",
+  "base_configuration": "configs/e1/e1_4_antennas_o2i.json (all cases, states, draws, thresholds unchanged; SHA-256 recorded in the manifest)",
+  "part_A_tr38901_v19": {
+    "question": "does the Release 19 update of TR 38.901 (V19.5.0, 2026-09) change any E1.4 result?",
+    "source": "ETSI TR 138 901 V19.5.0 (2026-09), https://www.etsi.org/deliver/etsi_tr/138900_138999/138901/19.05.00_60/tr_138901v190500p.pdf, 2,800,065 bytes, SHA-256 6d29a37c1f254f4b9f8fd73a0be66bdb4480c6b32d0a64ef27505ca4188b1e4c",
+    "audit_of_inputs_used_by_e1_2_to_e1_4": {
+      "unchanged": "UMa LOS/NLOS path loss and sigma_SF 4/6 dB (Table 7.4.1-1, incl. h_E rule and breakpoint), SF correlation distances 37/50/7 m and O2I sigma_SF 7 dB (Table 7.5-6 Part-1), multi-frequency rule (clause 7.6.5), low-loss O2I model, sigma_P 4.4/6.5 dB, d2D-in (UMa), car penetration N(9, 5^2)",
+      "changed": "Table 7.4.3-1 IRR glass: 25.4 + 0.11 f (was 23 + 0.3 f), marked 'updated as part of Release 19 Study on channel modelling enhancements for 7-24 GHz'; affects only the high-loss building model",
+      "changed_not_used_here": "UMa fast-fading LSPs (delay and angular spreads, cluster ASD/DS) updated by the same study: they do not enter E1.2-E1.4, but they shape the beamforming gain measured in E1.5.2 (ns-3.48 implements the pre-Release-19 tables: stated as a limitation of E1.5.2)",
+      "new_not_applicable": "low-loss A model (glass + plywood) is defined for SMa only"
+    },
+    "method": "rerun the complete E1.4 configuration with o2i_tr38901_version = 19.5.0 through scripts/e1_antennas_o2i.py functions; report every class and feasibility fraction next to the V16.1.0 value",
+    "pl_tw_high_db": {"V16.1.0": {"3.5e9": 26.849786, "7.2e9": 31.461631}, "V19.5.0": {"3.5e9": 27.499289, "7.2e9": 32.429602}},
+    "decision_rule": "V16.1.0 stays the frozen baseline of E1.2-E1.4. V19.5.0 is the reference for the paper's final figures (E1c onward) only if this part shows its effect; both are always reported"
+  },
+  "part_B_multiple_access_surrogate": {
+    "question": "is the F2 'equal time-share' surrogate the right per-user uplink service test for NR, whose uplink is OFDMA?",
+    "reasoning": "F2 gives each of the K users 1/K of the TIME on the whole carrier: per-user UL rate = (1/K) max_n r(n). In NR uplink OFDMA a user can hold about N_PRB/K PRBs CONTINUOUSLY and concentrate its full 23 dBm on them: per-user rate = max_{n <= N_PRB/K} r(n). For a power-limited UE this is up to K times larger. For the downlink with uniform PSD the two are identical",
+    "users_per_trxp": 10,
+    "users_source": "ITU-R M.2412-0 Table 5(b) Dense Urban-eMBB, 10 UEs per TRxP",
+    "F3_ofdma_share": {
+      "DL": "identical to F2: SE >= 2.25 bit/s/Hz (per-user 0.225 under either access scheme)",
+      "UL": "max over n <= floor(N_PRB / 10) of n * PRB_bw * SE_UL(SNR(n)), divided by the occupied bandwidth of the WHOLE carrier, >= 0.15 bit/s/Hz (the M.2410 per-user 5th-percentile UL value itself, since the share is continuous)",
+      "n_max_prb": {"N_PRB 51": 5, "N_PRB 273": 27, "N_PRB 546": 54},
+      "thresholds": {"DL": "the F2 downlink flag itself", "UL_se_norm_min_per_user": 0.15}
+    },
+    "proved_before_run": "if the uncapped F2 maximiser n* satisfies n* <= 10 n_max, then n' = ceil(n*/10) <= n_max has SNR(n') >= SNR(n*) and n' >= n*/10, hence r(n') >= r(n*)/10: F2-feasible implies F3-feasible. The only possible F2-yes/F3-no outcomes have n* > 10 n_max (PRB granularity of floor(N_PRB/10))",
+    "role": "analytic prediction only; E1.5.4 (10-UE 5G-LENA sector with TDMA and OFDMA schedulers) decides which surrogate describes NR"
+  },
+  "checks": {
+    "S1_v16_reproduction": "the V16.1.0 evaluation in this script reproduces the committed E1.4 summary.json exactly (every feasible and class fraction, every case, state, profile and mix; float equality)",
+    "S2_v19_scope": "V19.5.0 changes nothing in states outdoor, in_car, indoor_low, indoor_low_indep (float equality of every fraction, every case and profile)",
+    "S3_v19_e14_checks": "all E1.4 checks N1-N10 pass on the V19.5.0 run (N5 and N6 evaluated with the V19.5.0 coefficients)",
+    "S4_f3_allocation": "every capped UL record: best n <= n_max and capped rate <= uncapped rate (+1e-9 bit/s)",
+    "S5_f3_dominance": "every record that is UL-feasible under F2 but not under F3 has an uncapped maximiser n* > 10 n_max (zero violations of the proved bound)",
+    "S6_f3_partition": "under F3, K1, K2, K3, K4, K6 partition every outcome of every case, state and version, and K6 = 0 in the shared-variate states (implied: 3.5 GHz is at least as good as 7.2 GHz for every direction in those states, including case C, by the same scaling argument as F2)"
+  },
+  "expectations_stated_before_run": [
+    "A: only high-loss indoor outcomes change; the 7.2 - 3.5 GHz wall-loss difference grows from 4.61 to 4.93 dB, so K2 and K4 in high-loss buildings grow slightly; the M.2412 mix (16% high-loss) moves by well under 1 point",
+    "B: F3 uplink feasibility is much higher than F2 for power-limited (distant, indoor) links; K3 shrinks and K1 grows in every regime; the downlink is unaffected"
+  ]
+}

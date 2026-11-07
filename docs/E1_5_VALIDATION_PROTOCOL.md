@@ -285,7 +285,7 @@ comparator rotates an RNTI deque, so DL service rotates across slots, a
 time share. In UL the same scheduler compares RBGs assigned in the current
 slot and splits the band within each slot.
 
-### E1.5.1-D: TDMA UL starvation diagnostic (PRE-REGISTERED 2026-11-07)
+### E1.5.1-D: TDMA UL starvation diagnostic (PRE-REGISTERED 2026-11-07; all predictions held)
 
 Config `configs/e1/e1_5_1d_tdma_diagnostic.json`, script
 `scripts/e1_5_1d_tdma_diagnostic.py`, tests `tests/test_e1_5_1d_diagnostic.py`.
@@ -367,6 +367,62 @@ Instrument check, done before the pre-registration commit:
   levels and confirmed the line formats and volume.
 - The parser reproduces the `grep` counts of that log exactly (480 UL
   scheduling events, 58 UL data events, 329 symbols).
+
+#### E1.5.1-D results: ALL PREDICTIONS HELD (2026-11-07)
+
+Run from the pre-registration commit `8914e47` (4 min 39 s). Files:
+`results/phase2/e1_5_1d_tdma_diagnostic/`; scheduler logs in `raw/`
+(git-ignored, SHA-256 in the manifest).
+
+| Prediction | 7.2 GHz | 3.5 GHz |
+|---|---|---|
+| P0 replication | all 8 output files byte-identical to run 4 | identical |
+| P2 fixed order | 3 epochs (scheduler insertions of random-access RNTIs 135-139 at 1.057 / 1.067 s); 445 + 8 + 266 data events; no cycle | 1 epoch, 720 data events, 126 precedence pairs, no cycle |
+| P3 saturation | 719 of 719 steady-state UL data events assign every symbol | 720 of 720 |
+| P4 backlog without service | ue00-ue14: backlogged in 100% of 720 UL scheduling events; given a UL symbol in 0 of 719 data events (ue14: 1) | ue07-ue10: backlogged in >= 99.86%; given a symbol in 7 / 0 / 0 / 0 of 720 (ue07: 0.97%, just under the 1% threshold) |
+| P5 TDMA-feasible UEs only (TdmaRR) | 25 of 25 UEs served in all 9 windows, >= 64 UL TBs each | 26 of 26, >= 64 each |
+| P6 TdmaPF, all 36 UEs | 25 of 25 TDMA-feasible UEs served in all 9 windows, >= 62 UL TBs each | 26 of 26, >= 64 each |
+
+The non-TDMA-feasible UEs in run 4 (sweep_130dB, sweep_140dB at 7.2 GHz)
+were excluded from P4 as pre-registered.
+
+Order observed: the steady-state first-assignment order follows the
+iteration order of the scheduler's UE map, close to descending RNTI. At
+3.5 GHz it ends with `..., ue04, sweep_150dB, ue05, ue06, ue07`; ue08-ue10
+never receive a symbol. The full orders are in `summary.json`.
+
+Verdict:
+- Hypotheses H1-H3 are the recorded cause of the E1.5.1 TDMA failure:
+  1. Full-band TDMA grants let UEs that full-band TDMA cannot serve saturate
+     every UL slot.
+  2. `NrMacSchedulerTdmaRR` keeps no UL memory across slots, so backlogged
+     UEs are served in one fixed order.
+  3. UEs at the end of that order get no UL symbol, not even their bootstrap
+     grant, although their full-band UL SNR is 12-41 dB.
+- The stop rule is satisfied. E1.5.1 itself stays FAILED as pre-registered.
+- This is a property of the UL path of 5G-LENA's TDMA round-robin
+  scheduler under saturation. It is not a radio-model error: SNR identity
+  holds for every TB that is scheduled.
+
+Further observations (reported, not tested):
+- UL symbols spent on HARQ retransmissions: 47% (7.2 GHz) and 30% (3.5 GHz)
+  under TdmaRR with all 36 UEs, and 0.3% / 1.7% with TDMA-feasible UEs
+  only.
+- Under TdmaPF with all 36 UEs, the share is 51% / 46%. Almost all of it
+  comes from UEs whose full-band TBs fail 99-100% of the time (7.2 GHz:
+  ue24-ue26 and sweep_140dB-160dB). Those UEs never deliver a TB in most
+  windows, yet occupy about half of the UL symbols.
+
+Consequences, by the pre-registered decision rules:
+- `NrMacSchedulerTdmaRR` is not used for UL in any later stage.
+- E1.5.4 realises the time share with `NrMacSchedulerTdmaPF`. Its
+  pre-registration fixes the OFDMA counterpart.
+- E1.5.4 must also state how UEs that are not feasible in a direction are
+  handled. Under full-band TDMA they consume about half of the UL symbols
+  without delivering data. Admission or link-adaptation rules belong in its
+  design and cannot be left to defaults.
+- E1.5.2 measures DL SNR, where the TDMA and OFDMA RR schedulers rotate
+  correctly. It may use either one.
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

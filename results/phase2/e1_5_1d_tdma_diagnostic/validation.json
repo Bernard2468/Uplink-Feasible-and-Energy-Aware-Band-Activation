@@ -1,0 +1,352 @@
+{
+  "per_run": {
+    "f7p2_tdma_rep": {
+      "P0_replication": {
+        "files_compared": [
+          "e15_dl_tb.csv",
+          "e15_ul_tb.csv",
+          "e15_dl_rxpower.csv",
+          "e15_rnti_map.csv",
+          "e15_rrc_events.csv",
+          "e15_rb_after_attach.csv",
+          "e15_run_info.csv",
+          "losses.csv"
+        ],
+        "differing_files": [],
+        "passed": true
+      },
+      "P2_fixed_order": {
+        "epoch_bounds_s": [
+          1.057,
+          1.067
+        ],
+        "epochs": [
+          {
+            "epoch": 0,
+            "data_events": 445,
+            "precedence_pairs": 53,
+            "cycle": null
+          },
+          {
+            "epoch": 1,
+            "data_events": 8,
+            "precedence_pairs": 25,
+            "cycle": null
+          },
+          {
+            "epoch": 2,
+            "data_events": 266,
+            "precedence_pairs": 61,
+            "cycle": null
+          }
+        ],
+        "passed": true
+      },
+      "P3_saturation": {
+        "data_events": 719,
+        "all_symbols_assigned": 719,
+        "share": 1.0,
+        "threshold": 0.95,
+        "passed": true
+      },
+      "P4_backlog_without_service": {
+        "run4_v5_ul_failures": [
+          "ue00",
+          "ue01",
+          "ue02",
+          "ue03",
+          "ue04",
+          "ue05",
+          "ue06",
+          "ue07",
+          "ue08",
+          "ue09",
+          "ue10",
+          "ue11",
+          "ue12",
+          "ue13",
+          "ue14",
+          "sweep_130dB",
+          "sweep_140dB"
+        ],
+        "tdma_feasible_targets": [
+          "ue00",
+          "ue01",
+          "ue02",
+          "ue03",
+          "ue04",
+          "ue05",
+          "ue06",
+          "ue07",
+          "ue08",
+          "ue09",
+          "ue10",
+          "ue11",
+          "ue12",
+          "ue13",
+          "ue14"
+        ],
+        "not_tdma_feasible_excluded": [
+          "sweep_130dB",
+          "sweep_140dB"
+        ],
+        "per_ue": {
+          "ue00": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue01": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue02": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue03": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue04": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue05": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue06": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue07": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue08": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue09": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue10": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue11": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue12": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue13": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue14": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 719,
+            "served": 1,
+            "served_share": 0.0013908205841446453,
+            "passed": true
+          }
+        },
+        "passed": true
+      }
+    },
+    "f3p5_tdma_rep": {
+      "P0_replication": {
+        "files_compared": [
+          "e15_dl_tb.csv",
+          "e15_ul_tb.csv",
+          "e15_dl_rxpower.csv",
+          "e15_rnti_map.csv",
+          "e15_rrc_events.csv",
+          "e15_rb_after_attach.csv",
+          "e15_run_info.csv",
+          "losses.csv"
+        ],
+        "differing_files": [],
+        "passed": true
+      },
+      "P2_fixed_order": {
+        "epoch_bounds_s": [],
+        "epochs": [
+          {
+            "epoch": 0,
+            "data_events": 720,
+            "precedence_pairs": 126,
+            "cycle": null
+          }
+        ],
+        "passed": true
+      },
+      "P3_saturation": {
+        "data_events": 720,
+        "all_symbols_assigned": 720,
+        "share": 1.0,
+        "threshold": 0.95,
+        "passed": true
+      },
+      "P4_backlog_without_service": {
+        "run4_v5_ul_failures": [
+          "ue07",
+          "ue08",
+          "ue09",
+          "ue10"
+        ],
+        "tdma_feasible_targets": [
+          "ue07",
+          "ue08",
+          "ue09",
+          "ue10"
+        ],
+        "not_tdma_feasible_excluded": [],
+        "per_ue": {
+          "ue07": {
+            "ul_scheduling_events": 720,
+            "backlogged": 719,
+            "backlogged_share": 0.9986111111111111,
+            "ul_data_events": 720,
+            "served": 7,
+            "served_share": 0.009722222222222222,
+            "passed": true
+          },
+          "ue08": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 720,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue09": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 720,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          },
+          "ue10": {
+            "ul_scheduling_events": 720,
+            "backlogged": 720,
+            "backlogged_share": 1.0,
+            "ul_data_events": 720,
+            "served": 0,
+            "served_share": 0.0,
+            "passed": true
+          }
+        },
+        "passed": true
+      }
+    },
+    "f7p2_tdma_feasible": {
+      "P5_no_saturation_no_starvation": {
+        "ues": 25,
+        "not_served_in_all_windows": {},
+        "passed": true
+      }
+    },
+    "f3p5_tdma_feasible": {
+      "P5_no_saturation_no_starvation": {
+        "ues": 26,
+        "not_served_in_all_windows": {},
+        "passed": true
+      }
+    },
+    "f7p2_tdmapf": {
+      "P6_pf_memory": {
+        "tdma_feasible_ues": 25,
+        "not_served_in_all_windows": {},
+        "passed": true
+      }
+    },
+    "f3p5_tdmapf": {
+      "P6_pf_memory": {
+        "tdma_feasible_ues": 26,
+        "not_served_in_all_windows": {},
+        "passed": true
+      }
+    }
+  },
+  "all_predictions_held": true
+}

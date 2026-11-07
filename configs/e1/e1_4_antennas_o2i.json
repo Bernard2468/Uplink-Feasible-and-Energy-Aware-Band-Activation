@@ -1,0 +1,193 @@
+{
+  "experiment": "E1.4 antenna regimes and outdoor-to-indoor deployment, uplink and downlink, 3.5 vs 7.2 GHz",
+  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; values, checks and tolerances are not changed after results are seen",
+  "scope": [
+    "same 27 links and 200 shadowing realizations as E1.2/E1.3 (geometry-conditioned TR 38.901 UMa, hash-checked inputs)",
+    "single user per carrier, no interference: SNR, not SINR; rate mapping, feasibility profiles F1/F2 and classes K1-K5 exactly as E1.3",
+    "antenna gains at link-budget level: element pattern, array gain and ideal steering toward the geometric UE direction (UPPER BOUND: no CSI error, no angular-spread loss; the realised gain in the TR 38.901 fast-fading channel is measured in E1.5)",
+    "three antenna regimes are reported separately and never pooled: A equal element count, B equal physical aperture, C deployment configuration from a cited source",
+    "deployment states (outdoor, in-car, indoor low-loss, indoor high-loss) are reported separately; the M.2412 mix is an exact weighted combination of the per-state results, not a random assignment",
+    "fractions are over 27 distance-stratified positions x 200 realizations, NOT area-weighted (E1c)"
+  ],
+  "inputs": {
+    "geometry": "results/phase2/e1_geometry/site_tx0_links.csv (E1.1; gNB position from site_tx0_manifest.json)",
+    "propagation": "results/phase2/e1_3gpp_propagation/realizations.csv.gz (E1.2; SHA-256 checked against its manifest)",
+    "e13_reference": "results/phase2/e1_3_link_budget/records.csv.gz and summary.json (E1.3; SHA-256 checked against its manifest), used only by check N3"
+  },
+  "antenna_model": {
+    "gnb_element": {"pattern": "TR 38.901 V16.1.0 Table 7.3-1", "g_max_dbi": 8.0, "theta_3db_deg": 65.0, "phi_3db_deg": 65.0, "sla_v_db": 30.0, "a_max_db": 30.0},
+    "gnb_sectors": {"bearings_deg": [30.0, 150.0, 270.0], "source": "TR 38.901 V16.1.0 Table 7.8-1", "serving_sector": "the sector with the largest gain toward the UE (same sector at both carriers)"},
+    "gnb_array": "uniform planar array, rows x cols elements per polarisation, 0.5 wavelength spacing; one polarisation counted for gain; mechanical downtilt 0",
+    "gnb_gain": "G = G_E,max + A_E(theta, phi - bearing) + 10 log10(rows * cols) + SAF_K(theta); SAF_K = normalised factor of a fixed K-element vertical subarray (TR 38.901 clause 7.3.1 weights), 0 dB when K = 1 (every element steerable)",
+    "steering": "ideal steering of all TRX ports toward the geometric direction of the UE (upper bound)",
+    "same_gain_dl_ul": "the gNB array gain toward the UE is identical in DL (transmit) and UL (receive): TDD, same array",
+    "ue_rx": "n_rx isotropic (0 dBi) elements, maximum-ratio combining: +10 log10(n_rx) dB on the average DL SNR (upper bound)",
+    "ue_tx": "uplink at a fixed UE e.i.r.p. of 23 dBm: no transmit-array gain is added (TS 38.101-1 power class 3 total power; Nokia 2024 Table 1 caps UE average e.i.r.p. at 23 dBm)",
+    "angles": "TR 38.901 clause 7.1 GCS: zenith 90 deg = horizon, azimuth counter-clockwise from +x (scene x axis); UE direction from the gNB position of E1.1"
+  },
+  "o2i_model": {
+    "source": "TR 38.901 V16.1.0 clause 7.4.3 = ITU-R M.2412-0 Annex 1 section 3.2 model B (Table A1-8) and section 3.3",
+    "building": "PL = PL_b(d3D-out + d3D-in) + PL_tw + 0.5 d2D-in + sigma_P x_P",
+    "pl_tw": "5 - 10 log10(sum p_i 10^(-L_i/10)); low-loss 0.3 standard glass + 0.7 concrete, sigma_P 4.4 dB; high-loss 0.7 IRR glass + 0.3 concrete, sigma_P 6.5 dB; L_glass = 2 + 0.2 f, L_IRR = 23 + 0.3 f, L_concrete = 5 + 4 f (f in GHz), Tables 7.4.3-1 and 7.4.3-2",
+    "pl_tw_values_db": {"low": {"3.5e9": 12.697503, "7.2e9": 13.659470}, "high": {"3.5e9": 26.849786, "7.2e9": 31.461631}},
+    "d2d_in": "min of two independent U(0, 25 m) draws (UMa), per link and realization; mean 8.333 m, median 7.322 m",
+    "o2i_shadowing": "sigma_SF = 7 dB for O2I links (TR 38.901 Table 7.5-6 Part-1, UMa O2I column); independent of the outdoor E1.2 field (different link type, clause 7.6.3.4)",
+    "car": "PL = PL_b + 9 + 5 x_car dB (clause 7.4.3.2); outdoor E1.2 loss and shadowing of the link",
+    "legacy_model_not_used": "Table 7.4.3-3 (20 dB, single-frequency <6 GHz only) is not used: in a two-carrier study it would give 3.5 GHz a larger wall loss than 7.2 GHz",
+    "indoor_geometry": "each outdoor position is the facade point: d2D-out = E1.1 2D distance and its geometric LOS state is the state of the outdoor part of the O2I link; the indoor UE lies d2D-in further along the horizontal gNB-UE direction on the ground floor (h_UT = 1.5 m); PL_b uses d2D = d2D-out + d2D-in and d3D = sqrt(d2D^2 + (h_BS - h_UT)^2) (TR 38.901 Figure 7.4.1-2); the gNB gain is evaluated toward the indoor UE",
+    "not_modelled": "upper floors (M.2412: h_UT = 3(n_fl - 1) + 1.5, n_fl ~ U(1, N_fl), N_fl ~ U(4, 8)): the street-level LOS mask does not apply above the ground floor; ground floor is conservative for NLOS links (UMa NLOS loss falls by 0.6 dB per metre of UE height); deferred to E1c with building-resolved indoor positions",
+    "spatial_correlation": "d2D-in, x_P, O2I shadowing and car loss are drawn independently per link: E1.4 reports only per-link marginal fractions, which do not depend on correlation between links"
+  },
+  "frequency_correlation": {
+    "shared_states": "outdoor, in_car, indoor_low, indoor_high: d2D-in, building type, x_P, O2I shadowing variate and x_car are the same at both carriers (TR 38.901 clause 7.6.5 treatment of the shadowing variate applied to all O2I variates)",
+    "independent_states": "indoor_low_indep, indoor_high_indep: d2D-in and building type shared, x_P and the O2I shadowing variate drawn independently per carrier (sensitivity)"
+  },
+  "random": {
+    "seed": 20261108,
+    "generator": "numpy.random.default_rng (PCG64)",
+    "draw_order": ["u1", "u2", "x_p", "x_sf", "x_car", "x_p_2", "x_sf_2"],
+    "shape": "(200 realizations, 27 links in E1.1 file order) each",
+    "common_random_numbers": "the same draws are used by every case, so differences between cases are deterministic"
+  },
+  "deployment_states": {
+    "outdoor": "E1.2 outdoor loss unchanged (pedestrian reference; not part of the M.2412 mix)",
+    "in_car": "E1.2 outdoor loss + car penetration",
+    "indoor_low": "O2I, low-loss building model, shared variates",
+    "indoor_high": "O2I, high-loss building model, shared variates",
+    "indoor_low_indep": "as indoor_low, x_P and O2I shadowing independent per carrier",
+    "indoor_high_indep": "as indoor_high, x_P and O2I shadowing independent per carrier"
+  },
+  "mixes": {
+    "M2412": {"weights": {"in_car": 0.2, "indoor_low": 0.64, "indoor_high": 0.16}, "source": "ITU-R M.2412-0 Table 5(b) Dense Urban-eMBB: 80% indoor, 20% outdoor (in-car); 20% high-loss, 80% low-loss buildings", "primary": true},
+    "highloss50": {"weights": {"in_car": 0.2, "indoor_low": 0.4, "indoor_high": 0.4}, "source": "50% high-loss / 50% low-loss as used by Nokia 2024 (Table 1); outdoor share kept in-car", "primary": false}
+  },
+  "thresholds": {
+    "F1_link_closure": {"DL_snr_db_min": -10.0, "UL_snr_1prb_db_min": -10.0},
+    "F2_m2410_equivalent": {"DL_se_min": 2.25, "UL_se_norm_min": 1.5}
+  },
+  "thresholds_note": "identical to configs/e1/e1_3_link_budget.json; F2 is normalised by the occupied bandwidth, so in case C the 200 MHz carrier needs twice the absolute UL rate of the 100 MHz carrier (stated with every C result)",
+  "cases": {
+    "R0_isotropic_e13": {
+      "regime": "reference",
+      "description": "E1.3 main case (isotropic, 1 UE Rx) through the E1.4 pipeline: outdoor state must reproduce E1.3 exactly (check N3); other states give the pure O2I effect",
+      "sector_bearings_deg": [30.0, 150.0, 270.0], "nlos_bf_loss_db": 0.0,
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"isotropic": true}, "ue_n_rx": 1},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"isotropic": true}, "ue_n_rx": 1}
+      ]
+    },
+    "A_equal_elements": {
+      "regime": "A",
+      "description": "equal element count: 8x16 per polarisation (8x16x2 = 256 elements, M.2412 maximum; Nokia 2024 3.5 GHz array) at both carriers; UE 4 Rx at both; M.2412 Configuration A powers, noise figures and 20 MHz",
+      "sector_bearings_deg": [30.0, 150.0, 270.0], "nlos_bf_loss_db": 0.0,
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 4},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 4}
+      ]
+    },
+    "B_equal_aperture": {
+      "regime": "B",
+      "description": "equal gNB aperture: 8x16 at 3.5 GHz, 16x32 at 7.2 GHz (floor of 8 x 7.2/3.5 = 16.46 and 16 x 7.2/3.5 = 32.91; 4.00x the elements, 10 log10(4) = 6.02 dB vs the 6.27 dB path-loss gap); same conducted power, so 6.02 dB more e.i.r.p. at 7.2 GHz; UE unchanged (4 Rx); otherwise as A",
+      "sector_bearings_deg": [30.0, 150.0, 270.0], "nlos_bf_loss_db": 0.0,
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 4},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 16, "cols": 32}, "ue_n_rx": 4}
+      ]
+    },
+    "C_deployment": {
+      "regime": "C",
+      "description": "Nokia 2024 Table 1 configuration: 3.5 GHz 100 MHz, 53 dBm, 8x16x2 (29 dBi), UE 4 Rx; 7 GHz (applied at 7.2 GHz) 200 MHz, 53 dBm, 16x32x2 (35 dBi), UE 8 Rx; UE e.i.r.p. 23 dBm; noise figures M.2412 Configuration A (not stated by the source)",
+      "sector_bearings_deg": [30.0, 150.0, 270.0], "nlos_bf_loss_db": 0.0,
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 100e6, "scs_hz": 30e3, "n_prb": 273, "gnb_power_dbm": 53.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 4},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 200e6, "scs_hz": 30e3, "n_prb": 546, "gnb_power_dbm": 53.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 16, "cols": 32}, "ue_n_rx": 8}
+      ]
+    },
+    "S1_A_ue1rx": {
+      "regime": "A (sensitivity)",
+      "description": "as A with a single UE receive element: isolates the gNB array from the UE receive gain",
+      "sector_bearings_deg": [30.0, 150.0, 270.0], "nlos_bf_loss_db": 0.0,
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 1},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 1}
+      ]
+    },
+    "S2_C_7p2_43dbm": {
+      "regime": "C (sensitivity)",
+      "description": "as C with 43 dBm at 7.2 GHz (Nokia 2024 second level: 78 dBm e.i.r.p. per 200 MHz = 75 dBm per 100 MHz)",
+      "sector_bearings_deg": [30.0, 150.0, 270.0], "nlos_bf_loss_db": 0.0,
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 100e6, "scs_hz": 30e3, "n_prb": 273, "gnb_power_dbm": 53.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 4},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 200e6, "scs_hz": 30e3, "n_prb": 546, "gnb_power_dbm": 43.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 16, "cols": 32}, "ue_n_rx": 8}
+      ]
+    },
+    "S3_C_nlos_bf_loss": {
+      "regime": "C (sensitivity)",
+      "description": "as C with the gNB gain reduced by 4.5 dB on links whose outdoor state is NLOS, at both carriers (Nokia 2024 Figure 1: 10 dBi measured in NLOS vs 14.5 dBi nominal); any frequency dependence of this loss is measured in E1.5, not assumed",
+      "sector_bearings_deg": [30.0, 150.0, 270.0], "nlos_bf_loss_db": 4.5,
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 100e6, "scs_hz": 30e3, "n_prb": 273, "gnb_power_dbm": 53.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 4},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 200e6, "scs_hz": 30e3, "n_prb": 546, "gnb_power_dbm": 53.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 16, "cols": 32}, "ue_n_rx": 8}
+      ]
+    },
+    "S4_C_subarray": {
+      "regime": "C (sensitivity)",
+      "description": "as C with the Nokia 2024 TRX architecture: each TRX feeds a fixed 4-element vertical subarray with 10 deg electrical downtilt (4:1 aggregation), ports steered ideally; creates elevation nulls near the site (first null at about 28 m for the 25.5 m height difference)",
+      "sector_bearings_deg": [30.0, 150.0, 270.0], "nlos_bf_loss_db": 0.0,
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 100e6, "scs_hz": 30e3, "n_prb": 273, "gnb_power_dbm": 53.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16, "subarray_rows": 4, "etilt_deg": 10.0}, "ue_n_rx": 4},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 200e6, "scs_hz": 30e3, "n_prb": 546, "gnb_power_dbm": 53.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 16, "cols": 32, "subarray_rows": 4, "etilt_deg": 10.0}, "ue_n_rx": 8}
+      ]
+    },
+    "S5_A_sectors_rot60": {
+      "regime": "A (sensitivity)",
+      "description": "as A with the three sectors rotated by 60 deg (bearings 90, 210, 330): the sector orientation of a single site is arbitrary",
+      "sector_bearings_deg": [90.0, 210.0, 330.0], "nlos_bf_loss_db": 0.0,
+      "carriers": [
+        {"frequency_hz": 3.5e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 4},
+        {"frequency_hz": 7.2e9, "channel_bw_hz": 20e6, "scs_hz": 30e3, "n_prb": 51, "gnb_power_dbm": 44.0, "ue_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0, "gain_gnb_dbi": 0.0, "gain_ue_dbi": 0.0, "gnb_panel": {"rows": 8, "cols": 16}, "ue_n_rx": 4}
+      ]
+    }
+  },
+  "parameter_sources": {
+    "element_and_sectors": "SOURCED: TR 38.901 V16.1.0 Tables 7.3-1 and 7.8-1; element gain 8 dBi also ITU-R M.2412-0 Table 5(b) and Nokia 2024 Table 1",
+    "array_3p5": "SOURCED: Nokia 2024 Table 1 (8x16x2, 256 elements, 29 dBi); within ITU-R M.2412-0 Table 5(b) 'up to 256 Tx/Rx'",
+    "array_7p2": "ADAPTED: Nokia 2024 Table 1 7 GHz array (16x32x2, 1024 elements, 35 dBi) applied at 7.2 GHz; for regime B it is the equal-aperture array rounded down",
+    "ue_rx_count": "SOURCED for 3.5 GHz: TS 38.101-1 Rel-19 clause 7.2, minimum 4 Rx ports in n77/n78/n79 (and n104, 6425-7125 MHz); 4 Rx at 7.2 GHz in A/B is an ASSUMPTION adapted from n104; 8 Rx at 7 GHz in C from Nokia 2024 Table 1",
+    "ue_eirp": "SOURCED: 23 dBm (power class 3; Nokia 2024 Table 1 average UE e.i.r.p. 23 dBm)",
+    "c_powers_bandwidths": "SOURCED: Nokia 2024 Table 1 (53 dBm per 100 MHz at 3.5 GHz; 53 dBm or 43 dBm per 200 MHz at 7 GHz)",
+    "c_7p2_n_prb": "ASSUMPTION: 546 PRB at 30 kHz SCS (2 x 273, as two aggregated 100 MHz carriers); no 200 MHz FR1 channel exists in TS 38.101-1 Rel-19",
+    "c_noise_figures": "ASSUMPTION: ITU-R M.2412-0 Configuration A (5 / 7 dB) at both carriers; not stated by Nokia 2024",
+    "o2i_and_car": "SOURCED: TR 38.901 V16.1.0 clause 7.4.3, Tables 7.4.3-1, 7.4.3-2 and 7.5-6 (O2I sigma_SF 7 dB); ITU-R M.2412-0 Annex 1 sections 3.2-3.3",
+    "deployment_mix": "SOURCED: ITU-R M.2412-0 Table 5(b) Dense Urban-eMBB"
+  },
+  "checks": {
+    "N1_identities": "every record: rx = tx + direction gain - loss; noise = -174 + 10 log10(B) + NF; SNR = rx - noise (abs error <= 1e-9 dB)",
+    "N2_reciprocity": "for every case, state, link, realization and carrier: DL and UL use the same total loss and the same gNB gain (abs error <= 1e-9 dB)",
+    "N3_e13_reproduction": "R0 outdoor reproduces the E1.3 main_eqbw20 records (DL SNR, UL best-allocation SNR, UL 1-PRB SNR: abs error <= 1e-9 dB; rates: abs error <= 1e-6 bit/s; F1/F2 flags identical) and its K1-K5 fractions exactly",
+    "N4_gain_bounds": "every gNB gain is finite and <= G_E,max + 10 log10(rows * cols) (+1e-12); the serving sector is identical at both carriers",
+    "N5_carrier_offsets": "states outdoor, in_car, indoor_low, indoor_high: SNR(3.5) - SNR(7.2) equals the analytic offset from the case parameters, for DL (full band) and UL (1 PRB), every record (abs error <= 1e-9 dB); analytic DL offset = dP_gNB - 10 log10(B1/B2) - dNF_UE + dG_nominal + 10 log10(n_rx1/n_rx2) + 20 log10(f2/f1) + [PL_tw(f2) - PL_tw(f1)]; UL offset = dP_UE - 10 log10(PRB1/PRB2) - dNF_gNB + dG_nominal + 20 log10(f2/f1) + [PL_tw(f2) - PL_tw(f1)]",
+    "N6_o2i_components": "PL_tw used equals an independent re-evaluation of Table 7.4.3-2 (abs error <= 1e-9 dB); PL_in = 0.5 d2D-in; 0 <= d2D-in <= 25 m; shared variates identical across carriers in shared states and different in independent states",
+    "N7_draw_statistics": "n = 5400 per variate: d2D-in mean within 4 x 5.8926/sqrt(n) of 8.3333 m and std within 4/sqrt(2n) (relative) of 5.8926 m; each standard-normal variate: |mean| <= 4/sqrt(n) and |std - 1| <= 4/sqrt(2n)",
+    "N8_partition_and_mix": "K1-K4 cover every outcome of every case, state and profile; mix weights are non-negative and sum to 1",
+    "N9_mapping": "as E1.3 L5 (mapped SE <= Shannon; 0 below -10 dB; <= Thr_max; non-decreasing)",
+    "N10_ul_allocation": "as E1.3 L6 (uplink maximum rate >= rate at 1 PRB and at full allocation)",
+    "L8_unit_tests": "unit tests reproduce hand-computed element, subarray and O2I values (tests/test_antenna.py, tests/test_o2i.py)"
+  },
+  "expectations_stated_before_run": {
+    "note": "analytic consequences of the model, stated before the run; they are hypotheses to report, not pass criteria (except where also a check)",
+    "carrier_offset_db": {
+      "R0_and_A": {"outdoor_in_car": 6.265289, "indoor_low": 7.227256, "indoor_high": 10.877134},
+      "B_and_C": {"outdoor_in_car": 0.244689, "indoor_low": 1.206656, "indoor_high": 4.856534},
+      "S2_C_7p2_43dbm": "DL offsets of C + 10 dB; UL offsets as C"
+    },
+    "dl_minus_ul_fullband_db": "R0 and S1: 19.00; A and B: 25.02 (UE 4 Rx adds 6.02 dB to DL only); C: 34.02 at 3.5 GHz and 37.03 at 7.2 GHz",
+    "eirp_dbm": "A 3.5 / 7.2: 73.07 per 20 MHz; B 7.2: 79.09 per 20 MHz; C 3.5: 82.07 per 100 MHz; C 7.2: 88.09 per 200 MHz (85.08 per 100 MHz); S2 7.2: 75.08 per 100 MHz",
+    "predictions": [
+      "A: the K2 loss window keeps its E1.3 width (6.27 dB outdoor); array gain moves links from K3/K4 toward K1",
+      "B and C: outdoor K2 almost vanishes (window 0.24 dB); indoor high-loss reopens it to about 4.9 dB because wall loss grows with frequency",
+      "UE 4 Rx raises DL only, so A has more 'DL works, UL fails' outcomes than S1",
+      "indoor states shift every class toward K3/K4; high-loss buildings dominate the M.2412-mix K4 fraction"
+    ]
+  }
+}

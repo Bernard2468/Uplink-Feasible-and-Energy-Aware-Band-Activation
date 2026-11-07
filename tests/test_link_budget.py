@@ -1,3 +1,4 @@
+import dataclasses
 import math
 import unittest
 
@@ -74,6 +75,23 @@ class LinkBudgetTests(unittest.TestCase):
                                    atol=1e-12)
         np.testing.assert_allclose(u['noise_eval_dbm'], lb.noise_dbm(u['eval_bw_hz'], CFG.nf_gnb_db),
                                    atol=1e-12)
+
+    def test_per_link_gain(self):
+        # E1.4: a per-link gain shifts SNR one-for-one; a zero gain is bit-identical to no gain.
+        dl0, ul0 = lb.downlink([120.0, 130.0], CFG), lb.uplink([120.0, 130.0], CFG)
+        dl = lb.downlink([120.0, 130.0], CFG, gain_db=[10.0, 3.0])
+        ul = lb.uplink([120.0, 130.0], CFG, gain_db=[10.0, 3.0])
+        np.testing.assert_allclose(dl['snr_db'] - dl0['snr_db'], [10.0, 3.0], atol=1e-12)
+        np.testing.assert_allclose(ul['snr_1prb_db'] - ul0['snr_1prb_db'], [10.0, 3.0], atol=1e-12)
+        np.testing.assert_allclose(dl['antenna_gain_db'], [10.0, 3.0], atol=0)
+        for k in ('snr_db', 'rate_bps'):
+            np.testing.assert_array_equal(lb.downlink([120.0, 130.0], CFG, gain_db=[0.0, 0.0])[k], dl0[k])
+        for k in ('snr_best_db', 'rate_bps', 'best_n_prb'):
+            np.testing.assert_array_equal(lb.uplink([120.0, 130.0], CFG, gain_db=0.0)[k], ul0[k])
+        with self.assertRaises(ValueError):
+            lb.downlink([120.0], dataclasses.replace(CFG, gain_gnb_dbi=3.0), gain_db=[1.0])
+        with self.assertRaises(ValueError):
+            lb.uplink([120.0], CFG, gain_db=[np.nan])
 
     def test_config_validation(self):
         with self.assertRaises(ValueError):

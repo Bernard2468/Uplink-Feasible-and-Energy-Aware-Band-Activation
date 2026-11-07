@@ -97,7 +97,66 @@ link and every LOS link inside the breakpoint distance. It is an assumption of
 the model, not a result; E1a.1 ray tracing supports it only for LOS and
 near-NLOS links.
 
-Open items before E1 link budgets run: bandwidth per carrier, array
-configurations per antenna regime (A: equal elements, B: equal aperture,
-C: deployment-realistic), O2I model (TR 38.901 low/high loss), and the
-mapping from SINR to rate (to be calibrated against E1b).
+Status of the former open items: bandwidths and the rate mapping are fixed in
+`configs/e1/e1_3_link_budget.json` (E1.3); antenna regimes and the O2I model
+are fixed below and in `configs/e1/e1_4_antennas_o2i.json` (E1.4). Still open:
+calibration of the rate mapping against 5G-LENA (E1.5).
+
+## E1.4 antenna and deployment sources
+
+| Source | Retrieved | Bytes | SHA-256 |
+|---|---|---|---|
+| ETSI TR 138 901 V16.1.0 (as above) | 2026-11-06 | 1,444,732 | `513daf94...` |
+| ITU-R M.2412-0 (as above) | 2026-11-06 | 3,435,073 | `bbbe7f3c...` |
+| Nokia, "Coverage evaluation of 7-15 GHz bands from existing sites", white paper, (c) 2024, https://www.nokia.com/asset/i/213702/ | 2026-11-07 | 708,435 | `c240137ffac12c85261bf80d66139bbe1e85267fbb303b5436305ece49d88376` |
+| 3GPP TS 38.101-1 Rel-19 clause 7.2, iTecSpec mirror, https://itecspec.com/spec/3gpp-38-101-1-7-2-diversity-characteristics | 2026-11-07 | 1,367,645 (HTML) | `313b9482ef9f7fbd96fdded4a9360966469d58e7a558b570d52d317bbfacf428` |
+
+The TS 38.101-1 text comes from a mirror; it must be confirmed against the
+official 3GPP/ETSI publication before submission. The Nokia white paper is an
+industry evaluation, not a standard; its own footnote 1 says the
+configurations "do not reflect or anticipate product characteristics but serve
+to the purpose of evaluating coverage and performance trends". Regime C is
+therefore labelled "vendor evaluation configuration" wherever it is used.
+
+### Antennas
+
+| Item | Value | Label and source |
+|---|---|---|
+| gNB element pattern | 8 dBi; 65 deg H and V 3 dB beamwidth; SLA_V = A_max = 30 dB | SOURCED: TR 38.901 Table 7.3-1; 8 dBi also M.2412 Table 5(b) and Nokia Table 1 |
+| Sectors | 3, bearings 30 / 150 / 270 deg; mechanical tilt 0 | SOURCED: TR 38.901 Table 7.8-1 (its 102 deg calibration downtilt is not used: steering is per UE) |
+| gNB gain counting | one polarisation: G_E,max + 10 log10(rows x cols) | Reproduces Nokia Table 1 nominal gains: 8x16x2 -> 29.07 dBi ("29 dBi"), 16x32x2 -> 35.09 dBi ("35 dBi") |
+| Steering | ideal, every element (TRX port) steered to the geometric UE direction | UPPER BOUND; Nokia Figure 1 measured 10 dBi in NLOS vs 14.5 dBi nominal (sensitivity S3) |
+| Vertical subarray (sensitivity S4) | 4 elements per TRX, 10 deg electrical downtilt | SOURCED: Nokia Table 1 ("4:1 aggregation of radiators in elevation, 10 deg electrical downtilt"); weights TR 38.901 clause 7.3.1 |
+| 3.5 GHz array | 8 x 16 x 2 = 256 elements | SOURCED: Nokia Table 1 (64 TRX); within M.2412 "up to 256 Tx/Rx" |
+| 7.2 GHz array (B, C) | 16 x 32 x 2 = 1024 elements | ADAPTED: Nokia Table 1 7 GHz array; for B it is the equal-aperture array rounded down (exact factor (7.2/3.5)^2 = 4.23, used 4.00) |
+| UE receive elements | 4 (3.5 GHz; A/B at both carriers), 8 (7 GHz in C) | SOURCED: TS 38.101-1 clause 7.2, minimum 4 Rx in n77/n78/n79 and n104 (6425-7125 MHz); 4 Rx at 7.2 GHz ADAPTED from n104; 8 Rx from Nokia Table 1 |
+| UE transmit | 23 dBm e.i.r.p., no transmit-array gain | SOURCED: power class 3 (M.2412); Nokia Table 1 "23 dBm max average EIRP for UE" |
+| C powers and bandwidths | 53 dBm / 100 MHz (3.5 GHz); 53 or 43 dBm / 200 MHz (7 GHz) | SOURCED: Nokia Table 1 and its two 7 GHz EIRP levels (88 and 78 dBm per 200 MHz) |
+| C 7.2 GHz PRBs | 546 at 30 kHz SCS | ASSUMPTION: two aggregated 100 MHz carriers; no 200 MHz FR1 channel in TS 38.101-1 Rel-19 |
+| C noise figures | 5 dB gNB, 7 dB UE | ASSUMPTION: M.2412 Configuration A; not stated by Nokia |
+
+### Outdoor-to-indoor and in-car loss
+
+| Item | Value | Source |
+|---|---|---|
+| Building model | PL_b(d3D-out + d3D-in) + PL_tw + 0.5 d2D-in + N(0, sigma_P^2) | TR 38.901 clause 7.4.3.1, eq. (7.4-2) = M.2412 Annex 1 section 3.2, model B (Table A1-8) |
+| PL_tw low-loss / high-loss | 12.70 / 13.66 dB and 26.85 / 31.46 dB at 3.5 / 7.2 GHz | Tables 7.4.3-1 and 7.4.3-2 (PL_npi = 5 dB) |
+| sigma_P | 4.4 dB low-loss, 6.5 dB high-loss | Table 7.4.3-2 |
+| d2D-in | min of two U(0, 25 m) | Table 7.4.3-2 note (UMa) |
+| O2I shadow fading | 7 dB | Table 7.5-6 Part-1, UMa O2I column |
+| Car penetration | N(9, 5^2) dB, 0.6-60 GHz | clause 7.4.3.2 = M.2412 section 3.3 |
+| Deployment mix | 80% indoor (80% low-loss, 20% high-loss buildings), 20% outdoor in-car | M.2412 Table 5(b) Dense Urban-eMBB |
+
+Not used, and why: TR 38.901 Table 7.4.3-3 / M.2412 model A below 6 GHz
+(20 dB wall loss, d2D-in ~ U(0, 25 m), sigma_SF 7 dB) is restricted to
+single-frequency simulations below 6 GHz. Applied at 3.5 GHz next to the
+frequency-dependent model at 7.2 GHz, it would give the lower carrier the
+larger wall loss (20 dB vs 13.7 dB low-loss): an artefact of switching models
+at 6 GHz, not physics.
+
+Indoor geometry (stated with every result): ground floor only; each outdoor
+position is the facade point, whose geometric LOS state is used for the
+outdoor part of the O2I link; the UE lies d2D-in further along the gNB-UE
+direction. Upper floors (M.2412 floor distribution) need building-resolved
+indoor positions and are deferred to E1c; the ground floor is conservative for
+NLOS links.

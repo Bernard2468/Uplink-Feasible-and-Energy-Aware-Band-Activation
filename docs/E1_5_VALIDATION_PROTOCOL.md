@@ -437,7 +437,7 @@ Consequences, by the pre-registered decision rules:
 - E1.5.2 measures DL SNR, where the TDMA and OFDMA RR schedulers rotate
   correctly. It may use either one.
 
-### E1.5.2-0: antenna and beamforming conventions (PRE-REGISTERED 2026-11-07)
+### E1.5.2-0: antenna and beamforming conventions (PRE-REGISTERED 2026-11-07; PASSED in run 3 after amendments 1-2)
 
 Config `configs/e1/e1_5_2_0_conventions.json`, script
 `scripts/e1_5_2_0_conventions.py`, tests
@@ -541,6 +541,67 @@ Amendment 2 (after run 2):
   and the other checks reproduce run 2.
 - **Open item before E1.5.4:** what the reported SINR of co-scheduled OFDMA
   TBs under DirectPath means.
+
+#### E1.5.2-0 results: PASSED in run 3 (2026-11-07)
+
+Run 3 from `135f288` (1 min 46 s). Files:
+`results/phase2/e1_5_2_0_conventions/`. The prediction stated before run 3
+held in full:
+- R0, A0, N0 and B0 reproduce run 2 identically (deterministic).
+- Every NR DL TB spans 51 RBs.
+- V0 passes.
+
+| Check | Result |
+|---|---|
+| R0 | mode `link` byte-identical to E1.5.1 run 4 (8/8 files) |
+| A0 | ns-3 angles = Python within 3.4e-9 deg; DirectPath transmit-side array factor = 10 log10 N within 5e-14 dB; element + array gain = E1.4 gain within 1.4e-9 dB (regimes A and B, 27 links) |
+| N0 | isotropic: mean gain -0.10 / -0.09 dB (LOS / NLOS, 3.5 GHz) and +0.08 / -0.09 dB (7.2 GHz), 180 / 360 realizations |
+| B0.0 | requested gNB role in every realization |
+| B0.1 | role s, DirectPath: median LOS deficit 0.62 dB (3.5 GHz), 0.40 dB (7.2 GHz) |
+| B0.2 | role u, conjugated DirectPath: identical to B0.1 (0.62 / 0.40 dB) |
+| B0.3 | role u, DirectPath: median LOS loss vs role s **33.5 dB** (3.5 GHz) and **35.9 dB** (7.2 GHz) |
+| V0 | 8,476 DL TBs in 9 NR runs: \|TB SINR - (SNR_iso + channel-level gain)\| <= 2.8e-14 dB; gNB is "s" for every link; >= 81 TBs per UE |
+
+What is established:
+1. **The ns-3 antenna objects implement E1.4's gain model exactly.** This
+   covers the TR 38.901 element, the sector bearings, the angle conventions
+   and the array gain 10 log10 N.
+2. **The channel-level computation (mode `chan`) reproduces 5G-LENA's DL TB
+   SINR to machine precision** whenever a TB has the full band and its own
+   beam. E1.5.2-1 can therefore use it for many realizations.
+3. **ns-3 / 5G-LENA receive-side mismatch.** The NR DirectPath vector is
+   matched on the transmit side of the stored channel matrix and
+   anti-matched on the receive side, losing 33-36 dB in LOS. Its conjugate
+   is exactly matched on the receive side.
+   - In the NR runs here the gNB was always the transmit side, because the
+     first transmission was DL. Its DirectPath gain is therefore correct.
+   - Any array on the receive side does need the conjugate. That includes
+     a multi-element UE in DL.
+   - Consequence: UE arrays in E1.5.2b use a matched combiner, and every
+     configuration states each array's role.
+   - The write-up for the 5G-LENA maintainers is prepared; filing it is the
+     user's decision.
+4. **OFDMA co-scheduling under DirectPath** (amendment 2) is an open item
+   before E1.5.4.
+
+Reported, not tested: DirectPath realised gNB gain vs E1.4 ideal steering
+(deficit = E1.4 gain - realised, median over links, 20 realizations per
+link).
+
+| Regime, carrier | LOS (9 links) | NLOS (18 links) |
+|---|---|---|
+| A 8x16, 3.5 GHz | 0.62 dB (0.39-0.92) | 10.05 dB (7.57-13.63) |
+| A 8x16, 7.2 GHz | 0.40 dB (0.03-0.66) | 9.76 dB (5.76-12.98) |
+| B 16x32, 7.2 GHz | 0.51 dB (0.14-0.83) | 13.65 dB (9.16-22.93) |
+
+These numbers are a preview, not a result:
+- DirectPath steers toward the geometric direction, which in NLOS is not
+  where the energy arrives.
+- E1.5.2-1 measures the gain with a codebook beam search and with the
+  best single beam as an upper bound. It also uses more realizations,
+  includes O2I, and resamples positions for uncertainty.
+- E1.4's S3 sensitivity assumed a 4.5 dB NLOS loss. The DirectPath preview
+  is about twice that for 8x16 arrays, and larger again for 16x32.
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

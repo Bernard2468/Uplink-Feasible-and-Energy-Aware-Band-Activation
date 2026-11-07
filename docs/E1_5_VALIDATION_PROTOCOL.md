@@ -579,7 +579,8 @@ What is established:
      a multi-element UE in DL.
    - Consequence: UE arrays in E1.5.2b use a matched combiner, and every
      configuration states each array's role.
-   - The write-up for the 5G-LENA maintainers is prepared; filing it is the
+   - A draft issue for the 5G-LENA maintainers is in
+     `docs/upstream/5g-lena-directpath-rx-mismatch.md`; filing it is the
      user's decision.
 4. **OFDMA co-scheduling under DirectPath** (amendment 2) is an open item
    before E1.5.4.

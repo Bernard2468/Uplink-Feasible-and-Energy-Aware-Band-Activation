@@ -9,3 +9,10 @@ E1.5.1 run 1 (code d67997d), 2026-11-07: FAILED before validation was written
    b) RNTIs change after the single RNTI snapshot at 0.35 s (e.g. UE index 5 receives TBs for RNTI 37 although RNTIs 1-36 were mapped): re-attachment (contention / RLF).
    c) UE RB count read before the UE synchronised to the cell (reads 5).
 Raw files kept locally in raw/run1_failed/ (git-ignored).
+
+E1.5.1 run 2 (code 2d8cd06), 2026-11-07: ABORTED at start, no simulation ran
+All four runs exited with code 250 after < 1 s: NS_FATAL "Pattern type 'DL not valid"
+(nr-gnb-phy.cc:2109). The driver passed --tddPattern='DL|...' with literal single
+quotes; ./ns3 run splits the program arguments without a shell, so the quotes reached
+the program. Fix: pass --tddPattern=DL|DL|... without quotes. No result was produced.
+Raw run logs kept locally in raw/run2_aborted/ (git-ignored).

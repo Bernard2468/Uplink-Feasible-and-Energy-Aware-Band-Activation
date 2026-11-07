@@ -111,7 +111,7 @@ def run_one(conf, run, ns3, losses_by_ue, outdir):
             f'--scheduler={run["scheduler"]}', f'--dlRate={c["dl_rate_bps_per_ue"]!r}',
             f'--ulRate={c["ul_rate_bps_per_ue"]!r}', f'--packetSize={c["packet_size_bytes"]}',
             f'--appStart={c["app_start_s"]!r}', f'--simTime={c["sim_time_s"]!r}',
-            f"--tddPattern='{c['tdd_pattern']}'", f'--enableRlf={int(c["enable_rlf"])}']
+            f'--tddPattern={c["tdd_pattern"]}', f'--enableRlf={int(c["enable_rlf"])}']
     cmd = ['./ns3', 'run', '--no-build', f'--cwd={rundir}', ' '.join([PROGRAM] + args)]
     t0 = time.time()
     p = subprocess.run(cmd, cwd=ns3, capture_output=True, text=True)

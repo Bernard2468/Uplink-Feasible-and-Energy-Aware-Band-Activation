@@ -196,7 +196,7 @@ V2 in `f7p2_tdma`). Per the stop rule, no further amendment is made to make
 it pass.
 
 What run 4 establishes (every compared TB, all four runs):
-- **DL:** 31,100 TBs compared. |5G-LENA SNR - Python SNR| <= 3.0e-14 dB, and
+- **DL:** 31,100 TBs compared. |5G-LENA SNR - Python SNR| <= 3.1e-14 dB, and
   the received power per RB agrees within 2.9e-14 dB.
 - **UL:** 46,251 TBs compared, |error| <= 3.6e-14 dB. The OFDMA runs cover
   32-36 distinct allocation sizes from 1 to 51 RBs, so the "UE power spread

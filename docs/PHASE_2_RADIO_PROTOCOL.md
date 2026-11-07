@@ -127,6 +127,19 @@ Found in the ns-3.48 TR 38.901 propagation loss model during E1.4
     penetration (`BuildingPenetrationLossesEnabled=false`), and impose the
     E1.2/E1.4 losses, which use one model at both carriers.
 
+Found in the ns-3 build system during E1.5.1 (2026-11-07):
+
+12. **Any CMake re-run rebuilds the whole tree.** Re-running CMake (explicitly,
+    or by ninja when the set of scratch `*.cc` files changes) regenerates the
+    precompiled-header target, which every object depends on. Adding the first
+    project program therefore recompiled about 1,200 objects. Same sources,
+    same cache and the same "default" profile, so the libraries are
+    functionally identical; this is re-verified, not assumed (E1.5 results
+    log). Control: `scripts/e1_5_install_ns3_program.sh` rebuilds an existing
+    program without CMake, requires `ALLOW_RECONFIGURE=1` for a new program
+    file, and refuses a build whose dry run shows anything but the program.
+    All later E1.5 stages are modes of the same program file.
+
 ## 4. Experiment E1: co-sited 3.5/7.2 GHz uplink/downlink feasibility (design)
 
 Question: with both layers on the same site, where is the 7.2 GHz layer usable

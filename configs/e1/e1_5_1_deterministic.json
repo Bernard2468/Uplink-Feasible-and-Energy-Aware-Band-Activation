@@ -1,0 +1,44 @@
+{
+  "experiment": "E1.5.1 deterministic received power and SNR: 5G-LENA v5.1 vs the Python link budget",
+  "status": "PRE-REGISTERED 2026-11-07, committed before the first run; values, checks and tolerances are not changed after results are seen",
+  "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 4, E1.5.1 (acceptance criteria V1-V5 fixed there before this config)",
+  "stack": {"ns3_commit": "d083a17a", "nr_commit": "cedceadd", "program": "ns3/scratch/cmwave/e15-link-validation.cc (installed copy SHA-256 must equal the repo copy)"},
+  "channel": "MatrixPropagationLossModel with the prescribed loss per gNB-UE pair (symmetric), no ns-3 path loss, no shadowing, no fast fading, no building loss, no interference (single cell); isotropic 1x1 antennas at both ends",
+  "common": {
+    "bandwidth_hz": 20e6, "numerology": 1, "scs_hz": 30e3,
+    "rb_overhead": 0.073,
+    "rb_overhead_reason": "floor(20e6 x (1 - 0.073) / 360e3) = floor(51.5) = 51 RBs (TS 38.101-1 Table 5.3.2-1); the NR default 0.04 gives 53",
+    "gnb_tx_power_dbm": 44.0, "ue_tx_power_dbm": 23.0, "nf_gnb_db": 5.0, "nf_ue_db": 7.0,
+    "gnb_power_allocation": "UniformPowerAllocBw", "ue_power_allocation": "UniformPowerAllocUsed", "ul_power_control": false,
+    "dl_rate_bps_per_ue": 20e6, "ul_rate_bps_per_ue": 2e6, "packet_size_bytes": 1000,
+    "app_start_s": 0.4, "sim_time_s": 1.0
+  },
+  "ues": {
+    "links": "the 27 E1.2 links at their median loss (pathloss_db, zero shadowing) for the run's carrier",
+    "sweep_losses_db": [80, 90, 100, 110, 120, 130, 140, 150, 160],
+    "total_per_run": 36
+  },
+  "runs": [
+    {"tag": "f3p5_tdma", "frequency_hz": 3.5e9, "scheduler": "ns3::NrMacSchedulerTdmaRR"},
+    {"tag": "f3p5_ofdma", "frequency_hz": 3.5e9, "scheduler": "ns3::NrMacSchedulerOfdmaRR"},
+    {"tag": "f7p2_tdma", "frequency_hz": 7.2e9, "scheduler": "ns3::NrMacSchedulerTdmaRR"},
+    {"tag": "f7p2_ofdma", "frequency_hz": 7.2e9, "scheduler": "ns3::NrMacSchedulerOfdmaRR"}
+  ],
+  "python_reference": {
+    "dl_snr_db": "cmwave.radio.link_budget.downlink(L, cfg)['snr_db'] with cfg = 20 MHz, 51 PRB, 44 dBm, NF_UE 7 dB, gains 0",
+    "ul_snr_db": "23 - L - (-174 + 10 log10(n x 360 kHz) + 5), n = RBs assigned to the TB (m_rbAssignedNum)",
+    "dl_rx_power_per_rb_dbm": "44 - 10 log10(51) - L",
+    "ns3_sinr_db": "10 log10(m_sinr), m_sinr = linear mean over the TB's RBs (NR TransportBlockInfo::UpdatePerceivedSinr)"
+  },
+  "acceptance": {
+    "V0_readback": "RB count, gNB power and both noise figures read back from the ns-3 objects equal the configured values; UE TxPower attribute equals 23 dBm",
+    "V1_dl_snr": "every DL data TB of every UE: |10 log10(m_sinr) - DL SNR_python| <= 0.01 dB",
+    "V2_ul_snr": "every UL data TB: |10 log10(m_sinr) - UL SNR_python(n = m_rbAssignedNum)| <= 0.01 dB",
+    "V3_rb_count": "ns-3 RB count = 51 at gNB and UE",
+    "V4_dl_rx_power": "for every UE with DL data: min and max received power per RB (RxDataTrace) within 0.01 dB of 44 - 10 log10(51) - L",
+    "V5_coverage": "every UE whose Python DL SNR >= -5 dB has >= 10 DL TBs, and every UE whose Python 1-PRB UL SNR >= -5 dB has >= 10 UL TBs, in every run; UEs below are reported, not dropped",
+    "tolerance_db": 0.01,
+    "all_runs": "V0-V5 must hold in all four runs"
+  },
+  "reported_not_tested": "MCS, TB size, corrupt flag and TBLER per TB; RB-allocation histogram; DL/UL TB counts per UE (inputs to E1.5.3)"
+}

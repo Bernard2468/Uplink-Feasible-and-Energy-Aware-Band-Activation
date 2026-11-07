@@ -142,5 +142,41 @@ Interpretation:
 - Until then, K3 under F2 is an upper bound, and K3 under F3 is the analytic
   value for full-buffer equal-share OFDMA.
 
+### Build incident before E1.5.1 (2026-11-07): whole-tree rebuild, stack re-verified
+
+What happened:
+- Installing the first project program re-ran CMake on the existing cache.
+- That regenerated the precompiled-header target, so ninja recompiled
+  1,154 objects (24 min, -j4) before linking the program (hazard 12,
+  `docs/PHASE_2_RADIO_PROTOCOL.md` section 3).
+- The install script's dry-run guard did not catch it: a ninja dry run stops
+  at "Re-running CMake" and lists nothing.
+- Log: `results/verification/ns3_full_rebuild_20261107_hazard12.log`.
+
+What did not change:
+- Sources: ns-3 `d083a17a` and NR `cedceadd`, tracked files unmodified.
+- The CMake cache and the "default" build profile.
+
+Re-verification:
+- The default `cttc-nr-demo` was rebuilt alone, through the new guard. Its
+  output is byte-identical to the Phase-1 reference
+  `results/verification/cttc-nr-demo_after_mr2929.txt` (SHA-256
+  `8005997bb9313c98e39788426b2b5f40ea2948b1cbab8217c15c6f7e3a97cc4d`).
+
+Prevention, `scripts/ns3_guarded_build.sh`:
+1. An exact, side-effect-free glob check before ninja starts. A mismatch
+   means a reconfigure, so the build is refused.
+2. A watcher that kills ninja's whole process group if CMake re-runs or an
+   unexpected object is reported. Tested: no compiler survives the abort.
+
+`scripts/e1_5_install_ns3_program.sh`:
+- uses the guard;
+- needs `ALLOW_RECONFIGURE=1` for a new program file;
+- now builds the E1.5 program with exactly 1 object compiled.
+
+Not re-run: the 121 regression suites. Their test libraries were not
+rebuilt, and a rebuild of the libraries from the same sources and options
+does not change the code under test.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

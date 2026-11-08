@@ -1022,5 +1022,61 @@ What is established nonetheless, each by a passed check:
 DirectPath issue: DirectPath with OFDMA (shared empty BeamId), and hazard
 14. Filing them is the user's decision.
 
+### E1.5.3: single-UE NR link mapping (PRE-REGISTERED 2026-11-08)
+
+Config `configs/e1/e1_5_3_link_mapping.json`, script
+`scripts/e1_5_3_link_mapping.py`, tests `tests/test_e1_5_3_link_mapping.py`.
+This narrows the plan of section 4 to the quantity E1.3-E1.5.5 need: the
+SNR-to-SE mapping. Offered-load and delay curves are not needed for the
+feasibility question.
+
+**Why.** E1.3 and E1.4 use TR 36.942's E-UTRA-era mapping (UL α 0.4, capped
+at 2.0 bit/s/Hz). Under F2, uplink feasibility needs link SE 1.5, which
+takes 10.95 dB with α 0.4. The UL verdicts hinge on this curve.
+
+**Hazard found while preparing.** 5G-LENA's default error model, for both
+link adaptation and decoding, is `NrLteMiErrorModel`, an LTE model. The
+NR LDPC models must be set explicitly. The program's new `--errorModel`
+option sets them for the gNB DL and UL AMC, the UE's CQI and both decoders.
+Every run reads all four back.
+
+**Design.**
+- One UE, isotropic, AWGN (mode `link`, E1.5.1-verified).
+- 75 losses from 76 to 150 dB, each run carrying saturating DL and UL
+  together: DL SNR −9.6 to +64 dB, UL −32.6 to +41 dB.
+- Two error models: `NrEesmIrT2` (MCS table 2, 256QAM, primary) and
+  `NrEesmIrT1` (64QAM, sensitivity).
+- TdmaPF scheduler; measurement window 0.2-0.6 s.
+- **Metric:** decoded TB bits divided by all the data resources used (RBs
+  × symbols, including corrupt TBs and retransmissions). This is E1.3's
+  normalisation: the rate while the direction's resources are in use,
+  without the TDD duty cycle or control overhead.
+
+**Fit.**
+- Thr_max: the maximum measured SE.
+- α: least squares on the points with 0 < SE ≤ 0.9 Thr_max.
+- SNR_min: the lowest grid SNR with SE > 0.
+- Reported: the Shannon-gap form, and the SNR needed for the F2 link SE
+  (2.25 DL, 1.5 UL) under each mapping.
+
+**Checks.**
+
+| Check | Requirement |
+|---|---|
+| R3 | E1.5.2-0 byte-identical (includes the E1.5.1 link-mode rerun) |
+| E0 | all four error-model readbacks equal the requested model |
+| V | every TB's SINR = Python SNR within 0.01 dB |
+| M | MCS ≤ 27 (T2) or ≤ 28 (T1), and the top MCS on ≥ 90% of DL TBs at the lowest loss |
+| C | ≥ 50 TBs per direction for every point in [−10, 35] dB |
+
+**Decision.** If all checks pass, E1.5.5 and E1c use the T2 mapping in
+TR 36.942 form with the fitted α, Thr_max and SNR_min, provided its maximum
+fit error is ≤ 0.3 bit/s/Hz; otherwise the empirical curve. T1 and TR
+36.942 are sensitivities. Disagreement with TR 36.942 is a result, not a
+failure.
+
+**Limits.** AWGN only (fading enters through E1.5.2-1), one layer, ideal
+control channels, CQI from the exact SINR, no UL power control.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

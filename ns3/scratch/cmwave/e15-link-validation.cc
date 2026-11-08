@@ -1587,6 +1587,9 @@ main(int argc, char* argv[])
     cmd.AddValue("simTime", "simulation end [s]", simTime);
     cmd.AddValue("tddPattern", "gNB TDD slot pattern", tddPattern);
     cmd.AddValue("enableRlf", "UE radio-link-failure detection", enableRlf);
+    std::string errorModel; // E1.5.3, mode link: empty = NR default (unchanged)
+    cmd.AddValue("errorModel", "mode link: DL and UL error model TypeId (e.g. ns3::NrEesmIrT2); empty = NR default",
+                 errorModel);
     // E1.5.2 modes (the default mode "link" ignores these arguments)
     std::string mode = "link";
     std::string linksFile;
@@ -1786,6 +1789,14 @@ main(int argc, char* argv[])
         set("NumColumns", UintegerValue(1));
         set("AntennaElement", PointerValue(CreateObject<IsotropicAntennaModel>()));
     }
+    if (!errorModel.empty())
+    {
+        // E1.5.3: NR LDPC error model for AMC (gNB DL/UL, and the UE's DL AMC, which NR
+        // creates from the gNB DL AMC factory) and for decoding (both spectrum PHYs). The
+        // NR default is NrLteMiErrorModel.
+        nrHelper->SetDlErrorModel(errorModel);
+        nrHelper->SetUlErrorModel(errorModel);
+    }
 
     NetDeviceContainer gnbDevs = nrHelper->InstallGnbDevice(gnbNodes, allBwps);
     NetDeviceContainer ueDevs = nrHelper->InstallUeDevice(ueNodes, allBwps);
@@ -1877,10 +1888,36 @@ main(int argc, char* argv[])
         DoubleValue ueP;
         up->GetAttribute("TxPower", ueP);
         info << "ue_tx_power_dbm," << ueP.Get() << '\n';
+        if (!errorModel.empty())
+        {
+            auto sched = DynamicCast<NrMacSchedulerNs3>(
+                DynamicCast<NrGnbNetDevice>(gnbDevs.Get(0))->GetScheduler(0));
+            NS_ABORT_MSG_IF(!sched, "scheduler is not an NrMacSchedulerNs3");
+            info << "error_model_requested," << errorModel << '\n'
+                 << "error_model_gnb_dl_amc," << sched->GetDlAmc()->GetErrorModelType().GetName() << '\n'
+                 << "error_model_gnb_ul_amc," << sched->GetUlAmc()->GetErrorModelType().GetName() << '\n';
+        }
     }
 
     Simulator::Stop(Seconds(simTime));
     Simulator::Run();
+
+    if (!errorModel.empty())
+    {
+        // E1.5.3: type of the error-model INSTANCES used for decoding (created at the first TB)
+        std::ofstream em("e153_error_model.csv");
+        em << "device,ue_index,error_model_instance\n";
+        auto name = [](Ptr<NrErrorModel> m) {
+            return m ? m->GetInstanceTypeId().GetName() : std::string("none");
+        };
+        em << "gnb,-1," << name(NrHelper::GetGnbPhy(gnbDevs.Get(0), 0)->GetSpectrumPhy()->GetErrorModel())
+           << '\n';
+        for (uint32_t i = 0; i < nUe; ++i)
+        {
+            em << "ue," << i << ','
+               << name(NrHelper::GetUePhy(ueDevs.Get(i), 0)->GetSpectrumPhy()->GetErrorModel()) << '\n';
+        }
+    }
 
     std::ofstream rp("e15_dl_rxpower.csv");
     rp << "ue_index,n_rb_samples,min_rb_power_dbm,max_rb_power_dbm\n";

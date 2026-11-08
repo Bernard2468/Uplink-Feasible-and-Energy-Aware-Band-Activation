@@ -1,0 +1,84 @@
+{
+  "experiment": "E1.5.3: single-UE NR link-level mapping. 5G-LENA SNR -> spectral efficiency per used resource (NR LDPC error model, AMC at 10% BLER target, HARQ) against the TR 36.942 attenuated and truncated Shannon mapping used in E1.3-E1.4",
+  "status": "PRE-REGISTERED 2026-11-08, committed before the first measured run; grid, metric, fit, checks and decision rules are not changed after results are seen",
+  "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.3'",
+  "why": "E1.3/E1.4 map SNR to rate with TR 36.942 V19 Annex A.1 (DL alpha 0.6, Thr_max 4.4; UL alpha 0.4, Thr_max 2.0; SNR_min -10 dB), E-UTRA-era values. Under F2 (10 users time-sharing) the UL needs link SE 1.5 bit/s/Hz, i.e. 10.95 dB with alpha 0.4. The UL feasibility result depends on this mapping",
+  "seen_before_registration": "one smoke point on a synthetic loss (110 dB at 3.5 GHz, NrEesmIrT2): DL MCS 27, 6.32 bit/s/Hz per used resource; UL MCS 7, 1.63 bit/s/Hz. No other point, no fit",
+  "stack": {
+    "ns3_commit": "d083a17a",
+    "nr_commit": "cedceadd",
+    "program": "ns3/scratch/cmwave/e15-link-validation.cc mode link (E1.5.1) with --errorModel=<TypeId> (sets the DL and UL error model of the AMCs and of decoding); without it mode link is unchanged (check R3)"
+  },
+  "source_facts": [
+    "the NR default error model of AMC and decoding is NrLteMiErrorModel (LTE MI-based); NR LDPC models are NrEesmIrT1 (MCS table 1, up to 64QAM) and NrEesmIrT2 (MCS table 2, up to 256QAM), IR HARQ combining",
+    "NrHelper::SetDlErrorModel sets the gNB DL AMC and the UE spectrum PHY; the UE's DL AMC is created from the gNB DL AMC factory (nr-helper.cc line 538), so the UE's CQI uses the same model; SetUlErrorModel sets the gNB UL AMC and gNB spectrum PHY",
+    "NrAmc with AmcModel ErrorModel selects the highest MCS with TBLER <= 0.1 (nr-amc.cc)",
+    "control channels are ideal in 5G-LENA, so DL feedback works whatever the UL data quality"
+  ],
+  "setup": {
+    "ue": "one UE, isotropic 1x1 at both ends, no fading, no shadowing, prescribed loss (mode link, as E1.5.1)",
+    "carrier_hz": 3500000000.0,
+    "carrier_note": "the mapping depends on SNR only (AWGN, no Doppler); one carrier suffices; E1.5.1 showed the SNR identity at both carriers",
+    "common": "E1.5.1 common settings: 20 MHz, numerology 1, 51 RBs (RbOverhead 0.073), 44 dBm gNB (UniformPowerAllocBw), 23 dBm UE (UniformPowerAllocUsed, no UL power control), NF 5/7 dB, DDDSU",
+    "scheduler": "ns3::NrMacSchedulerTdmaPF (single UE: every RB of every data symbol it is given)",
+    "traffic": "saturating UDP CBR both directions at once: DL 300 Mbit/s, UL 100 Mbit/s, 1000-byte packets (above the 20 MHz capacity)",
+    "app_start_s": 0.1,
+    "sim_time_s": 0.6,
+    "window_s": [
+      0.2,
+      0.6
+    ],
+    "loss_grid_db": {
+      "start": 76.0,
+      "stop": 150.0,
+      "step": 1.0
+    },
+    "grid_note": "DL SNR = 140.4 - L and UL full-band SNR = 117.4 - L (Python link budget); the grid covers DL -9.6 ... +64 dB and UL -32.6 ... +41 dB",
+    "error_models": [
+      {
+        "tag": "t2",
+        "type": "ns3::NrEesmIrT2",
+        "role": "primary (MCS table 2, 256QAM)"
+      },
+      {
+        "tag": "t1",
+        "type": "ns3::NrEesmIrT1",
+        "role": "sensitivity (MCS table 1, 64QAM)"
+      }
+    ]
+  },
+  "metric": {
+    "se_used": "per run and direction, over the TBs received in the window (TBs counted by key, erratum 1): SE = sum of TB bits of decoded TBs (corrupt = 0, any rv) / sum over ALL received TBs incl. corrupt and retransmissions of (rb_assigned x 12 x 30 kHz x num_sym x T_sym), T_sym = 0.5 ms / 14. Bits per Hz per second while the direction's data resources are in use; DMRS and HARQ losses are included; PDCCH, guard and TDD duty cycle are not (the E1.3 normalisation: 'PHY rates while the direction's resources are in use')",
+    "snr": "DL: Python full-band SNR (E1.5.1-verified); UL: Python SNR with n = the TB's rb_assigned; one SNR per run and direction (median over its TBs)",
+    "reported": "first-transmission BLER, HARQ retransmission share, MCS histogram, SE including the TDD/control share (decoded bits / (51 RB x 12 x 30 kHz x window))"
+  },
+  "fit": {
+    "points": "per direction and error model, the runs with SNR in [-10, 35] dB and >= 50 TBs in the window",
+    "thr_max": "maximum measured SE over all runs of that direction and model",
+    "alpha": "least squares of SE = alpha log2(1 + snr) over the fit points with 0 < SE <= 0.9 Thr_max (closed form)",
+    "snr_min": "lowest SNR grid point with SE > 0",
+    "gap_form_reported": "Shannon-gap fit SE = log2(1 + snr / Gamma) on the same points (1-D search, Gamma in dB, 0.01 dB step)",
+    "goodness": "max and RMS |SE_meas - SE_fit| over the fit points",
+    "required_snr": "SNR needed for link SE 2.25 (DL) and 1.5 (UL), the F2 thresholds (0.225 / 0.15 bit/s/Hz x 10 users), under TR 36.942, the fitted form and the empirical curve"
+  },
+  "checks": {
+    "R3_link_mode_unchanged": "scripts/e1_5_2_0_conventions.py rerun with the E1.5.3 build into results/phase2/e1_5_3_link_mapping/r3_e1520_rerun: all checks pass and all 98 raw data files of its 21 runs byte-identical to E1.5.2-0 run 3 (includes the E1.5.1 link-mode rerun R0)",
+    "E0_error_model": "every run: the gNB DL AMC, gNB UL AMC, gNB and UE decoding error-model instances are all of the requested type",
+    "V_snr_identity": "every TB of every run: DL |10 log10(m_sinr) - SNR_python| <= 0.01 dB; UL |10 log10(m_sinr) - SNR_python(n = rb_assigned)| <= 0.01 dB",
+    "M_mcs_table": "t2: every TB has MCS <= 27 and >= 90% of the DL TBs of the lowest-loss run use MCS 27; t1: MCS <= 28 and >= 90% use MCS 28",
+    "C_coverage": "every run with SNR in [-10, 35] dB in a direction has >= 50 TBs of that direction in the window"
+  },
+  "decision_rules": {
+    "valid": "R3, E0, V, M and C pass -> the measured curves are the 5G-LENA link mapping",
+    "mapping_for_e1_5_5_and_e1c": "primary: t2 in the TR 36.942 functional form with the fitted alpha, Thr_max and SNR_min per direction, IF its max |SE_meas - SE_fit| on the fit points is <= 0.3 bit/s/Hz; otherwise the empirical t2 curve (piecewise linear in SNR dB over the grid). Sensitivities: t1 (same rule) and TR 36.942 V19 Table A.1 (legacy)",
+    "no_agreement_criterion": "disagreement with TR 36.942 is a result, not a failure",
+    "stop": "R3, E0, V, M or C fails -> stop and diagnose; evidence kept; nothing is changed after results are seen"
+  },
+  "limits": "AWGN (no fading; fading enters through E1.5.2-1's gain distribution), one layer, one UE, ideal control channels, CQI from the exact SINR, no UL power control, 20 MHz",
+  "instrument_checks_before_commit": [
+    "program rebuilt (1 object, no warnings); NrSpectrumPhy's ErrorModelType attribute is set-only, so the decoding model is read back from the instances after the run (e153_error_model.csv); AMC types read back before the run",
+    "smoke point (synthetic loss 110 dB, NrEesmIrT2): readbacks all ns3::NrEesmIrT2; 5.7 s, 79 MB; 480 DL and 316 UL TBs in the window",
+    "final build SHA-256 cd4c144f9b0435904876fe3ab93f92a206982bce22d2773f7b7de861e92327e8: E1.5.2-0 rerun into a scratch directory passes with 98/98 raw files of its 21 runs byte-identical to run 3 (includes the E1.5.1 link-mode rerun)",
+    "unit tests tests/test_e1_5_3_link_mapping.py (metric, fit recovery, gap form, required SNR); full suite 107/107"
+  ]
+}

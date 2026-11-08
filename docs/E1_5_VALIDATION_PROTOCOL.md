@@ -852,7 +852,7 @@ the CIs above carry the uncertainty.
 - Pre-Release-19 fast-fading tables.
 - The 27 positions are not an area sample.
 
-### E1.5.4-0: OFDMA co-scheduling under DirectPath (PRE-REGISTERED 2026-11-08; AMENDED after run 1)
+### E1.5.4-0: OFDMA co-scheduling under DirectPath (PRE-REGISTERED 2026-11-08; AMENDED after run 1; run 2 NOT established, mechanism explained)
 
 Config `configs/e1/e1_5_4_0_ofdma_diagnostic.json`, script
 `scripts/e1_5_4_0_ofdma_diagnostic.py`, tests
@@ -959,6 +959,68 @@ Amendment 1 (after run 1, `132dc5c`):
 - **Evidence.** `validation_run1_failed.json`,
   `manifest_run1_failed.json`, `summary_run1.json.gz`; `raw/run1_failed/`
   is kept locally.
+
+#### E1.5.4-0 results (run 2): formally NOT established (P4a); run-2 discrepancy explained (2026-11-08)
+
+Run 2 from `df030b5` (1.6 min). Files are in
+`results/phase2/e1_5_4_0_ofdma_diagnostic/`. Run 2 reproduced run 1 for
+K0-K4, as predicted.
+
+| Check | Result |
+|---|---|
+| R2 | 9 replays byte-identical to E1.5.2-0 run 2 (5 files each) |
+| J1-J3 | every TB joined to its DCI and RB count; every new-data DCI has its MAC record; 670 retransmission DCIs lack one, as diagnosed |
+| **H1a** (K0, K1) | **holds for every TB:** 4,499 replayed run-2 TBs and 938 K1 TBs, max error 4.3e-14 dB |
+| K1_power | 461 two-UE groups (pair ue01, ue08, 62° apart); own-beam identity fails on 461 TBs, by up to 29.6 dB |
+| P2 (K2) | no shared groups; 954/954 TBs match their own beam |
+| P3 (K3) | 461 shared groups; 938/938 TBs match their own beam |
+| P4 (as registered) | FAILED: the three 30° K4 runs carried no DL data (hazard 14) |
+| **P4a** (amendment 1) | **FAILED in 1 of 9 runs.** K4b, array B, 30° sector: 475 TBs, all matching their own beam, but 11 of 12 UEs were never scheduled |
+| H1b (reported) | the MAC order misidentifies the winning beam for 977 TBs, the DCI send order for 3,149 |
+
+**Verdict.** By the pre-registered rule the stage is NOT established,
+because P4a failed. The not-established branch applies: OFDMA TB SINR under
+DirectPath stays unvalidated and is not used in E1.5.4. No further
+amendment is made to reach a pass.
+
+What is established nonetheless, each by a passed check:
+1. **The 4,282 run-2 discrepancies are fully explained** (H1a, 0
+   exceptions, 4.3e-14 dB).
+   - In every group of co-scheduled TBs, each TB's SINR is the SINR of its
+     UE under one co-scheduled UE's beam, over the TB's own RBs.
+   - Against the UE's own beam the error spans −67 to +19 dB in K0.
+   - NR's SINR computation is correct. The transmission is mis-beamed,
+     because DirectPath gives every UE the same BeamId and the gNB holds
+     one analog beam per symbol.
+2. **Distinct BeamIds remove the mis-beaming.** Over 7,849 TBs (K2, the 6
+   K4 runs with data, K4b), every TB matches its own beam within 0.01 dB
+   and no two UEs share symbols.
+3. **Co-scheduling within one physical beam is computed correctly** (P3).
+4. **Hazard 14: 5G-LENA OFDMA with per-UE beams.**
+   - 13 beams in a sector: no DL data at all.
+   - 12 beams with array B: 11 of 12 UEs never scheduled. With array A,
+     12 beams served every UE.
+   - Located so far: integer division in the load-based symbols-per-beam
+     split, beams left with one symbol, and the leftover symbol always
+     going to the same beam. The full root cause is not isolated.
+   - It fails silently (exit 0) and crashes with logging on.
+
+**Consequences for E1.5.4** (to be fixed in its own pre-registration):
+- OFDMA with DirectPath's shared BeamId is never used.
+- OFDMA with per-UE BeamIds is not a reliable multiple-access model in this
+  5G-LENA version when a sector has many beams (hazard 14).
+- With one analog beam per symbol, UEs in different directions can only be
+  time-multiplexed. Frequency multiplexing across directions, which
+  E1.5.0's F3 surrogate assumes, needs a digital or hybrid gNB that this
+  PHY does not model. E1.5.4 must therefore decide how F3 is tested, for
+  example with an explicitly labelled isotropic (beamless) counterfactual,
+  or analytically.
+- The TDMA arm (TdmaPF, per-UE beams, one UE per symbol group) is not
+  affected.
+
+**Upstream.** Two further items exist, separate from the receive-side
+DirectPath issue: DirectPath with OFDMA (shared empty BeamId), and hazard
+14. Filing them is the user's decision.
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

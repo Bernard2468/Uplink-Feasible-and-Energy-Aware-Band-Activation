@@ -1,0 +1,70 @@
+{
+  "checks": {
+    "R2_replay_identical": {
+      "differing": {},
+      "passed": true
+    },
+    "J1_J3_join": {
+      "passed": true,
+      "failures": {},
+      "retx_dcis_without_mac_record": 670
+    },
+    "H1a_K0_K1": {
+      "passed": true
+    },
+    "H1b_K0_K1_reported": {
+      "decision_relevant": false,
+      "h1b_fail_tbs_mac_order": 977,
+      "h1b_fail_tbs_dci_send_order": 3149,
+      "passed": false
+    },
+    "K1_power": {
+      "two_ue_groups": 461,
+      "own_fail_cosched": 461,
+      "passed": true
+    },
+    "P2_K2": {
+      "passed": true
+    },
+    "P3_K3": {
+      "passed": true
+    },
+    "P4_K4": {
+      "decision_relevant": false,
+      "superseded_by": "P4a_amended (amendment 1)",
+      "failed_runs": [
+        "k4_a_f3p5_b30",
+        "k4_a_f7p2_b30",
+        "k4_b_f7p2_b30"
+      ],
+      "passed": false
+    },
+    "hazard14_reported": {
+      "decision_relevant": false,
+      "k4_runs_without_any_dl_dci": [
+        "k4_a_f3p5_b30",
+        "k4_a_f7p2_b30",
+        "k4_b_f7p2_b30"
+      ],
+      "passed": false
+    },
+    "P4a_amended": {
+      "runs": [
+        "k4_a_f3p5_b150",
+        "k4_a_f3p5_b270",
+        "k4_a_f7p2_b150",
+        "k4_a_f7p2_b270",
+        "k4_b_f7p2_b150",
+        "k4_b_f7p2_b270",
+        "k4b_a_f3p5_b30",
+        "k4b_a_f7p2_b30",
+        "k4b_b_f7p2_b30"
+      ],
+      "failed_runs": [
+        "k4b_b_f7p2_b30"
+      ],
+      "passed": false
+    }
+  },
+  "all_checks_passed": false
+}

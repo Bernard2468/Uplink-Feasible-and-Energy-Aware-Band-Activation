@@ -1035,6 +1035,11 @@ ChannelBeam(const std::string& kind,
     slm->CalcRxPowerSpectralDensity(txParams, gMob, uMob, gUpa, uUpa);
     auto m = slm->GetChannelModel()->GetChannel(gMob, uMob, gUpa, uUpa);
     NS_ABORT_MSG_IF(m->IsReverse(gUpa->GetId(), uUpa->GetId()), "gNB is not the transmit side s");
+    if (kind == "dpid")
+    {
+        // E1.5.4-0: the DirectPath vector itself, saved with a distinct BeamId per UE
+        return CreateDirectPathBfv(gMob, uMob, gUpa);
+    }
     const std::vector<Cplx> h =
         PerRbChannel(m, slm->GetChannelModel()->GetParams(gMob, uMob), txParams->psd);
     const size_t K = txParams->psd->GetValuesN();
@@ -1156,6 +1161,80 @@ WriteRbAfterAttach(NetDeviceContainer ueDevs, std::string path)
  * (e152_nr_direct.csv) together with the role of the gNB in the stored channel
  * matrix, so that every DL TB SINR can be compared with it.
  */
+// ---------------------------------------------------------------------------
+// E1.5.4-0 (OFDMA co-scheduling diagnostic), mode nrfading with --ofdmaDiag=1:
+//   e15od_dci.csv    every DL data DCI sent by the gNB, in PHY send order within the slot,
+//                    with its RBG bitmask (GnbPhyTxedCtrlMsgsTrace)
+//   e15od_dl_tb.csv  every DL TB at the UE with frame/subframe/slot/symbol (RxPacketTraceUe)
+//   e15od_rb_gain.csv after the run: per-RB gain of UE j when the gNB holds UE b's beam
+// ---------------------------------------------------------------------------
+static std::ofstream g_odDci;
+static std::ofstream g_odTb;
+static int64_t g_odSlotKey{-1};
+static uint32_t g_odSeq{0};
+
+static void
+OdDciTrace(SfnSf sfn, uint16_t /* cellId */, uint16_t /* rnti */, uint8_t /* bwpId */,
+           Ptr<const NrControlMessage> msg)
+{
+    if (msg->GetMessageType() != NrControlMessage::DL_DCI)
+    {
+        return;
+    }
+    // GetDciInfoElement() is not const in NR; the message is only read here.
+    auto dciMsg = DynamicCast<NrDlDciMessage>(ConstCast<NrControlMessage>(msg));
+    NS_ABORT_MSG_IF(!dciMsg, "DL_DCI message is not an NrDlDciMessage");
+    auto dci = dciMsg->GetDciInfoElement();
+    const int64_t key = int64_t(sfn.GetFrame()) * 1000 + sfn.GetSubframe() * 50 + sfn.GetSlot();
+    if (key != g_odSlotKey)
+    {
+        g_odSlotKey = key;
+        g_odSeq = 0;
+    }
+    std::string mask;
+    for (size_t k = 0; k < dci->m_rbgBitmask.size(); ++k)
+    {
+        mask += dci->m_rbgBitmask[k] ? '1' : '0';
+    }
+    g_odDci << Simulator::Now().GetNanoSeconds() << ',' << sfn.GetFrame() << ','
+            << +sfn.GetSubframe() << ',' << +sfn.GetSlot() << ',' << g_odSeq++ << ',' << dci->m_rnti
+            << ',' << +dci->m_symStart << ',' << +dci->m_numSym << ',' << +dci->m_mcs << ','
+            << +dci->m_rv << ',' << mask << '\n';
+}
+
+// MAC allocation order (NrGnbMac::DoSchedConfigIndication fires DlScheduling while
+// iterating the slot allocation list that it hands to the PHY, which schedules the
+// allocations in that order). The DCI trace order is NOT this order: the PHY sorts its
+// control-message list (std::list<Ptr<...>>::sort, i.e. by pointer value).
+static std::ofstream g_odSched;
+static int64_t g_odSchedKey{-1};
+static uint32_t g_odSchedSeq{0};
+
+static void
+OdDlSchedTrace(NrSchedulingCallbackInfo s)
+{
+    const int64_t key = int64_t(s.m_frameNum) * 1000 + s.m_subframeNum * 50 + s.m_slotNum;
+    if (key != g_odSchedKey)
+    {
+        g_odSchedKey = key;
+        g_odSchedSeq = 0;
+    }
+    g_odSched << Simulator::Now().GetNanoSeconds() << ',' << s.m_frameNum << ',' << +s.m_subframeNum
+              << ',' << s.m_slotNum << ',' << g_odSchedSeq++ << ',' << s.m_rnti << ','
+              << +s.m_symStart << ',' << +s.m_numSym << ',' << +s.m_mcs << ',' << s.m_tbSize << ','
+              << +s.m_rv << '\n';
+}
+
+static void
+OdTbTrace(uint32_t ueIndex, RxPacketTraceParams p)
+{
+    g_odTb << ueIndex << ',' << p.m_rnti << ',' << Simulator::Now().GetNanoSeconds() << ','
+           << p.m_frameNum << ',' << +p.m_subframeNum << ',' << p.m_slotNum << ','
+           << +p.m_symStart << ',' << +p.m_numSym << ',' << std::setprecision(17) << p.m_sinr
+           << ',' << p.m_rbAssignedNum << ',' << +p.m_mcs << ',' << +p.m_rv << ','
+           << p.m_corrupt << '\n';
+}
+
 static int
 RunNrFadingMode(const std::string& linksFile,
                 double frequency,
@@ -1176,10 +1255,11 @@ RunNrFadingMode(const std::string& linksFile,
                 double simTime,
                 const std::string& tddPattern,
                 const std::string& gnbBeam,
-                uint32_t oversampling)
+                uint32_t oversampling,
+                bool ofdmaDiag)
 {
-    NS_ABORT_MSG_IF(gnbBeam != "dp" && gnbBeam != "cb" && gnbBeam != "eig",
-                    "gnbBeam must be dp, cb or eig");
+    NS_ABORT_MSG_IF(gnbBeam != "dp" && gnbBeam != "cb" && gnbBeam != "eig" && gnbBeam != "dpid",
+                    "gnbBeam must be dp, cb, eig or dpid");
     auto links = ReadLinks(linksFile);
     const uint32_t nUe = links.size();
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));
@@ -1355,6 +1435,27 @@ RunNrFadingMode(const std::string& linksFile,
              << "sim_time_s," << simTime << '\n';
     }
 
+    if (ofdmaDiag)
+    {
+        g_odDci.open("e15od_dci.csv");
+        g_odDci << "time_ns,frame,subframe,slot,seq_in_slot,rnti,sym_start,num_sym,mcs,rv,rbg_bitmask\n";
+        gp->TraceConnectWithoutContext("GnbPhyTxedCtrlMsgsTrace", MakeCallback(&OdDciTrace));
+        g_odSched.open("e15od_dl_sched.csv");
+        g_odSched << "time_ns,frame,subframe,slot,seq_in_slot,rnti,sym_start,num_sym,mcs,tb_size,rv\n";
+        DynamicCast<NrGnbNetDevice>(gnbDevs.Get(0))
+            ->GetMac(0)
+            ->TraceConnectWithoutContext("DlScheduling", MakeCallback(&OdDlSchedTrace));
+        g_odTb.open("e15od_dl_tb.csv");
+        g_odTb << "ue_index,rnti,time_ns,frame,subframe,slot,sym_start,num_sym,sinr_lin,rb_assigned,mcs,"
+                  "rv,corrupt\n";
+        for (uint32_t i = 0; i < nUe; ++i)
+        {
+            NrHelper::GetUePhy(ueDevs.Get(i), 0)
+                ->GetSpectrumPhy()
+                ->TraceConnectWithoutContext("RxPacketTraceUe", MakeBoundCallback(&OdTbTrace, i));
+        }
+    }
+
     Simulator::Stop(Seconds(simTime));
     Simulator::Run();
 
@@ -1362,6 +1463,35 @@ RunNrFadingMode(const std::string& linksFile,
     NS_ABORT_MSG_IF(!gUpa, "gNB antenna is not a UniformPlanarArray");
     auto txParams = FlatTxParams(gp->GetRbNum(), frequency, gp->GetSubcarrierSpacing());
     const double txSum = Sum(*txParams->psd);
+    if (ofdmaDiag)
+    {
+        // Per-RB gain of UE j (rows) when the gNB array holds the beam that its beam
+        // manager stores for UE b, on the same channel objects (flat unit tx PSD).
+        g_odDci.close();
+        g_odTb.close();
+        g_odSched.close();
+        auto bm = gp->GetSpectrumPhy()->GetBeamManager();
+        std::ofstream rbOut("e15od_rb_gain.csv");
+        rbOut << "ue_index,beam_ue_index,rb,gain_lin\n";
+        for (uint32_t j = 0; j < nUe; ++j)
+        {
+            Ptr<MobilityModel> uMob = ueNodes.Get(j)->GetObject<MobilityModel>();
+            auto uUpa = DynamicCast<UniformPlanarArray>(
+                NrHelper::GetUePhy(ueDevs.Get(j), 0)->GetSpectrumPhy()->GetAntenna());
+            uUpa->SetBeamformingVector(CreateDirectPathBfv(uMob, gMob, uUpa));
+            for (uint32_t b = 0; b < nUe; ++b)
+            {
+                gUpa->SetBeamformingVector(bm->GetBeamformingVector(ueDevs.Get(b)));
+                Ptr<SpectrumSignalParameters> rx =
+                    slm->CalcRxPowerSpectralDensity(txParams, gMob, uMob, gUpa, uUpa);
+                for (size_t k = 0; k < rx->psd->GetValuesN(); ++k)
+                {
+                    rbOut << j << ',' << b << ',' << k << ',' << std::setprecision(17)
+                          << (*rx->psd)[k] / (*txParams->psd)[k] << '\n';
+                }
+            }
+        }
+    }
     if (gnbBeam != "dp")
     {
         // Gain of every link with the installed channel-computed beam, on the same
@@ -1489,6 +1619,9 @@ main(int argc, char* argv[])
     cmd.AddValue("gnbBeam", "dp (NR DirectPath), cb (DFT codebook) or eig (eigen beam) (mode nrfading)", gnbBeam);
     cmd.AddValue("oversampling", "DFT codebook oversampling per dimension (modes beams, nrfading)", oversampling);
     cmd.AddValue("dumpCopies", "copies per link whose per-RB channel is dumped (mode beams)", dumpCopies);
+    // E1.5.4-0 (mode nrfading)
+    bool ofdmaDiag = false;
+    cmd.AddValue("ofdmaDiag", "write DL DCI, slot-level TB and per-RB cross-beam gain files (mode nrfading)", ofdmaDiag);
     cmd.Parse(argc, argv);
     if (mode == "beams")
     {
@@ -1542,7 +1675,8 @@ main(int argc, char* argv[])
                                simTime,
                                tddPattern,
                                gnbBeam,
-                               oversampling);
+                               oversampling,
+                               ofdmaDiag);
     }
     NS_ABORT_MSG_IF(mode != "link", "unknown mode " << mode);
     NS_ABORT_MSG_IF(lossFile.empty(), "--lossFile is required");

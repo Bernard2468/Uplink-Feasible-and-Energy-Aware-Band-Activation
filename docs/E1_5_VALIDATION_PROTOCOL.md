@@ -852,5 +852,78 @@ the CIs above carry the uncertainty.
 - Pre-Release-19 fast-fading tables.
 - The 27 positions are not an area sample.
 
+### E1.5.4-0: OFDMA co-scheduling under DirectPath (PRE-REGISTERED 2026-11-08)
+
+Config `configs/e1/e1_5_4_0_ofdma_diagnostic.json`, script
+`scripts/e1_5_4_0_ofdma_diagnostic.py`, tests
+`tests/test_e1_5_4_0_ofdma_diagnostic.py`. This resolves the open item of
+E1.5.2-0 amendment 2 before any multi-UE stage.
+
+**Why.** In run 2, 4,282 OFDMA DL TBs that shared their symbols with other
+UEs were 54 dB below to 13 dB above the full-band gain of the UE's own beam.
+That comparison alone does not show a PHY error; it may be the wrong
+reference. Reading the source gave a specific, testable mechanism:
+- the schedulers key UEs by BeamId;
+- DirectPath gives every UE the same empty BeamId, so OFDMA puts several UEs
+  of one sector into the same symbols;
+- the gNB PHY changes its analog beam at most once per time instant, to the
+  UE of the first allocation it processes. The code comment reads "we hope
+  that the scheduler has scheduled UEs within the same beam".
+
+**Hypothesis H1.** For every TB, there is one co-scheduled UE b such that:
+- every TB of the group satisfies SINR = SNR_iso × the mean, over the TB's
+  own RBs, of the per-RB gain of the receiving UE with UE b's beam, within
+  0.01 dB (H1a, decision-relevant);
+- b is the UE of the group's first allocation in the MAC's allocation order
+  (H1b, reported).
+
+**Instrument.** Mode `nrfading` with `--ofdmaDiag=1` writes:
+- every DL DCI with its RBG bitmask;
+- every MAC DL allocation in list order (`DlScheduling` trace);
+- every TB with its slot and first symbol;
+- after the run, the per-RB gain of every UE under every UE's stored beam.
+
+`--gnbBeam=dpid` keeps the DirectPath vectors but gives each UE its own
+BeamId.
+
+**Cases.**
+- K0: replay of the 9 run-2 runs. They must be byte-identical (R2), so the
+  explanation applies to the failed evidence itself.
+- K1: two line-of-sight UEs in different directions.
+- K2: the K1 pair with distinct BeamIds.
+- K3: two co-located UEs, so their beams are identical.
+- K4: the K0 runs with distinct BeamIds.
+
+Predictions:
+- H1a holds in K0 and K1.
+- K1 can discriminate: there are at least 10 shared groups, and at least one
+  TB fails the own-beam identity.
+- K2 and K4 never put two UEs in the same symbols, and every TB matches its
+  own beam.
+- K3 shares symbols, and every TB matches its own beam.
+
+**Seen before this commit (declared in the config).** Smoke runs on a
+synthetic 2-UE geometry already showed H1a, and the K2 and K3 behaviour.
+They also showed that the first DCI in *send* order does not identify b: it
+failed in 454 of 922 co-scheduled TBs. The reason is that the PHY sorts its
+control-message list by pointer value. H1b was therefore restated against
+the MAC allocation order and made non-decision-relevant before this commit.
+A rerun showed the MAC order identifies b in only 345 of 461 synthetic
+groups, so which member's beam is used remains an open detail. The
+consequence follows from H1a alone.
+
+**Decision.** If H1a and all four predictions hold:
+- co-scheduled DirectPath TB SINR is a correct computation of a
+  mis-configured transmission (another UE's beam), not a measurement of the
+  UE's own link. It is never used.
+- E1.5.4 uses distinct BeamIds.
+- E1.5.4 must state the beam architecture: 5G-LENA's PHY has one analog
+  beam per symbol, so frequency multiplexing of UEs in different directions
+  (E1.5.0's F3 surrogate) needs a digital or hybrid gNB that this PHY does
+  not model.
+
+Otherwise, OFDMA SINR under DirectPath stays unvalidated and is not used.
+If R2 or the TB-DCI join fails, stop.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

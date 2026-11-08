@@ -1,0 +1,64 @@
+{
+  "experiment": "E1.5.4-0: what the reported SINR of OFDMA DL TBs co-scheduled under NR DirectPath beams means (open item of E1.5.2-0 amendment 2), resolved at resource level before any multi-UE stage",
+  "status": "PRE-REGISTERED 2026-11-08, committed before the first run; hypotheses, cases, checks, tolerances and decision rules are not changed after results are seen",
+  "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.4-0'",
+  "trigger": "E1.5.2-0 run 2 (58872cc, NrMacSchedulerOfdmaRR): 217 full-band DL TBs alone in their slot matched the channel-level gain within 3.2e-14 dB; 4,282 TBs co-scheduled in the same symbols on partial bands were off by -53.7 to +13.2 dB against the full-band gain of the UE's own beam",
+  "seen_before_registration": "the run-2 TB files and the run2_V0_diagnostic.txt split (full-band-alone vs co-scheduled); no per-RB, DCI or cross-beam data",
+  "stack": {
+    "ns3_commit": "d083a17a",
+    "nr_commit": "cedceadd",
+    "program": "ns3/scratch/cmwave/e15-link-validation.cc, mode nrfading: --ofdmaDiag=1 adds three output files and two passive trace connections; --gnbBeam=dpid saves each UE's DirectPath vector with a distinct BeamId (ue_index + 1, 0); with neither flag the mode is unchanged (check R2)"
+  },
+  "source_facts": [
+    "nr-gnb-phy.cc, DL data: 'if (Simulator::Now() > m_lastBfChange) { ... ChangeBeamformingVector(UE of this DCI) }' with the comment 'we hope that the scheduler has scheduled UEs within the same beam': the analog beam is changed at most once per time instant, to the UE of the first DCI processed at that instant",
+    "the schedulers key the active UEs by m_beamId (nr-mac-scheduler-ns3.cc: activeUe->find(ue->m_beamId)); the OFDMA scheduler assigns symbols per beam and shares the RBGs of those symbols among the UEs of that beam (nr-mac-scheduler-ofdma.cc AssignDLRBG, 'We keep beams per symbol fixed')",
+    "IdealBeamformingHelper with DirectPathBeamforming saves every UE's vector with the same empty BeamId, so all UEs of a sector form one OFDMA beam group",
+    "RxPacketTraceUe m_sinr is the LINEAR mean over the TB's RBs of the per-RB SINR; with UNIFORM_POWER_ALLOCATION_BW the per-RB transmit PSD does not depend on the allocation (E1.5.1 V1 passed on partial-band OFDMA TBs with isotropic antennas)",
+    "GnbPhyTxedCtrlMsgsTrace fires for every control message sent, including each DL DCI with its RBG bitmask; RxPacketTraceUe carries frame, subframe, slot and first symbol of the TB"
+  ],
+  "hypotheses": {
+    "H1a": "for every DL TB: with G the set of DL DCIs of the same slot and first symbol (its co-scheduling group), there is one UE b in G such that every TB of G satisfies |10 log10 SINR_TB - 10 log10(SNR_iso,j x mean over the TB's RBs of g_j,k(w_b))| <= 0.01 dB, where g_j,k(w_b) is the per-RB gain of the receiving UE j with UE b's stored beam, recomputed after the run on the same channel objects",
+    "H1b": "that UE b is the UE of the first DL data allocation of G in the MAC allocation order (NrGnbMac DlScheduling trace order: the list the MAC hands to the PHY, whose StartVarTti events at one time run in that order). Reported, not decision-relevant: the consequence follows from H1a alone",
+    "H1b_dci_send_order_reported": "the same with the DCI send order of GnbPhyTxedCtrlMsgsTrace; expected NOT to identify b, because NrGnbPhy sorts its control-message list by pointer value (ctrlMsgs.sort() on std::list<Ptr<NrControlMessage>>)",
+    "H0_reported": "own-beam identity (b = j) for every TB: expected to FAIL for co-scheduled TBs of UEs whose beams differ, and to hold for TBs alone in their symbols"
+  },
+  "cases": {
+    "K0_replay": "the 9 run-2 nrfading commands (manifest_run2_failed_V0.json; OfdmaRR, DirectPath, 1 Mbit/s per UE, RngRun 1), links files from raw/run2_failed/ (hash-checked), plus --ofdmaDiag=1",
+    "K1_two_ue_distinct": "two O2O LOS positions served by the 30 deg sector, chosen by rule: the pair with the largest azimuth separation seen from the gNB; array A, 7.2 GHz, OfdmaRR, DirectPath, 20 Mbit/s per UE (both buffers non-empty in most slots), RngRun 1",
+    "K2_two_ue_distinct_beamids": "the K1 pair with --gnbBeam=dpid (same DirectPath vectors, distinct BeamIds), otherwise as K1",
+    "K3_two_ue_same_beam": "two co-located copies of the first UE of the K1 pair (identical DirectPath vectors, independent channel realizations), DirectPath (shared empty BeamId), otherwise as K1",
+    "K4_replay_distinct_beamids": "the 9 K0 commands with --gnbBeam=dpid instead of the shared empty BeamId"
+  },
+  "common": "20 MHz, 51 RBs (RbOverhead 0.073), numerology 1, DDDSU, 44 dBm, NF 5/7 dB, app start 0.1 s, end 0.4 s, DL only, UE 1x1 isotropic, gNB 3GPP element UPA, TR 38.901 UMa fast fading with imposed E1.2 median losses (mode nrfading as in E1.5.2-0)",
+  "checks": {
+    "R2_replay_identical": "K0: e15_dl_tb.csv, e152_nr_direct.csv, e15_rrc_events.csv, e15_rb_after_attach.csv and e15_run_info.csv of every replay byte-identical (SHA-256) to run 2",
+    "J1_join": "every case: every DL TB (keyed (ue_index, rnti, time), erratum 1) has exactly one DL DCI with the same frame, subframe, slot, RNTI and first symbol, and the same number of symbols",
+    "J2_rb_count": "every joined TB: RBG bitmask length 51 (one RB per RBG) and its number of set bits equals the TB's rb_assigned",
+    "J3_mac_allocation": "every DL DCI has a MAC DL allocation (DlScheduling) with the same frame, subframe, slot, RNTI, first symbol and number of symbols (part of the join check)",
+    "H1a_K0_K1": "H1a holds for every TB of K0 and K1",
+    "H1b_K0_K1_reported": "H1b holds for every TB of K0 and K1 (reported with the DCI-send-order variant; not decision-relevant)",
+    "K1_power": "K1 has >= 10 groups with both UEs, and own-beam identity fails (> 0.01 dB) for >= 1 TB, so that the test can discriminate",
+    "P2_K2": "no group contains two UEs; every TB satisfies own-beam identity within 0.01 dB",
+    "P3_K3": ">= 10 groups contain both UEs; every TB satisfies own-beam identity within 0.01 dB",
+    "P4_K4": "no group contains two UEs; every TB satisfies own-beam identity within 0.01 dB; every UE has >= 10 TBs",
+    "definitions": "SNR_iso,j = the E1.5.1-verified Python DL SNR per RB for the E1.2 median loss of UE j (allocation-independent); TBs counted by key (erratum 1)"
+  },
+  "decision_rules": {
+    "established": "R2, J1-J3 pass and H1a, K1_power, P2, P3, P4 hold -> mechanism established: with a shared BeamId, 5G-LENA's OFDMA schedulers frequency-multiplex UEs whose physical beams differ, and the PHY transmits all of them with the first UE's beam. The co-scheduled TB SINR is then the SINR of the UE under another UE's beam on its own RBs: a correct computation of a mis-configured transmission, not a measurement of the UE's own link",
+    "consequences_if_established": [
+      "OFDMA TB SINR under DirectPath with the shared BeamId is never used as a measurement in E1.5.4 or later",
+      "E1.5.4 OFDMA runs use distinct per-UE BeamIds (K4-validated); 5G-LENA then multiplexes UEs with different beams in time, and in frequency only within one beam",
+      "E1.5.4 states its beam architecture: 5G-LENA's PHY holds one analog beam per symbol at the gNB, so frequency multiplexing of UEs in different directions (as assumed by E1.5.0's F3 'OFDMA share' surrogate) requires digital or hybrid beamforming, which this PHY does not model. How E1.5.4 tests F2 vs F3 under this constraint is decided in its own pre-registration",
+      "the finding is added to the upstream write-up as a separate usage hazard (DirectPath + OFDMA), only if the user decides to file"
+    ],
+    "not_established": "any of H1a, K1_power, P2, P3, P4 fails -> the mechanism is not the one stated; recorded; OFDMA TB SINR under DirectPath stays unvalidated and is not used in E1.5.4; diagnosis continues before E1.5.4",
+    "stop": "R2 or J1-J3 fails -> the instrument is wrong: stop and diagnose before evaluating H1"
+  },
+  "instrument_checks_before_commit": [
+    "program rebuilt (1 object, no warnings) after two instrument fixes: GetDciInfoElement() is non-const (ConstCast, read only); the slot number (uint8_t) was printed as a character",
+    "final build SHA-256 36b5456368da06212939d7483cc0fb3f7f1540dc531ddb403216630b174097dd: E1.5.2-0 rerun into a scratch directory passes all checks with 98/98 raw files of its 21 runs byte-identical to E1.5.2-0 run 3 (modes link, chan, nrfading dp unchanged)",
+    "smoke runs on a SYNTHETIC 2-UE geometry (gNB (0, 0, 25); UEs (100, 0) and (60, 80), or two co-located at (100, 0); 7.2 GHz, 8x16, OfdmaRR, 20 Mbit/s; not E1.1 positions). Join: every TB has its DCI, bitmask counts equal rb_assigned. Seen: with DirectPath, 461 two-UE groups; one member's beam explained every TB of each group within 2.1e-14 dB (H1a), while the other UE's own-beam identity failed by up to 37 dB; with distinct BeamIds no shared groups and every TB matched its own beam; co-located UEs shared groups and matched their own (identical) beams",
+    "the same smoke runs showed that the FIRST DCI IN SEND ORDER did not identify the beam in 454 of 922 co-scheduled TBs. Source reading explained it (the PHY sorts its control-message list by pointer value). H1b was therefore restated BEFORE this commit to the MAC allocation order (new trace e15od_dl_sched.csv, NrGnbMac DlScheduling), and made non-decision-relevant; the send-order variant is reported. This restatement was made after seeing synthetic data and is declared here. Rerun of the smoke with the MAC trace: the MAC order identified b in 345 of 461 two-UE groups (the MAC listed the same UE first in all 461; that UE's beam was used in 345 and the other's in 116); the DCI send order in about half. Which member's beam is used is therefore NOT predicted by either order; H1b stays reported only, and the identity rule is an open, non-decision-relevant detail",
+    "unit tests: tests/test_e1_5_4_0_ofdma_diagnostic.py (join, own-beam, H1a, H1b by MAC vs DCI order, J3)"
+  ]
+}

@@ -604,7 +604,7 @@ These numbers are a preview, not a result:
 - E1.4's S3 sensitivity assumed a 4.5 dB NLOS loss. The DirectPath preview
   is about twice that for 8x16 arrays, and larger again for 16x32.
 
-### E1.5.2-1: realised gNB gain (PRE-REGISTERED 2026-11-08)
+### E1.5.2-1: realised gNB gain (PRE-REGISTERED 2026-11-08; PASSED in run 1)
 
 Config `configs/e1/e1_5_2_1_beams.json`, script `scripts/e1_5_2_1_beams.py`,
 tests `tests/test_e1_5_2_1_beams.py`. Committed before the first measured run.
@@ -731,6 +731,126 @@ config):
   - The Python check now mirrors ns-3, agreeing within 2.9e-15. The
     tolerance is unchanged, and the exact-geometry difference (< 2e-8 dB)
     is reported.
+
+#### E1.5.2-1 results: PASSED in run 1 (2026-11-08)
+
+Run from `108524d` in 20 min; the array-B runs took 5.3 min each with
+1.3 GB peak memory. Files are in `results/phase2/e1_5_2_1_beams/`, with all
+32,400 realizations in `realizations.csv.gz`. Every check passed on the
+first run, with no amendment.
+
+| Check | Result |
+|---|---|
+| R1 | E1.5.2-0 rerun: 21 runs, 98/98 files byte-identical, all checks pass |
+| S1 | 6 × 5,400 realizations complete; gNB on side s; every eigenvalue certified |
+| I1 | rebuilt channel vs ns-3, DirectPath: max 9.8e-14 dB |
+| I2 | codebook beam installed in ns-3: max 1.8e-14 dB |
+| I3 | eigen beam installed in ns-3 vs bound: max 2.1e-9 dB |
+| I4 | numpy recomputation: DirectPath 8.5e-15, codebook 8.9e-16, eigenvalue 8.3e-10 relative; same beam selected |
+| D1 | largest beam/bound ratio 1 + 4.7e-10 |
+| N1 | isotropic mean gain −0.08 to +0.03 dB (limit ±0.25) |
+| V1 | 15 NR runs, 13,280 DL TBs with codebook or eigen beams: max \|error\| 2.8e-14 dB; ≥ 81 TBs per UE |
+
+Deficit against E1.4's ideal steering gain, in dB (median over positions, 95%
+position-bootstrap CI):
+
+| Array, carrier | Stratum | DirectPath | Codebook (primary) | Eigen bound | Per-RB MRT |
+|---|---|---|---|---|---|
+| A 8x16, 3.5 GHz | LOS (9) | 0.43 [0.41, 0.45] | 0.60 [0.51, 0.68] | 0.36 [0.28, 0.39] | 0.19 [-0.28, 0.28] |
+| A 8x16, 3.5 GHz | NLOS (18) | 12.56 [11.94, 13.31] | 5.05 [3.98, 5.89] | 3.99 [2.81, 4.75] | 0.78 [-0.28, 1.69] |
+| A 8x16, 3.5 GHz | O2I (27) | 10.38 [9.26, 10.72] | 4.79 [3.85, 5.29] | 3.03 [2.11, 3.49] | 0.35 [-0.41, 0.87] |
+| A 8x16, 7.2 GHz | LOS (9) | 0.47 [0.43, 0.50] | 0.58 [0.52, 0.73] | 0.36 [0.34, 0.40] | 0.17 [-0.16, 0.24] |
+| A 8x16, 7.2 GHz | NLOS (18) | 11.14 [10.69, 11.65] | 5.16 [4.01, 5.83] | 3.93 [2.93, 4.63] | 0.73 [-0.26, 1.51] |
+| A 8x16, 7.2 GHz | O2I (27) | 9.37 [8.87, 9.79] | 4.71 [3.96, 5.37] | 3.06 [2.31, 3.62] | 0.39 [-0.31, 0.81] |
+| B 16x32, 7.2 GHz | LOS (9) | 0.48 [0.44, 0.50] | 0.59 [0.51, 0.71] | 0.38 [0.26, 0.40] | 0.13 [-0.25, 0.29] |
+| B 16x32, 7.2 GHz | NLOS (18) | 17.01 [14.70, 17.90] | 6.26 [5.55, 7.29] | 4.36 [3.52, 5.18] | 0.61 [-0.37, 1.49] |
+| B 16x32, 7.2 GHz | O2I (27) | 15.42 [13.34, 16.54] | 6.90 [5.96, 7.23] | 3.37 [2.83, 3.99] | 0.23 [-0.35, 0.71] |
+
+Paired on the same realization, in dB (median over positions, 95% CI):
+
+| Array, carrier | Stratum | codebook − DirectPath | eigen − codebook | MRT − eigen | orthogonal-grid deficit |
+|---|---|---|---|---|---|
+| A 8x16, 3.5 GHz | LOS (9) | -0.14 [-0.25, -0.09] | 0.21 [0.13, 0.33] | 0.18 [0.06, 0.49] | 2.03 [0.64, 3.30] |
+| A 8x16, 3.5 GHz | NLOS (18) | 7.29 [6.33, 8.73] | 0.82 [0.78, 0.89] | 2.97 [2.88, 3.01] | 6.25 [5.35, 7.22] |
+| A 8x16, 3.5 GHz | O2I (27) | 4.95 [4.02, 6.00] | 1.53 [1.45, 1.69] | 2.51 [2.38, 2.55] | 5.97 [5.49, 6.58] |
+| A 8x16, 7.2 GHz | LOS (9) | -0.15 [-0.23, -0.09] | 0.21 [0.13, 0.31] | 0.14 [0.05, 0.43] | 2.10 [0.58, 3.35] |
+| A 8x16, 7.2 GHz | NLOS (18) | 5.97 [5.32, 7.17] | 0.90 [0.81, 0.99] | 2.98 [2.86, 3.01] | 6.34 [5.42, 7.75] |
+| A 8x16, 7.2 GHz | O2I (27) | 3.69 [3.33, 4.75] | 1.57 [1.50, 1.67] | 2.49 [2.43, 2.59] | 6.13 [5.45, 7.08] |
+| B 16x32, 7.2 GHz | LOS (9) | -0.15 [-0.25, -0.06] | 0.21 [0.16, 0.32] | 0.16 [0.05, 0.47] | 2.90 [0.78, 4.56] |
+| B 16x32, 7.2 GHz | NLOS (18) | 9.59 [8.88, 12.51] | 1.80 [1.74, 1.95] | 3.41 [3.36, 3.65] | 8.28 [7.26, 8.97] |
+| B 16x32, 7.2 GHz | O2I (27) | 7.78 [5.64, 10.17] | 3.15 [3.03, 3.44] | 3.02 [2.93, 3.06] | 8.63 [7.76, 9.01] |
+
+Differences in deficit between configurations, paired by position, in dB:
+
+| Comparison | Stratum | DirectPath | Codebook | Eigen bound |
+|---|---|---|---|---|
+| A: 7.2 minus 3.5 GHz | LOS | 0.04 [-0.00, 0.07] | 0.03 [-0.00, 0.05] | 0.01 [-0.02, 0.06] |
+| A: 7.2 minus 3.5 GHz | NLOS | -1.41 [-1.84, -1.03] | 0.03 [-0.13, 0.12] | -0.04 [-0.28, 0.08] |
+| A: 7.2 minus 3.5 GHz | O2I | -0.75 [-1.03, -0.62] | 0.07 [-0.04, 0.11] | 0.10 [-0.02, 0.17] |
+| 7.2 GHz: B minus A | LOS | 0.02 [-0.01, 0.04] | 0.06 [-0.12, 0.09] | -0.00 [-0.04, 0.01] |
+| 7.2 GHz: B minus A | NLOS | 5.47 [4.26, 7.01] | 1.42 [1.11, 1.55] | 0.58 [0.46, 0.62] |
+| 7.2 GHz: B minus A | O2I | 5.96 [4.28, 7.32] | 2.09 [1.86, 2.18] | 0.45 [0.27, 0.55] |
+
+The tables are generated from `summary.json`, not typed by hand.
+
+What is established (simulator-internal, TR 38.901 pre-Release-19 tables, 20 MHz):
+1. **LOS.** E1.4's ideal steering gain holds within 0.6 dB for every beam
+   type. The 4x-oversampled codebook loses 0.15 dB to DirectPath through
+   grid scalloping. An orthogonal (non-oversampled) grid loses 2-3 dB.
+2. **NLOS and O2I, one analog beam.**
+   - The codebook beam falls 4.7-5.2 dB short of the ideal for 8x16 arrays
+     and 6.3-6.9 dB for 16x32.
+   - The frequency-flat bound is only 0.8-1.6 dB (A) and 1.8-3.2 dB (B)
+     better, so finer beam search cannot recover much more.
+   - DirectPath falls 9-17 dB short. Geometric steering is not a valid
+     NLOS model.
+3. **The channel has the energy; one beam cannot collect it.** The per-RB
+   matched filter comes within 0.1-0.8 dB of the ideal gain in every
+   stratum. The loss comes from one frequency-flat beam (one direction over
+   20 MHz), not from the channel. A digital, frequency-selective precoder
+   with exact CSI would recover it; an analog single-beam gNB cannot.
+4. **No frequency dependence at equal element count.** With the codebook or
+   the bound, the deficit at 7.2 GHz equals that at 3.5 GHz within 0.1 dB
+   (CIs within ±0.3 dB). E1.4's carrier comparison in regime A is therefore
+   unchanged by realised beamforming. DirectPath alone is 0.8-1.4 dB
+   better at 7.2 GHz (smaller angular spreads in the tables), which is
+   irrelevant once DirectPath is not used.
+5. **Equal aperture costs more realised gain.**
+   - Array B loses 1.4 dB (NLOS) and 2.1 dB (O2I) more of its ideal gain
+     than A.
+   - Its ideal 6.02 dB advantage over A at 7.2 GHz therefore becomes about
+     4.6 dB in NLOS and 3.9 dB in O2I (codebook; 5.4-5.6 dB with the bound).
+   - Narrower beams capture a smaller share of the angular spread. In LOS
+     the advantage is intact.
+6. **The codebook deficit has no distance trend in NLOS** (Spearman
+   |ρ| ≤ 0.15), so the per-stratum model of the decision rule fits.
+   - DirectPath's NLOS deficit falls with distance (ρ = −0.70 to −0.94).
+     The TR 38.901 ZOD offset biases geometric steering most at short
+     range.
+   - In O2I at geometric-LOS positions, the codebook deficit rises with
+     distance (ρ ≈ 0.85, 9 positions). This is a caveat for E1c.
+7. **E1.4's S3 assumption** (4.5 dB NLOS loss, for regime C) has the size of
+   the measured regime-A codebook deficit. Regime C itself is not measured.
+
+**Decision applied (pre-registered rule).** E1.5.5 and E1c use G_E1.4 −
+D_cb, in dB. Sensitivities: DirectPath (lower) and the eigen bound (upper);
+the CIs above carry the uncertainty.
+
+| | LOS | NLOS | O2I |
+|---|---|---|---|
+| A, 3.5 GHz | 0.60 | 5.05 | 4.79 |
+| A, 7.2 GHz | 0.58 | 5.16 | 4.71 |
+| B, 7.2 GHz | 0.59 | 6.26 | 6.90 |
+
+**Limits of these numbers.**
+- Selection uses exact CSI: no beam-sweep overhead, measurement noise or
+  CSI ageing.
+- Single polarization, one port, the E1.4 serving sector.
+- 20 MHz. A wider band averages a frequency-flat beam over more frequency
+  selectivity, so deployment bandwidths (E1c) may lose somewhat more; this
+  is not measured here.
+- Pre-Release-19 fast-fading tables.
+- The 27 positions are not an area sample.
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

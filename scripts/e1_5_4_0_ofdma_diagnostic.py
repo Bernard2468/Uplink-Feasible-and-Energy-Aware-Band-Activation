@@ -111,7 +111,11 @@ def evaluate(rundir, links, cfg):
             continue
         joined.append((t, d, mask))
     sched = read_sched(rundir)
-    j3_fail = [k for k, d in dci.items() if k not in sched or int(sched[k]['num_sym']) != int(d['num_sym'])]
+    # Amendment 1: NrGnbMac fires DlScheduling only for new data (m_ndi == 1), so J3 applies
+    # to new-data DCIs (rv 0); retransmission DCIs without a MAC record are only counted.
+    j3_fail = [k for k, d in dci.items() if int(d['rv']) == 0
+               and (k not in sched or int(sched[k]['num_sym']) != int(d['num_sym']))]
+    j3_retx = sum(1 for k, d in dci.items() if int(d['rv']) > 0 and k not in sched)
     groups = defaultdict(list)
     for k, d in dci.items():
         groups[k[:3] + (k[4],)].append(d)
@@ -133,6 +137,7 @@ def evaluate(rundir, links, cfg):
         by_group[(int(t['frame']), int(t['subframe']), int(t['slot']), int(t['sym_start']))].append((t, mask))
     st = {'tbs': len(tbs), 'trace_rows': rows, 'dl_dcis': len(dci), 'joined': len(joined),
           'J1_unmatched': len(j_fail), 'J2_rb_mismatch': len(j2_fail), 'J3_dci_without_mac_allocation': len(j3_fail),
+          'J3_retx_dcis_without_mac_record': j3_retx, 'h1b_not_evaluable_groups': 0,
           'mac_allocations': len(sched), 'groups_with_tbs': len(by_group),
           'group_size_hist': {}, 'own_ok_alone': 0, 'own_fail_alone': 0, 'own_ok_cosched': 0,
           'own_fail_cosched': 0, 'own_err_cosched_db': [], 'h1a_fail_tbs': 0, 'h1b_fail_tbs': 0,
@@ -171,6 +176,12 @@ def evaluate(rundir, links, cfg):
             st['h1b_fail_tbs'] += len(members)
             st['h1b_dci_order_fail_tbs'] += len(members)
             continue
+        if any(int(d['rv']) > 0 for d in dcis):
+            # amendment 1: the MAC order is unknown for groups with a retransmission
+            st['h1b_not_evaluable_groups'] += 1
+            b = cands[0]
+            st['max_err_h1_db'] = max(st['max_err_h1_db'], max(err(t, mask, b) for t, mask in members))
+            continue
         mo = mac_order.get(gk)
         first = rnti_ue.get(int(mo[0]['rnti'])) if mo else None
         if first not in cands:
@@ -188,8 +199,10 @@ def evaluate(rundir, links, cfg):
 
 
 def join_ok(st):
+    """J1, J2 and J3 (new-data DCIs, amendment 1). A run without TBs joins trivially; its
+    TB count is checked by the case predictions."""
     return (st['J1_unmatched'] == 0 and st['J2_rb_mismatch'] == 0 and st['J3_dci_without_mac_allocation'] == 0
-            and st['joined'] == st['tbs'] and st['tbs'] > 0)
+            and st['joined'] == st['tbs'])
 
 
 def h1a_ok(st):
@@ -292,6 +305,27 @@ def main():
         'differing': {t: s['R2_differing_files'] for t, s in summary['K0'].items() if s['R2_differing_files']},
         'passed': all(not s['R2_differing_files'] for s in summary['K0'].values())}
 
+    # Amendment 1, K4b: the 30 deg sector (13 UEs) with its first 12 links, distinct BeamIds
+    # (separates hazard 14, no DL data with more beams than data symbols, from P4's question)
+    res = {}
+    for r in run2:
+        if not r['tag'].endswith('_b30'):
+            continue
+        tag = f"k4b_{r['tag']}"
+        src = E1520 / 'raw/run2_failed' / r['tag'] / 'links.csv'
+        rd = work / tag
+        shutil.rmtree(rd, ignore_errors=True)
+        rd.mkdir(parents=True)
+        lines = src.read_text(encoding='utf-8').splitlines(keepends=True)
+        if len(lines) != 14:
+            raise SystemExit(f'{src}: expected 13 links in the 30 deg sector')
+        (rd / 'links.csv').write_text(''.join(lines[:13]), encoding='utf-8', newline='')
+        a = replace_arg(run2_args(r), 'linksFile', rd / 'links.csv') + ['--ofdmaDiag=1', '--gnbBeam=dpid']
+        go(tag, rd, a)
+        f = float(next(x for x in a if x.startswith('--frequency=')).split('=')[1])
+        res[tag] = evaluate(rd, read_links(rd / 'links.csv'), diag.carrier_cfg(c, f))
+    summary['K4b'] = res
+
     # K1-K3: two UEs
     gnb, links = e1520.build_links(7.2e9, 8, 16, medians)
     (i, j), sep = k1_pair(links)
@@ -318,11 +352,15 @@ def main():
         go(tag, rd, a)
         summary[case] = {tag: evaluate(rd, read_links(rd / 'links.csv'), diag.carrier_cfg(c, 7.2e9))}
 
-    allst = [st for case in ('K0', 'K1', 'K2', 'K3', 'K4') for st in summary[case].values()]
+    cases_all = ('K0', 'K1', 'K2', 'K3', 'K4', 'K4b')
+    allst = [st for case in cases_all for st in summary[case].values()]
     validation['J1_J3_join'] = {'passed': all(join_ok(st) for st in allst),
-                                'failures': {t: (st['J1_unmatched'], st['J2_rb_mismatch'])
-                                             for case in ('K0', 'K1', 'K2', 'K3', 'K4')
-                                             for t, st in summary[case].items() if not join_ok(st)}}
+                                'failures': {t: (st['J1_unmatched'], st['J2_rb_mismatch'],
+                                                 st['J3_dci_without_mac_allocation'])
+                                             for case in cases_all
+                                             for t, st in summary[case].items() if not join_ok(st)},
+                                'retx_dcis_without_mac_record': sum(st['J3_retx_dcis_without_mac_record']
+                                                                    for st in allst)}
     validation['H1a_K0_K1'] = {'passed': all(h1a_ok(st) for case in ('K0', 'K1') for st in summary[case].values())}
     validation['H1b_K0_K1_reported'] = {
         'decision_relevant': False,
@@ -337,8 +375,19 @@ def main():
     validation['P2_K2'] = {'passed': k2['groups_two_or_more_ues'] == 0 and own_all_ok(k2)}
     k3s = summary['K3']['k3']
     validation['P3_K3'] = {'passed': k3s['groups_two_or_more_ues'] >= 10 and own_all_ok(k3s)}
-    validation['P4_K4'] = {'passed': all(st['groups_two_or_more_ues'] == 0 and own_all_ok(st)
-                                         and st['min_tbs_per_ue'] >= 10 for st in summary['K4'].values())}
+    def p4(st):
+        return st['groups_two_or_more_ues'] == 0 and own_all_ok(st) and st['min_tbs_per_ue'] >= 10
+
+    validation['P4_K4'] = {'decision_relevant': False, 'superseded_by': 'P4a_amended (amendment 1)',
+                           'failed_runs': [t for t, st in summary['K4'].items() if not p4(st)],
+                           'passed': all(p4(st) for st in summary['K4'].values())}
+    zero = [t for t, st in summary['K4'].items() if st['dl_dcis'] == 0]
+    validation['hazard14_reported'] = {'decision_relevant': False, 'k4_runs_without_any_dl_dci': zero,
+                                       'passed': not zero}
+    p4a = {t: st for t, st in summary['K4'].items() if t not in zero}
+    p4a.update(summary['K4b'])
+    validation['P4a_amended'] = {'runs': sorted(p4a), 'failed_runs': [t for t, st in p4a.items() if not p4(st)],
+                                 'passed': bool(p4a) and all(p4(st) for st in p4a.values())}
     k0 = summary['K0'].values()
     summary['K0_totals'] = {
         'tbs': sum(x['tbs'] for x in k0), 'alone_own_ok': sum(x['own_ok_alone'] for x in k0),
@@ -346,6 +395,8 @@ def main():
         'cosched_own_ok': sum(x['own_ok_cosched'] for x in k0),
         'cosched_own_fail': sum(x['own_fail_cosched'] for x in k0),
         'h1a_fail': sum(x['h1a_fail_tbs'] for x in k0), 'h1b_fail': sum(x['h1b_fail_tbs'] for x in k0),
+        'h1b_not_evaluable_groups': sum(x['h1b_not_evaluable_groups'] for x in k0),
+        'groups_two_or_more_ues': sum(x['groups_two_or_more_ues'] for x in k0),
         'max_err_h1_db': max(x['max_err_h1_db'] for x in k0)}
     passed = all(v['passed'] for v in validation.values() if v.get('decision_relevant', True))
     (outdir / 'validation.json').write_text(json.dumps({'checks': validation, 'all_checks_passed': passed},

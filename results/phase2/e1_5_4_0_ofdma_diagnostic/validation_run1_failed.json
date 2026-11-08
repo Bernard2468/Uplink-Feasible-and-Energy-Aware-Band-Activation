@@ -1,0 +1,93 @@
+{
+  "checks": {
+    "R2_replay_identical": {
+      "differing": {},
+      "passed": true
+    },
+    "J1_J3_join": {
+      "passed": false,
+      "failures": {
+        "k0_a_f3p5_b30": [
+          0,
+          0
+        ],
+        "k0_a_f3p5_b150": [
+          0,
+          0
+        ],
+        "k0_a_f3p5_b270": [
+          0,
+          0
+        ],
+        "k0_a_f7p2_b30": [
+          0,
+          0
+        ],
+        "k0_a_f7p2_b150": [
+          0,
+          0
+        ],
+        "k0_a_f7p2_b270": [
+          0,
+          0
+        ],
+        "k0_b_f7p2_b30": [
+          0,
+          0
+        ],
+        "k0_b_f7p2_b150": [
+          0,
+          0
+        ],
+        "k0_b_f7p2_b270": [
+          0,
+          0
+        ],
+        "k4_a_f3p5_b30": [
+          0,
+          0
+        ],
+        "k4_a_f3p5_b270": [
+          0,
+          0
+        ],
+        "k4_a_f7p2_b30": [
+          0,
+          0
+        ],
+        "k4_a_f7p2_b150": [
+          0,
+          0
+        ],
+        "k4_b_f7p2_b30": [
+          0,
+          0
+        ]
+      }
+    },
+    "H1a_K0_K1": {
+      "passed": false
+    },
+    "H1b_K0_K1_reported": {
+      "decision_relevant": false,
+      "h1b_fail_tbs_mac_order": 1603,
+      "h1b_fail_tbs_dci_send_order": 3352,
+      "passed": false
+    },
+    "K1_power": {
+      "two_ue_groups": 461,
+      "own_fail_cosched": 461,
+      "passed": true
+    },
+    "P2_K2": {
+      "passed": true
+    },
+    "P3_K3": {
+      "passed": true
+    },
+    "P4_K4": {
+      "passed": false
+    }
+  },
+  "all_checks_passed": false
+}

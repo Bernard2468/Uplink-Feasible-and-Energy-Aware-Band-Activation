@@ -144,6 +144,25 @@ class EvaluateTests(unittest.TestCase):
             self.assertFalse(e.join_ok(st))
 
 
+    def test_retransmissions_without_mac_record(self):
+        """Amendment 1: a retransmission DCI (rv > 0) has no DlScheduling record; J3 ignores it
+        and its group is not evaluable for H1b, while H1a still covers it."""
+        g = gains()
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            make(d, g)
+            dci = e151.read_csv(d / 'e15od_dci.csv')
+            for r in dci[:2]:                                 # slot 0: both DCIs are retransmissions
+                r['rv'] = '1'
+            write(d / 'e15od_dci.csv', list(dci[0].keys()), [list(r.values()) for r in dci])
+            sch = e151.read_csv(d / 'e15od_dl_sched.csv')[2:]
+            write(d / 'e15od_dl_sched.csv', list(sch[0].keys()), [list(r.values()) for r in sch])
+            st = e.evaluate(d, LINKS, CFG)
+            self.assertEqual((st['J3_dci_without_mac_allocation'], st['J3_retx_dcis_without_mac_record']), (0, 2))
+            self.assertEqual(st['h1b_not_evaluable_groups'], 1)
+            self.assertTrue(e.join_ok(st) and e.h1_ok(st))
+
+
 class InputTests(unittest.TestCase):
 
     def test_pair_rule_and_args(self):

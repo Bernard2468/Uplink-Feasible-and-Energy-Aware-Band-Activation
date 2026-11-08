@@ -1,7 +1,29 @@
 {
   "experiment": "E1.5.4-0: what the reported SINR of OFDMA DL TBs co-scheduled under NR DirectPath beams means (open item of E1.5.2-0 amendment 2), resolved at resource level before any multi-UE stage",
-  "status": "PRE-REGISTERED 2026-11-08, committed before the first run; hypotheses, cases, checks, tolerances and decision rules are not changed after results are seen",
+  "status": "PRE-REGISTERED 2026-11-08, committed before the first run; hypotheses, cases, checks, tolerances and decision rules are not changed after results are seen. AMENDED after run 1 (see amendments)",
   "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.4-0'",
+  "amendments": [
+    {
+      "id": 1,
+      "date": "2026-11-08",
+      "trigger": "run 1 (code 132dc5c): R2 PASS (9 replays byte-identical to run 2), K1_power, P2, P3 PASS; J1_J3_join FAIL, P4_K4 FAIL; H1a and H1b reported FAIL only because the code made them require the join check (the per-TB H1a result was not inspected before this amendment)",
+      "diagnosis": [
+        "J3: every DCI without a MAC record is a HARQ retransmission (rv >= 1) and every retransmission DCI lacks one (e.g. k0_a_f7p2_b30: 126 unmatched = 108 rv1 + 18 rv2 = all retransmissions). NrGnbMac::DoSchedConfigIndication fires DlScheduling only inside 'if (dciElem->m_ndi == 1)' (new data). J1 (TB-DCI) and J2 (RB counts) passed on every TB of every run",
+        "P4: the three K4 runs of the 30 deg sector (13 UEs, 13 distinct BeamIds) produced NO DL DCI at all (exit 0, no message); the 6 other K4 runs scheduled every UE. Hazard 14 (5G-LENA): NrMacSchedulerOfdma LOAD_BASED symbols-per-beam computes 'double tmp = symAvail / bufTotal' in integer arithmetic, then hands out symbols one by one; with 13 active beams and 12 data symbols one beam receives 0 symbols and the slot carries no DL data. Shown by direct test (same 30 deg links, distinct BeamIds): 13 UEs -> 0 DL TBs, 12 UEs -> 1,484, 11 UEs -> 1,297; with NS_LOG on, the 13-beam run aborts with SIGSEGV inside the scheduler's log statement right after the 0-symbol assignment"
+      ],
+      "defect": "instrument (J3 premise false; check coupling in code) and a 5G-LENA scheduler hazard that makes P4 vacuous for 13 beams; neither concerns H1a",
+      "changes": [
+        "J3 applies to new-data DCIs (rv 0); retransmission DCIs without a MAC record are counted and reported",
+        "the join check no longer requires >= 1 TB (TB counts are checked by the case predictions); H1a, P2-P4 depend on J1, J2 and J3(new data)",
+        "H1b is evaluated only on groups without a retransmission DCI (others counted as not evaluable); still reported only",
+        "P4 keeps its pre-registered definition and its failure, now marked non-decision-relevant; new case K4b = the three 30 deg run-2 commands with the first 12 links (link order) and distinct BeamIds; P4a = P4's conditions on the K4 runs that scheduled DL data plus K4b, and replaces P4 in the decision",
+        "hazard14_reported lists the K4 runs without any DL DCI"
+      ],
+      "unchanged": "H1a, its 0.01 dB tolerance, R2, J1, J2, K1_power, P2, P3, all cases K0-K4 and their commands, the decision consequences",
+      "prediction_before_run_2": "run 2 reproduces run 1 (deterministic) for K0-K4; K4b schedules every UE (>= 10 TBs) with no shared groups and own-beam identity on every TB; J1_J3 passes",
+      "evidence_kept": "validation_run1_failed.json, manifest_run1_failed.json, summary_run1.json.gz (committed); raw/run1_failed/ (local, git-ignored)"
+    }
+  ],
   "trigger": "E1.5.2-0 run 2 (58872cc, NrMacSchedulerOfdmaRR): 217 full-band DL TBs alone in their slot matched the channel-level gain within 3.2e-14 dB; 4,282 TBs co-scheduled in the same symbols on partial bands were off by -53.7 to +13.2 dB against the full-band gain of the UE's own beam",
   "seen_before_registration": "the run-2 TB files and the run2_V0_diagnostic.txt split (full-band-alone vs co-scheduled); no per-RB, DCI or cross-beam data",
   "stack": {
@@ -44,7 +66,7 @@
     "definitions": "SNR_iso,j = the E1.5.1-verified Python DL SNR per RB for the E1.2 median loss of UE j (allocation-independent); TBs counted by key (erratum 1)"
   },
   "decision_rules": {
-    "established": "R2, J1-J3 pass and H1a, K1_power, P2, P3, P4 hold -> mechanism established: with a shared BeamId, 5G-LENA's OFDMA schedulers frequency-multiplex UEs whose physical beams differ, and the PHY transmits all of them with the first UE's beam. The co-scheduled TB SINR is then the SINR of the UE under another UE's beam on its own RBs: a correct computation of a mis-configured transmission, not a measurement of the UE's own link",
+    "established": "R2, J1-J3 pass and H1a, K1_power, P2, P3, P4 (P4a after amendment 1) hold -> mechanism established: with a shared BeamId, 5G-LENA's OFDMA schedulers frequency-multiplex UEs whose physical beams differ, and the PHY transmits all of them with the first UE's beam. The co-scheduled TB SINR is then the SINR of the UE under another UE's beam on its own RBs: a correct computation of a mis-configured transmission, not a measurement of the UE's own link",
     "consequences_if_established": [
       "OFDMA TB SINR under DirectPath with the shared BeamId is never used as a measurement in E1.5.4 or later",
       "E1.5.4 OFDMA runs use distinct per-UE BeamIds (K4-validated); 5G-LENA then multiplexes UEs with different beams in time, and in frequency only within one beam",

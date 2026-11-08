@@ -852,7 +852,7 @@ the CIs above carry the uncertainty.
 - Pre-Release-19 fast-fading tables.
 - The 27 positions are not an area sample.
 
-### E1.5.4-0: OFDMA co-scheduling under DirectPath (PRE-REGISTERED 2026-11-08)
+### E1.5.4-0: OFDMA co-scheduling under DirectPath (PRE-REGISTERED 2026-11-08; AMENDED after run 1)
 
 Config `configs/e1/e1_5_4_0_ofdma_diagnostic.json`, script
 `scripts/e1_5_4_0_ofdma_diagnostic.py`, tests
@@ -924,6 +924,41 @@ consequence follows from H1a alone.
 
 Otherwise, OFDMA SINR under DirectPath stays unvalidated and is not used.
 If R2 or the TB-DCI join fails, stop.
+
+Amendment 1 (after run 1, `132dc5c`):
+- **What happened.** R2 passed (9 replays byte-identical to run 2), as did
+  K1_power, P2 and P3. The join check and P4 failed. H1a was reported FAIL
+  only because the code made it depend on the join check; its per-TB result
+  was not inspected before this amendment.
+- **J3 diagnosis.** Every DCI without a MAC record is a HARQ
+  retransmission, and every retransmission lacks one: the MAC fires
+  `DlScheduling` only for new data (`m_ndi == 1`). J1 (TB-DCI) and J2 (RB
+  counts) passed on every TB.
+- **P4 diagnosis: 5G-LENA hazard 14.**
+  - The three K4 runs of the 30° sector (13 UEs, 13 distinct BeamIds) had
+    no DL allocation at all, with exit 0 and no message.
+  - The OFDMA scheduler's load-based symbols-per-beam step divides integers
+    (`double tmp = symAvail / bufTotal`) and then hands out symbols one at
+    a time. With 13 active beams and 12 data symbols, one beam gets 0
+    symbols and the slot carries no DL data.
+  - Direct test on the same links: 13 UEs give 0 DL TBs, 12 UEs 1,484 and
+    11 UEs 1,297. With logging on, the 13-beam run crashes (SIGSEGV)
+    inside the scheduler's own log line.
+- **Changes.**
+  - J3 applies to new-data DCIs only.
+  - H1a, P2-P4 depend on J1, J2 and J3 only.
+  - H1b is evaluated on groups without retransmissions (still reported
+    only).
+  - P4 keeps its failure on record. P4a applies P4's conditions to the K4
+    runs that scheduled data plus a new case K4b (the 30° runs with their
+    first 12 links). P4a replaces P4 in the decision.
+- **What did not change.** H1a and its tolerance, R2, J1, J2, K1_power, P2,
+  P3, cases K0-K4, and the consequences.
+- **Prediction stated before run 2.** K0-K4 reproduce run 1; K4b serves
+  every UE with no shared groups and own-beam identity on every TB.
+- **Evidence.** `validation_run1_failed.json`,
+  `manifest_run1_failed.json`, `summary_run1.json.gz`; `raw/run1_failed/`
+  is kept locally.
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

@@ -1,0 +1,119 @@
+{
+  "experiment": "E1.5.2-1: realised gNB array gain in the TR 38.901 UMa channel. NR DirectPath (geometric steering), oversampled DFT codebook selection and the frequency-flat single-beam bound, all evaluated on the same stored channel realizations",
+  "status": "PRE-REGISTERED 2026-11-08, committed before the first measured run; checks, thresholds, statistics and decision rules are not changed after results are seen",
+  "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.2-1'",
+  "parent": "E1.5.2-0 PASSED in run 3 (8e4986d): mode chan reproduces 5G-LENA's DL TB SINR and the E1.4 gain model; the gNB is the transmit side 's' when DL comes first",
+  "seen_before_registration": [
+    "the E1.5.2-0 DirectPath preview (O2O only, RngRun 1, 20 realizations per link): median deficit LOS 0.4-0.6 dB, NLOS 9.8-13.7 dB. E1.5.2-1 uses RngRun 2, so none of those realizations is reused; the 27 positions are the same",
+    "smoke runs on a synthetic 3-link geometry (gNB (0, 0, 25); UEs (100, 0), (0, 150), (100, 50); not the E1.1 positions) to test the code and measure run time: 12 realizations of array A and 150 of array B in mode beams, and 2-UE NR runs with each beam type"
+  ],
+  "audit_input": "ChatGPT draft 'E1_5_2_1_preregistration_review_v1' (2026-11-08), evaluated point by point in the protocol section; adopted: paired beams on one realization, labelled oracle codebook selection, eigenvalue bound labelled as unconstrained, >= 100 realizations, position bootstrap, NR confirmation of installed beams, no minimum-improvement criterion; changed: see protocol",
+  "stack": {"ns3_commit": "d083a17a", "nr_commit": "cedceadd",
+            "program": "ns3/scratch/cmwave/e15-link-validation.cc: mode beams added; mode nrfading gains --gnbBeam=cb|eig (default dp, unchanged); modes link and chan unchanged (check R1)"},
+  "source_facts": [
+    "three-gpp-spectrum-propagation-loss-model.cc (ns-3 d083a17a): rx PSD on RB i = tx PSD x |sum_c LT_c exp(-j 2 pi f_i tau_c) doppler_c|^2 with LT_c = sum_{u,s} conj(w_u) H(u, s, c) w_s; with one UE element (w_u = 1) and the gNB on side s this is |sum_n w_n h_i[n]|^2, h_i[n] = sum_c H(0, n, c) exp(-j 2 pi f_i tau_c)",
+    "the Doppler factor is exp(j 2 pi t f / c (...)) with t = Simulator::Now(): exactly 1 at t = 0 (mode beams) and 1 at every t for static nodes with the default vScatt = 0 (V0 and the NR smoke run agree to 1e-12 dB at t > 0)",
+    "UniformPlanarArray element n sits at (y', z') = (dH (n mod cols), dV floor(n / cols)) in the panel frame, rotated by the bearing (GetElementLocation)",
+    "ThreeGppChannelModel keeps the cluster parameters per node pair and the channel matrix per antenna pair; changing a beamforming vector recomputes only the long-term component, never the channel (GetLongTerm, UpdatePeriod 0)",
+    "NR IdealBeamformingHelper runs the beamforming task at attach and then every BeamformingPeriodicity (default 100 ms); BeamManager::SaveBeamformingVector stores a per-UE vector that NrGnbPhy installs before each DL data transmission to that UE (nr-gnb-phy.cc ChangeBeamformingVector)",
+    "ns-3 Angles(v) sets the azimuth to WrapToPi(atan2(y, x)), which TRUNCATES it to a grid of 2 pi / 1e11 rad (int64 conversion, src/antenna/model/angles.cc); NR's DirectPath vector therefore points up to 6.3e-11 rad in azimuth away from the exact direction (phase error <= 2 pi x array size x 6.3e-11 < 1e-8 rad, gain change < 2e-8 dB). Check I4 mirrors this quantization; the difference to the exact geometric direction is reported",
+    "NrGnbPhy changes the analog beam at most once per time instant ('if (Simulator::Now() > m_lastBfChange)', nr-gnb-phy.cc): UEs co-scheduled in the same symbols get the first UE's beam (relevant to the OFDMA item, not used here: all NR runs are TDMA)"
+  ],
+  "hazard_13": "ns-3.48 UMa with LOS and O2I: GetThreeGppTable selects the O2I table (6x6 LSP correlation, uK = sigK = 0) whenever O2I is set, but GenerateLSPs still treats the link as LOS (7 parameters, order SF, K, DS, ASD, ASA, ZSD, ZSA), so the O2I correlation matrix is read in the wrong order with a zero 7th row (ZSA becomes deterministic), and a LOS ray with K = 0 dB is added. LOS + O2I is therefore never used; mode beams aborts on it",
+  "geometry": "configs/e1/positions_munich_tx0.json: gNB (8.5, 21.0, 27.0), the 27 UE positions at 1.5 m, geometric class from E1.1 (9 LOS, 18 NLOS)",
+  "serving_sector": "E1.4 rule: cmwave.radio.antenna.gnb_gain_dbi (largest element gain; bearings 30/150/270 deg)",
+  "strata": {
+    "o2o": "prescribed condition = E1.1 geometric class, O2O (LOS 9, NLOS 18)",
+    "o2i": "all 27 positions with condition NLOS + O2I: ns-3's UMa O2I table (12 clusters, no specular ray, ZSD and ZOD offset of NLOS form); positions labelled by the geometric class of the outdoor path for reporting. O2I penetration loss is a large-scale loss and does not enter the gain metric, so low- and high-loss buildings are one stratum for the gain; they differ only in the link budget (E1.5.5)"
+  },
+  "arrays": {
+    "a": {"rows": 8, "cols": 16, "carriers_hz": [3.5e9, 7.2e9]},
+    "b": {"rows": 16, "cols": 32, "carriers_hz": [7.2e9]},
+    "common": "TR 38.901 Table 7.3-1 element (ThreeGppAntennaModel OUTDOOR: 8 dBi, 65/65 deg, 30 dB), 0.5 lambda spacing both ways, mechanical downtilt 0, single (vertical) polarization, one port: all elements carry one analog beam; aperture A = 4 x 8 wavelengths (vertical x horizontal), B = 8 x 16 wavelengths; B at 7.2 GHz (0.33 x 0.67 m) has about the physical aperture of A at 3.5 GHz (0.34 x 0.69 m), the E1.4 equal-aperture regime"
+  },
+  "ue_antenna": "1x1 isotropic (the gNB term only; UE arrays are E1.5.2b)",
+  "channel": "TR 38.901 UMa (ns-3.48 ThreeGppChannelModel, pre-Release-19 fast-fading tables), 20 MHz, 30 kHz SCS, 51 RBs (RbOverhead 0.073), UpdatePeriod 0, no blockage, static nodes; mode beams applies no path loss or shadowing (gain only)",
+  "realizations_per_position": 200,
+  "rng": {"RngSeed": 1, "RngRun": 2, "streams": "spectrum model AssignStreams(1000), as E1.5.2-0",
+          "common_random_numbers": "all runs of one stratum use the same streams, so their realizations share random variates; ns-3 draws the cluster parameters independently of the element count, so arrays A and B at 7.2 GHz see the same clusters per realization (reported: identical n_clusters sequences). The two carriers are NOT correlated as in TR 38.901 cl. 7.6.5; carrier comparisons are paired by position only"},
+  "beams": {
+    "dp": "NR CreateDirectPathBfv toward the geometric gNB-UE direction: w = exp(-j 2 pi r.d) / sqrt(N). Geometric steering, not an oracle in NLOS",
+    "cb": "oversampled 2D DFT codebook, Oh = Ov = 4: (4 cols) x (4 rows) beams (2048 for A, 8192 for B), w[row cols + col] = exp(-j 2 pi (col p / (4 cols) + row q / (4 rows))) / sqrt(N), the form of the TS 38.214 Type I DFT beams; selection = argmax of the mean RB gain with exact channel knowledge (ORACLE codebook selection: no measurement noise, no sweep overhead); DirectPath is not a candidate",
+    "cb1": "best beam of the orthogonal subgrid (p mod 4 = 0, q mod 4 = 0: cols x rows beams), same rule",
+    "eig": "unconstrained_single_beam_bound: largest eigenvalue of R = (1/K) sum_i conj(h_i) h_i^T, the maximum of w^H R w over unit-norm frequency-flat w (any amplitudes); computed by power iteration on the 51 x 51 Gram matrix with a Cholesky certificate (lambda_max <= (1 + 1e-9) mu); its eigenvector is installed in ns-3 (and in NR for V1); not achievable with constant-modulus phase shifters",
+    "eigpo": "phase-only version of the computed principal beam, exp(j arg w) / sqrt(N): a constant-modulus beam built from exact CSI (reported, not a bound)",
+    "mrt": "(1/K) sum_i ||h_i||^2: per-RB matched filter, the ceiling of any frequency-selective single-stream digital precoder with exact CSI (reported)"
+  },
+  "gain_definition": "g = sum over the 51 RBs of rx PSD / sum of the flat tx PSD (the E1.5.2-0 chan definition) = mean over RBs of the beamformed channel power gain, element pattern included; G = 10 log10 g",
+  "e14_reference": "G_E1.4(p) = cmwave.radio.antenna.gnb_gain_dbi: element gain + 10 log10 N toward the geometric direction, serving sector (ideal steering)",
+  "beams_runs": [
+    {"tag": "a_f3p5_o2o", "frequency_hz": 3.5e9, "array": "a", "stratum": "o2o"},
+    {"tag": "a_f3p5_o2i", "frequency_hz": 3.5e9, "array": "a", "stratum": "o2i"},
+    {"tag": "a_f7p2_o2o", "frequency_hz": 7.2e9, "array": "a", "stratum": "o2o"},
+    {"tag": "a_f7p2_o2i", "frequency_hz": 7.2e9, "array": "a", "stratum": "o2i"},
+    {"tag": "b_f7p2_o2o", "frequency_hz": 7.2e9, "array": "b", "stratum": "o2o"},
+    {"tag": "b_f7p2_o2i", "frequency_hz": 7.2e9, "array": "b", "stratum": "o2i"}
+  ],
+  "oversampling": 4,
+  "dump_copies": 1,
+  "n1_runs": [
+    {"tag": "n1_f3p5_o2o", "frequency_hz": 3.5e9, "stratum": "o2o"},
+    {"tag": "n1_f3p5_o2i", "frequency_hz": 3.5e9, "stratum": "o2i"},
+    {"tag": "n1_f7p2_o2o", "frequency_hz": 7.2e9, "stratum": "o2o"},
+    {"tag": "n1_f7p2_o2i", "frequency_hz": 7.2e9, "stratum": "o2i"}
+  ],
+  "n1_settings": "mode chan (unchanged since E1.5.2-0), isotropic 1x1 gNB and UE, role s, weights dp, 200 copies, RngRun 2",
+  "nr_runs": {
+    "configs": [
+      {"tag": "v1_a_f7p2_o2o_cb", "frequency_hz": 7.2e9, "array": "a", "stratum": "o2o", "beam": "cb"},
+      {"tag": "v1_a_f7p2_o2o_eig", "frequency_hz": 7.2e9, "array": "a", "stratum": "o2o", "beam": "eig"},
+      {"tag": "v1_a_f7p2_o2i_eig", "frequency_hz": 7.2e9, "array": "a", "stratum": "o2i", "beam": "eig"},
+      {"tag": "v1_a_f3p5_o2o_cb", "frequency_hz": 3.5e9, "array": "a", "stratum": "o2o", "beam": "cb"},
+      {"tag": "v1_b_f7p2_o2o_eig", "frequency_hz": 7.2e9, "array": "b", "stratum": "o2o", "beam": "eig"}
+    ],
+    "per_config": "one run per sector bearing (30, 150, 270 deg) with the UEs that sector serves",
+    "settings": {"scheduler": "ns3::NrMacSchedulerTdmaRR", "dl_rate_bps_per_ue": 1e6, "packet_size_bytes": 1000,
+                 "app_start_s": 0.1, "sim_time_s": 0.4, "rng_run": 2,
+                 "beamforming": "IdealBeamformingHelper with DirectPath at attach, BeamformingPeriodicity = simTime + 100 s; then the channel-computed beam (cb or eig, from the channel generated before the run in the DL direction) is saved per UE with BeamId (ue_index + 1, 0)",
+                 "other": "E1.5.1 / E1.5.2-0 common settings (44 dBm, NF 5/7 dB, RbOverhead 0.073, numerology 1, DDDSU); no UL traffic"}
+  },
+  "checks": {
+    "R1_previous_modes_unchanged": "scripts/e1_5_2_0_conventions.py rerun with the E1.5.2-1 build into results/phase2/e1_5_2_1_beams/r1_e1520_rerun: all checks pass and every raw data file of its 21 runs (R0 link mode, 11 chan, 9 nrfading; run.log excluded) is byte-identical (SHA-256) to E1.5.2-0 run 3",
+    "S1_bookkeeping": "every beams run: 27 x 200 rows, each (link, copy) once; gnb_is_s = 1 everywhere; frequency and scenario read back; 51 RBs; rng_run = 2; eig_uncertified = 0; n_clusters <= 16 for LOS and O2I links and <= 24 for O2O NLOS links (table clusters + 4 sub-clusters); 27 dumped realizations",
+    "I1_reconstruction": "every realization: |10 log10(g_dp / g_ns3_dp)| <= 1e-6 dB (rebuilt per-RB channel vs ns-3's own PSD, DirectPath beam)",
+    "I2_codebook_in_ns3": "every realization: |10 log10(g_ns3_cb / g_cb)| <= 1e-6 dB (selected DFT beam installed in ns-3)",
+    "I3_eigen_in_ns3": "every realization: certified; |10 log10(g_ns3_eig / g_eigvec)| <= 1e-6 dB and |10 log10(g_eigvec / g_eig)| <= 1e-6 dB (eigen beam installed in ns-3 achieves the bound)",
+    "I4_independent_recompute": "numpy, from the dumped h of copy 0 of every link of every beams run (162 realizations): DirectPath vector rebuilt in Python from the geometry and the UPA layout, gain within 1e-9 relative of g_dp; the full codebook as an explicit N x B matrix: max gain within 1e-9 relative of g_cb (and of g_cb1 on the subgrid), and the gain of the C++-selected beam within 1e-9 relative of that max; numpy.linalg.eigvalsh(R) largest eigenvalue within 1e-8 relative of g_eig; mrt within 1e-9 relative",
+    "D1_dominance": "every realization: max(g_dp, g_cb, g_cb1, g_eigpo, g_eigvec) <= g_eig (1 + 2e-9); g_eig <= g_mrt (1 + 1e-12); g_cb1 <= g_cb",
+    "N1_normalisation": "isotropic 1x1: |10 log10(mean linear gain)| <= 0.25 dB for each carrier and each stratum (O2O LOS, O2O NLOS, O2I)",
+    "V1_nr_custom_beams": "every NR run: every DL TB has |10 log10(m_sinr) - (SNR_iso + 10 log10 g_beam)| <= 0.01 dB, g_beam recomputed after the run on the same channel objects with the installed beam; gnb_is_s = 1, bm_vector_match = 1 and channel_generated_s = 0 for every UE; every TB spans 51 RBs; >= 10 distinct DL TBs per UE; frequency read back",
+    "definitions": "TBs counted by key (erratum 1); SNR_iso = the E1.5.1-verified Python DL SNR for the E1.2 median loss"
+  },
+  "statistics": {
+    "per_position": "for position p, beam x, run: G_x(p) = median over the 200 realizations of 10 log10 g_x (primary); also 10 log10 of the mean linear gain, and the 5th and 95th percentiles over realizations",
+    "deficit": "D_x(p) = G_E1.4(p) - G_x(p)",
+    "paired_beams": "Delta_{x,y}(p) = median over realizations of [10 log10 g_x - 10 log10 g_y] on the same realization, for (cb, dp), (eig, cb), (eig, dp), (mrt, eig), (cb, cb1), (eig, eigpo)",
+    "paired_configs": "by position: D_x(p; a, 7.2 GHz) - D_x(p; a, 3.5 GHz) and D_x(p; b, 7.2 GHz) - D_x(p; a, 7.2 GHz), each stratum",
+    "strata": "O2O LOS (9 positions), O2O NLOS (18), O2I (27, also split by geometric class)",
+    "summary": "median over the positions of a stratum, with a 95% percentile bootstrap CI: positions resampled with replacement within the stratum, 2000 resamples, numpy default_rng(15211); positions, not realizations, are the independent units",
+    "reported": "all 27 per-position values for every run and beam; Spearman correlation of D_x(p) with the 2D distance per stratum (descriptive); selected codebook beam directions; run time and peak memory"
+  },
+  "decision_rules": {
+    "instrument_valid": "R1, S1, I1-I4, D1, N1 and V1 pass -> the measured gains are the E1.5.2-1 result",
+    "gain_model_for_e1_5_5_and_e1c": "regimes A and B: G_used(p) = G_E1.4(p) - D_cb[stratum, carrier, array], D_cb = the stratum median deficit of the DFT codebook beam (primary: a deployable analog beam choice, selected here with exact CSI); sensitivities: D_dp (geometric steering, lower) and D_eig (frequency-flat bound, upper); the bootstrap CI of D_cb is carried as uncertainty. Strata: O2O LOS, O2O NLOS, O2I",
+    "regime_c": "not measured here (1024 elements, 200 MHz; cost test first); E1.4's S3 assumption (4.5 dB NLOS loss) stays labelled as an assumption",
+    "no_minimum_gain": "no minimum improvement of cb over dp is required; zero or negative values are valid results",
+    "artefact": "the 33-36 dB receive-side DirectPath loss of E1.5.2-0 is an implementation artefact and is never used as a physical gain",
+    "stop": "any check fails -> stop and diagnose before any gain is used; failed evidence is kept; no threshold is changed and no failed check is removed"
+  },
+  "out_of_scope": "UE arrays (E1.5.2b); dual polarization and multi-port/multi-stream precoding; beam-sweep overhead, measurement noise and CSI ageing; mobility; best-sector selection (the E1.4 serving sector is kept); Release-19 fast-fading tables; regime C; spatial consistency; TR 38.901 cl. 7.6.5 cross-frequency correlation; area-representative coverage (E1c)",
+  "instrument_checks_before_commit": [
+    "program rebuilt through scripts/e1_5_install_ns3_program.sh (1 object, no warnings), SHA-256 a0f53e60e6f504559e92ed894bcab3b5148719819fcdcfdddce4153bfcc6a051 at the time of the check",
+    "E1.5.2-0 rerun with that build into a scratch directory: all checks pass and 98/98 raw data files of its 21 runs byte-identical to E1.5.2-0 run 3 (repeated as R1 with the final build)",
+    "mode beams smoke run (synthetic 3-link geometry, array A, 4 copies): ns-3 and the rebuilt channel agree within 1e-14 relative for dp, cb and eig; an independent numpy recomputation from the dump agrees within 2.5e-13 relative (same selected beam)",
+    "array B smoke run (150 realizations): 10 s, 93 MB, every eigenvalue certified within 200 power iterations",
+    "NR smoke runs (2 UEs) with dp, cb and eig beams: for each UE, TB SINR minus beam gain identical to 1e-12 dB across the three beam types; bm_vector_match = 1 and channel_generated_s = 0",
+    "end-to-end run of scripts/e1_5_2_1_beams.py (execute + analyse) on a SYNTHETIC 6-position geometry with 3 realizations: first pass, I4 failed only on the DirectPath term (max 3.6e-9 relative, other terms <= 1e-9): the Python vector used the exact azimuth, NR the WrapToPi-truncated one (diagnosed with an 80-bit recomputation: Python double = long double to 1e-15; NR = Python exactly for azimuths 0 and 90 deg only). Python now mirrors the truncation (agreement <= 2.9e-15) and reports the exact-geometry difference; the 1e-9 tolerance is unchanged. Second pass: every check passes except N1 (3 realizations per position cannot meet 0.25 dB; expected)",
+    "LOS + O2I found inconsistent in ns-3.48 UMa by source reading (hazard 13); excluded by construction (O2I stratum = NLOS + O2I) and by an abort in mode beams"
+  ]
+}

@@ -604,5 +604,133 @@ These numbers are a preview, not a result:
 - E1.4's S3 sensitivity assumed a 4.5 dB NLOS loss. The DirectPath preview
   is about twice that for 8x16 arrays, and larger again for 16x32.
 
+### E1.5.2-1: realised gNB gain (PRE-REGISTERED 2026-11-08)
+
+Config `configs/e1/e1_5_2_1_beams.json`, script `scripts/e1_5_2_1_beams.py`,
+tests `tests/test_e1_5_2_1_beams.py`. Committed before the first measured run.
+The config holds every number; this section explains the design.
+
+**Question.**
+- How much of E1.4's ideal steering gain survives the TR 38.901 channel, by
+  stratum, carrier and array?
+- How much does a deployable beam choice recover relative to NR's
+  geometric DirectPath beam?
+- How far is that choice from the best single frequency-flat beam?
+
+**Instrument: new mode `beams`.** On each stored channel realization the
+program rebuilds the per-RB channel vector of the gNB array from ns-3's
+channel matrix, h_i[n] = Σ_c H(0, n, c) e^{-j2π f_i τ_c}. That is exactly
+what ns-3's spectrum model applies. All beams are then evaluated on the
+same realization:
+
+| Beam | Definition | Role |
+|---|---|---|
+| dp | NR DirectPath, geometric steering | lower reference |
+| cb | best of an oversampled 2D DFT codebook (4x per dimension: 2,048 beams for A, 8,192 for B), selected with exact CSI | primary: deployable analog beam, oracle selection |
+| cb1 | best of the orthogonal subgrid | reported |
+| eig | largest eigenvalue of R = (1/K) Σ conj(h_i) h_i^T, the best unit-norm frequency-flat beam, any amplitudes | upper bound for one analog beam |
+| eigpo | phase-only version of that eigen beam | reported |
+| mrt | (1/K) Σ ‖h_i‖², per-RB matched filter | ceiling of frequency-selective digital precoding |
+
+Every number that enters a result is reproduced twice:
+- by ns-3 itself, with the beam installed (I1-I3);
+- by an independent numpy implementation, from a dump of h (I4).
+
+The eigen beam is also installed in full NR runs (V1), which shows the
+bound is attained inside the model.
+
+**Strata.**
+- O2O: the E1.1 geometric class (9 LOS, 18 NLOS).
+- O2I: all 27 positions with the NLOS + O2I condition.
+  - Hazard 13 (source reading): for LOS + O2I, ns-3.48 UMa reads the 6x6
+    O2I correlation matrix in the 7-parameter LOS order and adds a
+    K = 0 dB LOS ray. That combination is therefore never generated.
+  - Building penetration loss is a large-scale loss. It does not change
+    the angular structure, so low- and high-loss buildings have the same
+    gain and form one stratum. They differ only in the link budget
+    (E1.5.5).
+
+**Design.**
+- Arrays A (3.5 and 7.2 GHz) and B (7.2 GHz) × 2 strata = 6 runs.
+- 200 realizations per position.
+- RngRun 2, so none of the E1.5.2-0 preview realizations is reused.
+- The runs of one stratum share random-number streams. Arrays A and B at
+  7.2 GHz therefore see the same clusters at each realization.
+- The two carriers are not correlated as in TR 38.901 cl. 7.6.5 (ns-3
+  does not implement it). Carrier comparisons are paired by position only.
+
+**Checks** (full text in the config; thresholds fixed now):
+
+| Check | Requirement |
+|---|---|
+| R1 | E1.5.2-0 rerun with the new build: all 21 runs byte-identical to run 3, all checks pass |
+| S1 | every realization present once, gNB on side s, readbacks, eigenvalues certified, cluster counts fit the table |
+| I1 | rebuilt channel = ns-3 PSD for DirectPath, within 1e-6 dB |
+| I2 | selected codebook beam installed in ns-3: within 1e-6 dB |
+| I3 | eigen beam installed in ns-3 attains the bound: within 1e-6 dB |
+| I4 | numpy recomputation (DirectPath from geometry, explicit codebook matrix, `eigvalsh`) within 1e-9 relative (eigenvalue 1e-8) |
+| D1 | no beam exceeds the bound; bound ≤ per-RB MRT; subgrid ≤ full grid |
+| N1 | isotropic gain normalised within ±0.25 dB per carrier and stratum |
+| V1 | 15 NR runs with codebook or eigen beams: every DL TB SINR = SNR_iso + beam gain within 0.01 dB; beam still installed; channel generated before the run |
+
+**Statistics.**
+- Per position: the median over realizations of the gain in dB (E1.4 used
+  median losses), plus the mean and the 5th and 95th percentiles.
+- Deficit: D = G_E1.4 − G.
+- Beam comparisons are paired on the same realization.
+- Stratum summary: the median over positions, with a 95% bootstrap CI that
+  resamples positions (2,000 resamples, seed 15211). Positions are the
+  independent units; 27 × 200 draws are not 5,400 sites.
+
+**Decision rules.**
+- All checks pass: E1.5.5 and E1c use G_E1.4 − D_cb for regimes A and B,
+  per stratum, carrier and array.
+  - DirectPath and the eigen bound give the sensitivity range.
+  - The CI of D_cb is carried as uncertainty.
+- Regime C keeps E1.4's assumed 4.5 dB until it is measured.
+- No minimum improvement is required. The 33-36 dB receive-side artefact of
+  E1.5.2-0 is never used as a physical gain.
+- Any check fails: stop.
+
+**Changes from the original E1.5.2 plan (section 4).**
+- The UE 4-element array moves to E1.5.2b.
+- The codebook is a standard oversampled DFT grid instead of NR's CellScan:
+  - it can be evaluated on the stored channel;
+  - it is finer than CellScan's default angular step;
+  - V1 shows any beam can be installed in NR without source changes.
+
+**ChatGPT draft (2026-11-08), evaluated point by point.**
+
+| Draft point | Decision |
+|---|---|
+| Pair all beams on one stored realization | Adopted, enforced by construction |
+| Label exact-CSI codebook selection as an oracle | Adopted |
+| Eigenvalue bound, labelled unconstrained | Adopted and strengthened: the eigenvalue is certified (Cholesky), its beam is installed in ns-3 and NR, and the per-RB MRT is added, because a frequency-flat bound does not bound digital per-subband precoding |
+| ≥ 100 realizations | 200 (array B: about 6 min per run) |
+| Indoor low-loss and high-loss as distinct strata | Changed: penetration loss does not enter the gain, so one O2I stratum; the loss difference belongs to the link budget |
+| Same seed for cross-frequency comparisons | Partly: ns-3 lacks cl. 7.6.5 correlation; streams are shared but carriers are compared by position only |
+| DirectPath as a codebook candidate | Not done: DirectPath needs the UE position, while the codebook is measurement-based. They are reported separately and paired |
+| E1.5.2-0 output reproduced within 0.01 dB | Strengthened to byte identity (R1) |
+| Dominance checks | Adopted (D1), plus I1-I4 |
+| NR validation of the selected beams | Done without NR source changes (V1) |
+| Feasibility-label changes | Deferred to E1.5.5, which owns the reclassification |
+| No minimum-improvement criterion | Adopted |
+| SINR identity is model-internal, not physical validation | Agreed; the paper will say "simulator-internal verification" |
+| OFDMA diagnostic before E1.5.4 | Adopted as its own stage, pre-registered separately |
+| Upstream issue: check duplicates, minimal reproducer, user's consent | Agreed |
+
+**Found before the commit** (instrument and ns-3 facts, all recorded in the
+config):
+- **Hazard 13**, described above.
+- **ns-3 azimuth quantization.** `Angles` truncates the azimuth to a grid
+  of 2π/10¹¹ rad (`WrapToPi`).
+  - The first end-to-end test on a synthetic geometry failed I4 on the
+    DirectPath term: 3.6e-9 relative against a 1e-9 tolerance.
+  - An 80-bit recomputation located the cause in NR's angle, not in the
+    Python code.
+  - The Python check now mirrors ns-3, agreeing within 2.9e-15. The
+    tolerance is unchanged, and the exact-geometry difference (< 2e-8 dB)
+    is reported.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

@@ -4,7 +4,9 @@
 //   --mode=chan     E1.5.2: gNB array gain in the TR 38.901 channel, channel level
 //                   (see RunChannelMode).
 //   --mode=nrfading E1.5.2: NR stack with TR 38.901 fast fading and a gNB array
-//                   (see RunNrFadingMode).
+//                   (see RunNrFadingMode). E1.5.2-1 adds --gnbBeam=cb|eig.
+//   --mode=beams    E1.5.2-1: DirectPath, DFT codebook and eigen-beam gains on the
+//                   same stored channel realization (see RunBeamsMode).
 //
 // Mode "link" (E1.5.1):
 //
@@ -45,6 +47,7 @@
 #include <limits>
 #include <map>
 #include <sstream>
+#include <sys/resource.h>
 #include <vector>
 
 using namespace ns3;
@@ -265,6 +268,423 @@ FlatTxParams(uint32_t numRbs, double frequency, double scs)
     return p;
 }
 
+// ---------------------------------------------------------------------------
+// E1.5.2-1 additions: per-RB channel vectors of the stored channel and beams.
+// Complex products are written out in real arithmetic (no library calls).
+// ---------------------------------------------------------------------------
+
+using Cplx = std::complex<double>;
+
+/**
+ * Per-RB channel vector of the gNB array (role s of the stored matrix) toward a
+ * one-element UE (role u), rebuilt from ns-3's stored channel:
+ *   h_i[n] = sum_c H(0, n, c) exp(-j 2 pi f_i tau_c),   f_i = centre of RB i.
+ * With the UE weight 1, ns-3's beamformed channel on RB i is g_i = sum_n w_n h_i[n]
+ * (three-gpp-spectrum-propagation-loss-model.cc: CalcLongTerm with conj(uW) = 1,
+ * GenSpectrumChannelMatrix; the Doppler factor is exactly 1 at t = 0, and stays 1 for
+ * static nodes with the default vScatt = 0). Row-major: h[i * N + n].
+ */
+static std::vector<Cplx>
+PerRbChannel(Ptr<const MatrixBasedChannelModel::ChannelMatrix> m,
+             Ptr<const MatrixBasedChannelModel::ChannelParams> prm,
+             Ptr<const SpectrumValue> psd)
+{
+    const size_t nU = m->m_channel.GetNumRows();
+    const size_t nS = m->m_channel.GetNumCols();
+    const size_t nC = m->m_channel.GetNumPages();
+    NS_ABORT_MSG_IF(nU != 1, "PerRbChannel needs a one-element UE on the u side");
+    NS_ABORT_MSG_IF(prm->m_delay.size() < nC, "fewer cluster delays than clusters");
+    const size_t K = psd->GetValuesN();
+    std::vector<Cplx> e(K * nC);
+    size_t i = 0;
+    for (auto b = psd->ConstBandsBegin(); b != psd->ConstBandsEnd(); ++b, ++i)
+    {
+        for (size_t c = 0; c < nC; ++c)
+        {
+            const double d = -2 * M_PI * b->fc * prm->m_delay[c];
+            e[i * nC + c] = Cplx(std::cos(d), std::sin(d));
+        }
+    }
+    std::vector<Cplx> h(K * nS);
+    for (size_t k = 0; k < K; ++k)
+    {
+        for (size_t n = 0; n < nS; ++n)
+        {
+            double re = 0;
+            double im = 0;
+            for (size_t c = 0; c < nC; ++c)
+            {
+                const Cplx a = m->m_channel(0, n, c);
+                const Cplx b = e[k * nC + c];
+                re += a.real() * b.real() - a.imag() * b.imag();
+                im += a.real() * b.imag() + a.imag() * b.real();
+            }
+            h[k * nS + n] = Cplx(re, im);
+        }
+    }
+    return h;
+}
+
+/** (1/K) sum_i |h_i^T w|^2: mean over RBs of the beamformed channel power gain. */
+static double
+BeamGain(const std::vector<Cplx>& h, size_t K, size_t N, const PhasedArrayModel::ComplexVector& w)
+{
+    NS_ABORT_MSG_IF(w.GetSize() != N, "beam size mismatch");
+    double acc = 0;
+    for (size_t k = 0; k < K; ++k)
+    {
+        double re = 0;
+        double im = 0;
+        for (size_t n = 0; n < N; ++n)
+        {
+            const Cplx a = h[k * N + n];
+            const Cplx b = w[n];
+            re += a.real() * b.real() - a.imag() * b.imag();
+            im += a.real() * b.imag() + a.imag() * b.real();
+        }
+        acc += re * re + im * im;
+    }
+    return acc / K;
+}
+
+/**
+ * Oversampled 2D DFT beam (the form of the TS 38.214 Type I DFT beams), element
+ * n = row * cols + col (UniformPlanarArray::GetElementLocation: y' = col, z' = row):
+ *   w[n] = exp(-j 2 pi (col p / Ph + row q / Pv)) / sqrt(N),  Ph = Oh cols, Pv = Ov rows.
+ */
+static PhasedArrayModel::ComplexVector
+DftBeam(uint32_t rows, uint32_t cols, uint32_t oh, uint32_t ov, uint32_t p, uint32_t q)
+{
+    const uint64_t ph = uint64_t(oh) * cols;
+    const uint64_t pv = uint64_t(ov) * rows;
+    const size_t n = size_t(rows) * cols;
+    PhasedArrayModel::ComplexVector w(n);
+    const double norm = 1.0 / std::sqrt(double(n));
+    for (uint32_t r = 0; r < rows; ++r)
+    {
+        for (uint32_t c = 0; c < cols; ++c)
+        {
+            const double a = -2 * M_PI *
+                             (double((uint64_t(c) * p) % ph) / double(ph) +
+                              double((uint64_t(r) * q) % pv) / double(pv));
+            w[size_t(r) * cols + c] = std::polar(norm, a);
+        }
+    }
+    return w;
+}
+
+struct CodebookResult
+{
+    double gain{-1};  // best beam of the oversampled grid (Oh x Ov)
+    uint32_t p{0};
+    uint32_t q{0};
+    double gain1{-1}; // best beam of the orthogonal subgrid (p % Oh == 0, q % Ov == 0)
+    uint32_t p1{0};
+    uint32_t q1{0};
+};
+
+/**
+ * Exhaustive search of the oversampled 2D DFT codebook (Oh cols x Ov rows beams) for
+ * the beam with the largest mean RB gain, using the separable structure
+ * g_i(p, q) = (1/sqrt N) sum_row Wv[row][q] sum_col H_i[row][col] Wh[col][p].
+ * Ties keep the first beam in (q, p) order.
+ */
+static CodebookResult
+CodebookSearch(const std::vector<Cplx>& h, size_t K, uint32_t rows, uint32_t cols, uint32_t oh, uint32_t ov)
+{
+    const size_t ph = size_t(oh) * cols;
+    const size_t pv = size_t(ov) * rows;
+    const size_t N = size_t(rows) * cols;
+    std::vector<double> whr(cols * ph);
+    std::vector<double> whi(cols * ph);
+    std::vector<double> wvr(rows * pv);
+    std::vector<double> wvi(rows * pv);
+    for (size_t c = 0; c < cols; ++c)
+    {
+        for (size_t p = 0; p < ph; ++p)
+        {
+            const double a = -2 * M_PI * double((c * p) % ph) / double(ph);
+            whr[c * ph + p] = std::cos(a);
+            whi[c * ph + p] = std::sin(a);
+        }
+    }
+    for (size_t r = 0; r < rows; ++r)
+    {
+        for (size_t q = 0; q < pv; ++q)
+        {
+            const double a = -2 * M_PI * double((r * q) % pv) / double(pv);
+            wvr[r * pv + q] = std::cos(a);
+            wvi[r * pv + q] = std::sin(a);
+        }
+    }
+    std::vector<double> acc(ph * pv, 0.0);
+    std::vector<double> tr(rows * ph);
+    std::vector<double> ti(rows * ph);
+    std::vector<double> gr(ph);
+    std::vector<double> gi(ph);
+    for (size_t k = 0; k < K; ++k)
+    {
+        std::fill(tr.begin(), tr.end(), 0.0);
+        std::fill(ti.begin(), ti.end(), 0.0);
+        for (size_t r = 0; r < rows; ++r)
+        {
+            for (size_t c = 0; c < cols; ++c)
+            {
+                const Cplx x = h[k * N + r * cols + c];
+                const double xr = x.real();
+                const double xi = x.imag();
+                const double* ar = &whr[c * ph];
+                const double* ai = &whi[c * ph];
+                double* outr = &tr[r * ph];
+                double* outi = &ti[r * ph];
+                for (size_t p = 0; p < ph; ++p)
+                {
+                    outr[p] += xr * ar[p] - xi * ai[p];
+                    outi[p] += xr * ai[p] + xi * ar[p];
+                }
+            }
+        }
+        for (size_t q = 0; q < pv; ++q)
+        {
+            std::fill(gr.begin(), gr.end(), 0.0);
+            std::fill(gi.begin(), gi.end(), 0.0);
+            for (size_t r = 0; r < rows; ++r)
+            {
+                const double vr = wvr[r * pv + q];
+                const double vi = wvi[r * pv + q];
+                const double* inr = &tr[r * ph];
+                const double* ini = &ti[r * ph];
+                for (size_t p = 0; p < ph; ++p)
+                {
+                    gr[p] += vr * inr[p] - vi * ini[p];
+                    gi[p] += vr * ini[p] + vi * inr[p];
+                }
+            }
+            double* a = &acc[q * ph];
+            for (size_t p = 0; p < ph; ++p)
+            {
+                a[p] += gr[p] * gr[p] + gi[p] * gi[p];
+            }
+        }
+    }
+    CodebookResult out;
+    const double scale = 1.0 / (double(K) * double(N));
+    for (size_t q = 0; q < pv; ++q)
+    {
+        for (size_t p = 0; p < ph; ++p)
+        {
+            const double g = acc[q * ph + p] * scale;
+            if (g > out.gain)
+            {
+                out.gain = g;
+                out.p = p;
+                out.q = q;
+            }
+            if (p % oh == 0 && q % ov == 0 && g > out.gain1)
+            {
+                out.gain1 = g;
+                out.p1 = p;
+                out.q1 = q;
+            }
+        }
+    }
+    return out;
+}
+
+/** Gram matrix G = A^H A of the per-RB vectors (K x K Hermitian), G[i][j] = h_i^H h_j. */
+static std::vector<Cplx>
+GramMatrix(const std::vector<Cplx>& h, size_t K, size_t N)
+{
+    std::vector<Cplx> g(K * K);
+    for (size_t i = 0; i < K; ++i)
+    {
+        for (size_t j = i; j < K; ++j)
+        {
+            double re = 0;
+            double im = 0;
+            for (size_t n = 0; n < N; ++n)
+            {
+                const Cplx a = h[i * N + n];
+                const Cplx b = h[j * N + n];
+                // conj(a) * b
+                re += a.real() * b.real() + a.imag() * b.imag();
+                im += a.real() * b.imag() - a.imag() * b.real();
+            }
+            g[i * K + j] = Cplx(re, im);
+            g[j * K + i] = Cplx(re, -im);
+        }
+    }
+    return g;
+}
+
+/** True if the Hermitian matrix c I - G is positive definite (complex Cholesky). */
+static bool
+ShiftedIsPositiveDefinite(const std::vector<Cplx>& g, size_t n, double c)
+{
+    std::vector<Cplx> l(n * n, Cplx(0, 0));
+    for (size_t j = 0; j < n; ++j)
+    {
+        double d = c - g[j * n + j].real();
+        for (size_t k = 0; k < j; ++k)
+        {
+            d -= std::norm(l[j * n + k]);
+        }
+        if (!(d > 0))
+        {
+            return false;
+        }
+        const double ljj = std::sqrt(d);
+        l[j * n + j] = Cplx(ljj, 0);
+        for (size_t i = j + 1; i < n; ++i)
+        {
+            Cplx s = -g[i * n + j];
+            for (size_t k = 0; k < j; ++k)
+            {
+                s -= l[i * n + k] * std::conj(l[j * n + k]);
+            }
+            l[i * n + j] = s / ljj;
+        }
+    }
+    return true;
+}
+
+struct EigenResult
+{
+    double mu{0};          // Rayleigh quotient x^H G x of the returned unit vector x
+    std::vector<Cplx> x;   // K-dim unit vector
+    uint32_t iterations{0};
+    bool certified{false}; // (1 + eps) mu I - G positive definite: lambda_max <= (1 + eps) mu
+};
+
+/**
+ * Largest eigenvalue of the Hermitian PSD Gram matrix by power iteration. Since mu is a
+ * Rayleigh quotient, mu <= lambda_max always; the Cholesky certificate gives
+ * lambda_max <= (1 + eps) mu. Starts: the all-ones vector, then the unit vector of the
+ * largest diagonal entry.
+ */
+static EigenResult
+PrincipalEigen(const std::vector<Cplx>& g, size_t n, double eps, uint32_t maxIter)
+{
+    EigenResult res;
+    std::vector<Cplx> y(n);
+    size_t jmax = 0;
+    for (size_t j = 1; j < n; ++j)
+    {
+        if (g[j * n + j].real() > g[jmax * n + jmax].real())
+        {
+            jmax = j;
+        }
+    }
+    uint32_t total = 0;
+    for (int start = 0; start < 2; ++start)
+    {
+        std::vector<Cplx> x(n, Cplx(start == 0 ? 1.0 / std::sqrt(double(n)) : 0.0, 0.0));
+        if (start == 1)
+        {
+            x[jmax] = Cplx(1, 0);
+        }
+        for (uint32_t it = 1; it <= maxIter; ++it)
+        {
+            ++total;
+            double nrm = 0;
+            double mu = 0;
+            for (size_t i = 0; i < n; ++i)
+            {
+                double re = 0;
+                double im = 0;
+                for (size_t j = 0; j < n; ++j)
+                {
+                    const Cplx a = g[i * n + j];
+                    const Cplx b = x[j];
+                    re += a.real() * b.real() - a.imag() * b.imag();
+                    im += a.real() * b.imag() + a.imag() * b.real();
+                }
+                y[i] = Cplx(re, im);
+                nrm += re * re + im * im;
+                mu += x[i].real() * re + x[i].imag() * im; // Re(conj(x_i) y_i)
+            }
+            nrm = std::sqrt(nrm);
+            if (it % 20 == 0 || it == maxIter)
+            {
+                // certify the CURRENT x (mu is its Rayleigh quotient)
+                if (ShiftedIsPositiveDefinite(g, n, (1 + eps) * mu))
+                {
+                    res.mu = mu;
+                    res.x = x;
+                    res.iterations = total;
+                    res.certified = true;
+                    return res;
+                }
+            }
+            for (size_t i = 0; i < n; ++i)
+            {
+                x[i] = y[i] / nrm;
+            }
+            res.mu = mu;
+        }
+        res.x = x;
+    }
+    res.iterations = total;
+    res.certified = false;
+    return res;
+}
+
+/** Unit-norm eigen beam w = conj(A x) / ||A x|| (frequency-flat, unconstrained modulus). */
+static PhasedArrayModel::ComplexVector
+EigenBeam(const std::vector<Cplx>& h, size_t K, size_t N, const std::vector<Cplx>& x)
+{
+    PhasedArrayModel::ComplexVector w(N);
+    double nrm = 0;
+    for (size_t n = 0; n < N; ++n)
+    {
+        double re = 0;
+        double im = 0;
+        for (size_t k = 0; k < K; ++k)
+        {
+            const Cplx a = h[k * N + n];
+            const Cplx b = x[k];
+            re += a.real() * b.real() - a.imag() * b.imag();
+            im += a.real() * b.imag() + a.imag() * b.real();
+        }
+        w[n] = Cplx(re, -im); // conj
+        nrm += re * re + im * im;
+    }
+    nrm = std::sqrt(nrm);
+    for (size_t n = 0; n < N; ++n)
+    {
+        w[n] = w[n] / nrm;
+    }
+    return w;
+}
+
+/** Constant-modulus (phase-only) version of a beam: exp(j arg w_n) / sqrt(N). */
+static PhasedArrayModel::ComplexVector
+PhaseOnly(const PhasedArrayModel::ComplexVector& w)
+{
+    const size_t n = w.GetSize();
+    PhasedArrayModel::ComplexVector out(n);
+    const double norm = 1.0 / std::sqrt(double(n));
+    for (size_t k = 0; k < n; ++k)
+    {
+        out[k] = std::polar(norm, std::arg(w[k]));
+    }
+    return out;
+}
+
+/** Peak resident set size of this process [kB] (Linux getrusage). */
+static long
+PeakRssKb()
+{
+    struct rusage ru;
+    getrusage(RUSAGE_SELF, &ru);
+    return ru.ru_maxrss;
+}
+
+// Power-iteration settings of E1.5.2-1 (pre-registered): eps = 1e-9, at most 200000
+// iterations per start.
+static constexpr double kEigEps = 1e-9;
+static constexpr uint32_t kEigMaxIter = 200000;
+
 /**
  * Mode "chan": channel-level gain of the gNB array in the TR 38.901 channel
  * (ns-3 ThreeGppChannelModel + ThreeGppSpectrumPropagationLossModel, the
@@ -400,6 +820,236 @@ RunChannelMode(const std::string& linksFile,
     return 0;
 }
 
+/**
+ * Mode "beams" (E1.5.2-1): on each stored channel realization (set-up of mode chan,
+ * gNB = transmit side s, UE = one isotropic element), the mean RB gain of
+ *   dp    NR DirectPath vector (geometric steering)          ns-3 and rebuilt
+ *   cb    best beam of the oversampled DFT codebook          rebuilt; ns-3 with it installed
+ *   cb1   best beam of its orthogonal subgrid                rebuilt
+ *   eig   largest eigenvalue of R = (1/K) sum_i conj(h_i) h_i^T, the maximum of w^H R w
+ *         over unit-norm frequency-flat w                    rebuilt; ns-3 with its eigenvector
+ *   eigpo phase-only version of the eigen beam               rebuilt
+ *   mrt   (1/K) sum_i ||h_i||^2, the per-RB matched-filter ceiling
+ * Outputs: e1521_real.csv, e1521_det.csv, e1521_info.csv; for copies < dumpCopies the
+ * per-RB vectors h (K x N complex doubles, little-endian, row-major) in e1521_h.bin,
+ * indexed by e1521_h_index.csv.
+ */
+static int
+RunBeamsMode(const std::string& linksFile,
+             double frequency,
+             uint32_t numRbs,
+             double scs,
+             Vector gnbPos,
+             uint32_t rows,
+             uint32_t cols,
+             uint32_t copies,
+             uint32_t oversampling,
+             uint32_t dumpCopies)
+{
+    NS_ABORT_MSG_IF(copies == 0, "copies must be >= 1");
+    NS_ABORT_MSG_IF(oversampling == 0, "oversampling must be >= 1");
+    auto links = ReadLinks(linksFile);
+    for (const auto& l : links)
+    {
+        // ns-3.48 UMa: O2I selects the O2I table (6x6 correlation, no K-factor) but LOS
+        // still runs the 7-parameter LOS generation and adds a LOS ray (hazard 13).
+        NS_ABORT_MSG_IF(l.los && l.o2i, "mode beams: LOS with O2I is not allowed (hazard 13)");
+    }
+    NodeContainer gnb;
+    gnb.Create(1);
+    NodeContainer ues;
+    ues.Create(links.size() * copies);
+    MobilityHelper mobility;
+    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+    mobility.Install(gnb);
+    mobility.Install(ues);
+    Ptr<MobilityModel> gMob = gnb.Get(0)->GetObject<MobilityModel>();
+    gMob->SetPosition(gnbPos);
+
+    auto cond = CreateObject<CmwavePrescribedConditionModel>();
+    cond->SetGnbNodeId(gnb.Get(0)->GetId());
+    std::vector<Ptr<UniformPlanarArray>> ueArrays;
+    for (size_t l = 0; l < links.size(); ++l)
+    {
+        for (uint32_t c = 0; c < copies; ++c)
+        {
+            Ptr<Node> n = ues.Get(l * copies + c);
+            n->GetObject<MobilityModel>()->SetPosition(links[l].pos);
+            cond->SetCondition(n->GetId(), links[l].los, links[l].o2i);
+            ueArrays.push_back(MakeIsoArray());
+        }
+    }
+    std::map<double, Ptr<UniformPlanarArray>> sectorArray;
+    for (const auto& l : links)
+    {
+        if (!sectorArray.count(l.bearingDeg))
+        {
+            sectorArray[l.bearingDeg] = MakeGnbArray(rows, cols, l.bearingDeg, "3gpp");
+        }
+    }
+    for (const auto& [b, a] : sectorArray)
+    {
+        NS_ABORT_MSG_IF(a->GetNumPorts() != 1 || a->IsDualPol(), "mode beams needs one port, single polarization");
+    }
+
+    auto slm = CreateObject<ThreeGppSpectrumPropagationLossModel>();
+    slm->SetChannelModelAttribute("Frequency", DoubleValue(frequency));
+    slm->SetChannelModelAttribute("Scenario", StringValue("UMa"));
+    slm->SetChannelModelAttribute("ChannelConditionModel", PointerValue(cond));
+    slm->AssignStreams(1000);
+    DoubleValue fRead;
+    slm->GetChannelModelAttribute("Frequency", fRead);
+    StringValue scRead;
+    slm->GetChannelModelAttribute("Scenario", scRead);
+    auto txParams = FlatTxParams(numRbs, frequency, scs);
+    const double txSum = Sum(*txParams->psd);
+    const size_t K = txParams->psd->GetValuesN();
+    const size_t N = size_t(rows) * cols;
+
+    std::ofstream det("e1521_det.csv");
+    det << "link_index,name,bearing_deg,zenith_deg,azimuth_deg,elem_gain_db,af_s_db,af_u_db,n_elems\n";
+    std::ofstream real("e1521_real.csv");
+    real << "link_index,copy,n_clusters,gnb_is_s,g_ns3_dp,g_dp,g_cb,cb_p,cb_q,g_cb1,cb1_p,cb1_q,"
+            "g_eigpo,g_eig,g_mrt,g_ns3_cb,g_ns3_eig,g_eigvec,eig_iters,eig_certified\n";
+    std::ofstream hidx("e1521_h_index.csv");
+    hidx << "link_index,copy,k,n,offset_bytes\n";
+    std::ofstream hbin("e1521_h.bin", std::ios::binary);
+    uint64_t offset = 0;
+    uint64_t uncertified = 0;
+    for (size_t l = 0; l < links.size(); ++l)
+    {
+        auto gUpa = sectorArray.at(links[l].bearingDeg);
+        for (uint32_t c = 0; c < copies; ++c)
+        {
+            const size_t idx = l * copies + c;
+            Ptr<MobilityModel> uMob = ues.Get(idx)->GetObject<MobilityModel>();
+            auto uUpa = ueArrays[idx];
+            PhasedArrayModel::ComplexVector wDp = CreateDirectPathBfv(gMob, uMob, gUpa);
+            if (c == 0)
+            {
+                Angles ang(uMob->GetPosition(), gMob->GetPosition());
+                double e = 0;
+                double s = 0;
+                double u = 0;
+                DeterministicGain(gUpa, wDp, ang, &e, &s, &u);
+                det << l << ',' << links[l].name << ',' << std::setprecision(17)
+                    << links[l].bearingDeg << ',' << ang.GetInclination() * 180.0 / M_PI << ','
+                    << ang.GetAzimuth() * 180.0 / M_PI << ',' << 10 * std::log10(e) << ','
+                    << 10 * std::log10(s) << ',' << 10 * std::log10(u) << ',' << gUpa->GetNumElems()
+                    << '\n';
+            }
+            // DL first: the gNB is the transmit side s of the stored matrix.
+            gUpa->SetBeamformingVector(wDp);
+            uUpa->SetBeamformingVector(CreateDirectPathBfv(uMob, gMob, uUpa));
+            const double gNs3Dp =
+                Sum(*slm->CalcRxPowerSpectralDensity(txParams, gMob, uMob, gUpa, uUpa)->psd) / txSum;
+            auto m = slm->GetChannelModel()->GetChannel(gMob, uMob, gUpa, uUpa);
+            const bool gnbIsS = !m->IsReverse(gUpa->GetId(), uUpa->GetId());
+            NS_ABORT_MSG_IF(!gnbIsS, "gNB is not the transmit side s");
+            auto prm = slm->GetChannelModel()->GetParams(gMob, uMob);
+            const std::vector<Cplx> h = PerRbChannel(m, prm, txParams->psd);
+
+            const double gDp = BeamGain(h, K, N, wDp);
+            const CodebookResult cb = CodebookSearch(h, K, rows, cols, oversampling, oversampling);
+            const std::vector<Cplx> gram = GramMatrix(h, K, N);
+            const EigenResult eig = PrincipalEigen(gram, K, kEigEps, kEigMaxIter);
+            uncertified += eig.certified ? 0 : 1;
+            const PhasedArrayModel::ComplexVector wEig = EigenBeam(h, K, N, eig.x);
+            const double gEigvec = BeamGain(h, K, N, wEig);
+            const double gEigpo = BeamGain(h, K, N, PhaseOnly(wEig));
+            double trace = 0;
+            for (size_t k = 0; k < K; ++k)
+            {
+                trace += gram[k * K + k].real();
+            }
+            const auto wCb = DftBeam(rows, cols, oversampling, oversampling, cb.p, cb.q);
+            gUpa->SetBeamformingVector(wCb);
+            const double gNs3Cb =
+                Sum(*slm->CalcRxPowerSpectralDensity(txParams, gMob, uMob, gUpa, uUpa)->psd) / txSum;
+            gUpa->SetBeamformingVector(wEig);
+            const double gNs3Eig =
+                Sum(*slm->CalcRxPowerSpectralDensity(txParams, gMob, uMob, gUpa, uUpa)->psd) / txSum;
+
+            real << l << ',' << c << ',' << m->m_channel.GetNumPages() << ',' << gnbIsS << ','
+                 << std::setprecision(17) << gNs3Dp << ',' << gDp << ',' << cb.gain << ',' << cb.p
+                 << ',' << cb.q << ',' << cb.gain1 << ',' << cb.p1 << ',' << cb.q1 << ',' << gEigpo
+                 << ',' << eig.mu / K << ',' << trace / K << ',' << gNs3Cb << ',' << gNs3Eig << ','
+                 << gEigvec << ',' << eig.iterations << ',' << eig.certified << '\n';
+            if (c < dumpCopies)
+            {
+                hidx << l << ',' << c << ',' << K << ',' << N << ',' << offset << '\n';
+                for (const Cplx& v : h)
+                {
+                    const double re = v.real();
+                    const double im = v.imag();
+                    hbin.write(reinterpret_cast<const char*>(&re), sizeof(double));
+                    hbin.write(reinterpret_cast<const char*>(&im), sizeof(double));
+                }
+                offset += uint64_t(h.size()) * 2 * sizeof(double);
+            }
+        }
+    }
+    hbin.close();
+    std::ofstream info("e1521_info.csv");
+    info << "key,value\n"
+         << "mode,beams\n"
+         << "frequency_hz_readback," << std::setprecision(17) << fRead.Get() << '\n'
+         << "scenario_readback," << scRead.Get() << '\n'
+         << "num_rbs," << K << '\n'
+         << "scs_hz," << scs << '\n'
+         << "rows," << rows << '\n'
+         << "cols," << cols << '\n'
+         << "oversampling," << oversampling << '\n'
+         << "copies," << copies << '\n'
+         << "dump_copies," << dumpCopies << '\n'
+         << "n_links," << links.size() << '\n'
+         << "rng_seed," << RngSeedManager::GetSeed() << '\n'
+         << "rng_run," << RngSeedManager::GetRun() << '\n'
+         << "eig_eps," << kEigEps << '\n'
+         << "eig_max_iter," << kEigMaxIter << '\n'
+         << "eig_uncertified," << uncertified << '\n'
+         << "peak_rss_kb," << PeakRssKb() << '\n';
+    Simulator::Destroy();
+    return 0;
+}
+
+/**
+ * E1.5.2-1: the gNB beam toward one UE computed from the stored channel, for mode
+ * nrfading with --gnbBeam=cb|eig. The channel is generated here in the DL direction
+ * (gNB = s) with the DirectPath vectors installed, exactly as in mode beams.
+ */
+static PhasedArrayModel::ComplexVector
+ChannelBeam(const std::string& kind,
+            Ptr<ThreeGppSpectrumPropagationLossModel> slm,
+            Ptr<MobilityModel> gMob,
+            Ptr<MobilityModel> uMob,
+            Ptr<UniformPlanarArray> gUpa,
+            Ptr<UniformPlanarArray> uUpa,
+            Ptr<SpectrumSignalParameters> txParams,
+            uint32_t rows,
+            uint32_t cols,
+            uint32_t oversampling)
+{
+    gUpa->SetBeamformingVector(CreateDirectPathBfv(gMob, uMob, gUpa));
+    uUpa->SetBeamformingVector(CreateDirectPathBfv(uMob, gMob, uUpa));
+    slm->CalcRxPowerSpectralDensity(txParams, gMob, uMob, gUpa, uUpa);
+    auto m = slm->GetChannelModel()->GetChannel(gMob, uMob, gUpa, uUpa);
+    NS_ABORT_MSG_IF(m->IsReverse(gUpa->GetId(), uUpa->GetId()), "gNB is not the transmit side s");
+    const std::vector<Cplx> h =
+        PerRbChannel(m, slm->GetChannelModel()->GetParams(gMob, uMob), txParams->psd);
+    const size_t K = txParams->psd->GetValuesN();
+    const size_t N = size_t(rows) * cols;
+    if (kind == "cb")
+    {
+        const CodebookResult cb = CodebookSearch(h, K, rows, cols, oversampling, oversampling);
+        return DftBeam(rows, cols, oversampling, oversampling, cb.p, cb.q);
+    }
+    NS_ABORT_MSG_IF(kind != "eig", "gnbBeam must be dp, cb or eig");
+    const EigenResult eig = PrincipalEigen(GramMatrix(h, K, N), K, kEigEps, kEigMaxIter);
+    NS_ABORT_MSG_IF(!eig.certified, "eigenvalue not certified");
+    return EigenBeam(h, K, N, eig.x);
+}
+
 static std::ofstream g_dlTb;
 static std::ofstream g_ulTb;
 
@@ -524,8 +1174,12 @@ RunNrFadingMode(const std::string& linksFile,
                 uint32_t packetSize,
                 double appStart,
                 double simTime,
-                const std::string& tddPattern)
+                const std::string& tddPattern,
+                const std::string& gnbBeam,
+                uint32_t oversampling)
 {
+    NS_ABORT_MSG_IF(gnbBeam != "dp" && gnbBeam != "cb" && gnbBeam != "eig",
+                    "gnbBeam must be dp, cb or eig");
     auto links = ReadLinks(linksFile);
     const uint32_t nUe = links.size();
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));
@@ -569,6 +1223,12 @@ RunNrFadingMode(const std::string& linksFile,
     auto epcHelper = CreateObject<NrPointToPointEpcHelper>();
     auto bfHelper = CreateObject<IdealBeamformingHelper>();
     bfHelper->SetAttribute("BeamformingMethod", TypeIdValue(DirectPathBeamforming::GetTypeId()));
+    if (gnbBeam != "dp")
+    {
+        // E1.5.2-1: the DirectPath task runs once at attach and is then overwritten with
+        // the channel-computed beam; no periodic re-run within the simulation.
+        bfHelper->SetAttribute("BeamformingPeriodicity", TimeValue(Seconds(simTime + 100.0)));
+    }
     auto nrHelper = CreateObject<NrHelper>();
     nrHelper->SetBeamformingHelper(bfHelper);
     nrHelper->SetEpcHelper(epcHelper);
@@ -607,6 +1267,28 @@ RunNrFadingMode(const std::string& linksFile,
     internet.Install(ueNodes);
     Ipv4InterfaceContainer ueIfaces = epcHelper->AssignUeIpv4Address(ueDevs);
     nrHelper->AttachToClosestGnb(ueDevs, gnbDevs);
+
+    // E1.5.2-1: channel-computed gNB beams (codebook or eigen), one BeamId per UE.
+    std::vector<PhasedArrayModel::ComplexVector> customW;
+    if (gnbBeam != "dp")
+    {
+        auto gp0 = NrHelper::GetGnbPhy(gnbDevs.Get(0), 0);
+        auto gUpa0 = DynamicCast<UniformPlanarArray>(gp0->GetSpectrumPhy()->GetAntenna());
+        NS_ABORT_MSG_IF(!gUpa0, "gNB antenna is not a UniformPlanarArray");
+        auto tx0 = FlatTxParams(gp0->GetRbNum(), frequency, gp0->GetSubcarrierSpacing());
+        for (uint32_t i = 0; i < nUe; ++i)
+        {
+            Ptr<MobilityModel> uMob = ueNodes.Get(i)->GetObject<MobilityModel>();
+            auto uUpa = DynamicCast<UniformPlanarArray>(
+                NrHelper::GetUePhy(ueDevs.Get(i), 0)->GetSpectrumPhy()->GetAntenna());
+            NS_ABORT_MSG_IF(!uUpa, "UE antenna is not a UniformPlanarArray");
+            customW.push_back(
+                ChannelBeam(gnbBeam, slm, gMob, uMob, gUpa0, uUpa, tx0, rows, cols, oversampling));
+            gp0->GetSpectrumPhy()->GetBeamManager()->SaveBeamformingVector(
+                BeamformingVector(customW.back(), BeamId(static_cast<uint16_t>(i + 1), 0.0)),
+                ueDevs.Get(i));
+        }
+    }
 
     const uint16_t dlPort = 1234;
     ApplicationContainer servers;
@@ -680,6 +1362,35 @@ RunNrFadingMode(const std::string& linksFile,
     NS_ABORT_MSG_IF(!gUpa, "gNB antenna is not a UniformPlanarArray");
     auto txParams = FlatTxParams(gp->GetRbNum(), frequency, gp->GetSubcarrierSpacing());
     const double txSum = Sum(*txParams->psd);
+    if (gnbBeam != "dp")
+    {
+        // Gain of every link with the installed channel-computed beam, on the same
+        // channel objects; also whether the beam manager still holds that beam and when
+        // the stored channel was generated (it must be the pre-run one, t = 0).
+        auto bm = gp->GetSpectrumPhy()->GetBeamManager();
+        std::ofstream beamOut("e1521_nr_beam.csv");
+        beamOut << "ue_index,name,beam,gain_lin,gnb_is_s,gnb_elems,bm_vector_match,channel_generated_s\n";
+        for (uint32_t i = 0; i < nUe; ++i)
+        {
+            Ptr<MobilityModel> uMob = ueNodes.Get(i)->GetObject<MobilityModel>();
+            auto uUpa = DynamicCast<UniformPlanarArray>(
+                NrHelper::GetUePhy(ueDevs.Get(i), 0)->GetSpectrumPhy()->GetAntenna());
+            const bool match = bm->GetBeamformingVector(ueDevs.Get(i)) == customW[i];
+            gUpa->SetBeamformingVector(customW[i]);
+            uUpa->SetBeamformingVector(CreateDirectPathBfv(uMob, gMob, uUpa));
+            auto m = slm->GetChannelModel()->GetChannel(gMob, uMob, gUpa, uUpa);
+            const bool gnbIsS = !m->IsReverse(gUpa->GetId(), uUpa->GetId());
+            Ptr<SpectrumSignalParameters> rx =
+                slm->CalcRxPowerSpectralDensity(txParams, gMob, uMob, gUpa, uUpa);
+            beamOut << i << ',' << links[i].name << ',' << gnbBeam << ',' << std::setprecision(17)
+                    << Sum(*rx->psd) / txSum << ',' << gnbIsS << ',' << gUpa->GetNumElems() << ','
+                    << match << ',' << m->m_generatedTime.GetSeconds() << '\n';
+        }
+        g_dlTb.close();
+        g_rrc.close();
+        Simulator::Destroy();
+        return 0;
+    }
     std::ofstream direct("e152_nr_direct.csv");
     direct << "ue_index,name,gain_lin,gnb_is_s,gnb_elems\n";
     for (uint32_t i = 0; i < nUe; ++i)
@@ -771,7 +1482,29 @@ main(int argc, char* argv[])
     cmd.AddValue("gnbRole", "s: gNB transmits first (DL); u: UE transmits first (mode chan)", gnbRole);
     cmd.AddValue("gnbWeights", "dp: NR DirectPath vector; dpconj: its conjugate (mode chan)", gnbWeights);
     cmd.AddValue("bearingDeg", "gNB sector bearing [deg] (mode nrfading)", bearingDeg);
+    // E1.5.2-1 (modes beams and nrfading)
+    std::string gnbBeam = "dp";
+    uint32_t oversampling = 4;
+    uint32_t dumpCopies = 1;
+    cmd.AddValue("gnbBeam", "dp (NR DirectPath), cb (DFT codebook) or eig (eigen beam) (mode nrfading)", gnbBeam);
+    cmd.AddValue("oversampling", "DFT codebook oversampling per dimension (modes beams, nrfading)", oversampling);
+    cmd.AddValue("dumpCopies", "copies per link whose per-RB channel is dumped (mode beams)", dumpCopies);
     cmd.Parse(argc, argv);
+    if (mode == "beams")
+    {
+        const double scs = 15e3 * std::pow(2.0, numerology);
+        const auto numRbs = static_cast<uint32_t>(std::floor(bandwidth * (1 - rbOverhead) / (12 * scs)));
+        return RunBeamsMode(linksFile,
+                            frequency,
+                            numRbs,
+                            scs,
+                            Vector(gnbX, gnbY, gnbZ),
+                            gnbRows,
+                            gnbCols,
+                            copies,
+                            oversampling,
+                            dumpCopies);
+    }
     if (mode == "chan")
     {
         const double scs = 15e3 * std::pow(2.0, numerology);
@@ -807,7 +1540,9 @@ main(int argc, char* argv[])
                                packetSize,
                                appStart,
                                simTime,
-                               tddPattern);
+                               tddPattern,
+                               gnbBeam,
+                               oversampling);
     }
     NS_ABORT_MSG_IF(mode != "link", "unknown mode " << mode);
     NS_ABORT_MSG_IF(lossFile.empty(), "--lossFile is required");

@@ -1,0 +1,31 @@
+{
+  "generated_utc": "2026-11-09T17:07:53.312618+00:00",
+  "tool": "scripts/e1c3_directional.py",
+  "git_head_at_run": "6d9b9b9",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "config_sha256": "0282a5cc8fae7e9a6c2b49c411f32d6799d14fb4f9663135792b9d20d1d831e9",
+  "input_sha256": {
+    "e1c2_interference/manifest.json": "d7852dc55d527ccec946050f26a2a802105e3b9f5b24d1e75c37baf30f4eceb0",
+    "e1c2_interference/summary.json": "111f287fe02ccc2b629d8b9701ae192f1bb334e282a123cc362e7b163224314c",
+    "e1c2_interference/raw/counts_isd200.npz": "cb0121ed7aa0b87eef02c6a53eb52a3888c4e46acbdd2a0fab67e4ffc0fdbd40",
+    "e1c2_interference/raw/counts_isd500.npz": "e9223e865ad6e002d3eac85c7defc2295df3feefdb449cd580355cdceeb958cc",
+    "e1_5_2_1_beams/manifest.json": "6d8551bd95c93c56e02a0f1fcd98dea9c07cd972fb316bd6f9305b3e59758021",
+    "e1_5_3_link_mapping/manifest.json": "ce7ac5516490031cc90af3c9062deb158749dacf9a6d48cf1f83a7d890ccb47b",
+    "e1_5_3a_amc_diagnostic/manifest.json": "80559d904c5e57597ea4e366c5b898e6a3a57a4fa338f5ae09974c235d0fdaac",
+    "e1_5_4_multiuser/manifest.json": "a86df31223fab38796787df80f7532609f59ce30e5b8768748f993be5caaba59",
+    "e1_5_5_reclassification/manifest.json": "4f35d289e08f9769c6722dc412ebd6ea7d46f51016f8fe7b248de353e5989e43",
+    "e1c_area_maps/manifest.json": "2419b5bc7a08e0d59673576196b051fe347ee56fdb35f21ebb28cf2bbaf8e73c",
+    "e1_geometry/site_tx0_mask.npz": "d1cd5abd4ef71204ef3d80d591909ddb0042d622bc92897de132ed72c127a7c8",
+    "e1c_geometry/site_tx0_indoor.npz": "4e72c069219fd5eb909e8df85a35398b5219c1088c7c3f25a965876a512c27b7",
+    "e1c2_geometry/e1c2_geometry_manifest.json": "4b42aa62a28e932c2d3135c61d22b04c3edcbed0b109e1090322ac808d0b920f",
+    "e1c2_geometry/e1c2_sites_isd200.npz": "039693be0c3d8f08411f6613131637f00c766e190ae68b5d7e8935a5ecbd85c4",
+    "e1c2_geometry/e1c2_sites_isd500.npz": "5e4ddbb4b596acea970ef7ef66ae6c98b7ba296e425c6f5e92f5259ff9b858d1"
+  },
+  "outputs_sha256": {
+    "summary.json": "8c880e5f7911f7f4e4df2e9e75507ebfce60f9d380c1ffebff4f767c9b80b5c3",
+    "raw/counts_isd200.npz": "16d11155185251befa8b4fa12b0b489d5c5c489c442c9ce9b1151757f5d787b2",
+    "raw/counts_isd500.npz": "b1052c0322494b6013c2438333b909cbb96411410453f7e62ed388e7133c5ec3"
+  },
+  "all_checks_passed": true
+}

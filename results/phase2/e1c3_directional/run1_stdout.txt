@@ -1,0 +1,37 @@
+H2 True H3 True
+ISD 200: victims [935, 5756]
+ISD 200: realization 10/100, 58 s
+ISD 200: realization 20/100, 113 s
+ISD 200: realization 30/100, 180 s
+ISD 200: realization 40/100, 243 s
+ISD 200: realization 50/100, 301 s
+ISD 200: realization 60/100, 348 s
+ISD 200: realization 70/100, 392 s
+ISD 200: realization 80/100, 442 s
+ISD 200: realization 90/100, 498 s
+ISD 200: realization 100/100, 544 s
+H1a True H1b True 2.84e-14
+H4 True 3.55e-14 dB
+ISD 200 done in 555 s
+ISD 500: victims [4541, 38921]
+ISD 500: realization 10/100, 234 s
+ISD 500: realization 20/100, 432 s
+ISD 500: realization 30/100, 655 s
+ISD 500: realization 40/100, 876 s
+ISD 500: realization 50/100, 1096 s
+ISD 500: realization 60/100, 1312 s
+ISD 500: realization 70/100, 1541 s
+ISD 500: realization 80/100, 1743 s
+ISD 500: realization 90/100, 1948 s
+ISD 500: realization 100/100, 2154 s
+H1a True H1b True 2.84e-14
+H4 True 7.82e-14 dB
+ISD 500 done in 2171 s
+H0_inputs PASS
+H2_array_pattern PASS
+H3_calibration PASS
+H5_mapping_partition PASS
+H1a_e1c2_reproduced PASS
+H1b_per_beam_limit PASS
+H4_scalar_recompute PASS
+E1c.3 GATES PASSED 2730 s

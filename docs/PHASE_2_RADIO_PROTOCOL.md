@@ -1134,6 +1134,136 @@ is reported with its range.
   downtilt.
 - E1c.2's limits also apply.
 
+#### E1c.3 results (run 1): all gates PASSED; P1 FAILED (median clause), P2 held (2026-11-09)
+
+**Run 1 (`6d9b9b9`)** took 2,730 s.
+
+Gates:
+- **H0** passes.
+- **H1a:** E1c.2 reproduced: 972 raw count arrays identical per ISD,
+  maximum mix difference 0.0, same victims.
+- **H1b:** 2.8e-14 dB.
+- **H2:** 5.6e-14 relative; peak exact; grid-mean error 8.9e-16.
+- **H3:** 3.6e-15 dB.
+- **H4:** 50 pairs per ISD, 0 association mismatches, at most 7.8e-14 dB
+  (explicit phasor sums, including ISD-500 synthetic targets).
+- **H5:** 0 partition errors.
+
+ISD 500 uses 21.0 synthetic DL targets per realization (the TRxPs without
+candidates); there were no sampling fallbacks.
+
+Generated from `summary.json`. ISD 200, M2412 mix, F2. `avg` = E1c.2
+primary.
+
+| Case | Setting | UL 3.5 | UL 7.2 | DL 3.5 | DL 7.2 | K1 | K2 | K3 | K4 | K6 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A | avg (E1c.2) | 0.970 | 0.896 | 1.000 | 0.995 | 0.896 | 0.073 | 0.025 | 0.005 | 0.000 |
+| A | **sd** | 0.967 | 0.892 | 0.967 | 0.962 | 0.867 | 0.071 | 0.024 | 0.038 | 0.000 |
+| A | geo | 0.964 | 0.886 | 0.923 | 0.919 | 0.828 | 0.067 | 0.024 | 0.081 | 0.001 |
+| A | sd_stress | 0.937 | 0.830 | 0.467 | 0.466 | 0.429 | 0.027 | 0.009 | 0.534 | 0.000 |
+| A | sd_iso72 | 0.967 | 0.901 | 0.967 | 0.996 | 0.875 | 0.067 | 0.029 | 0.004 | 0.026 |
+| A | sd_ul_full | 0.731 | 0.702 | 0.967 | 0.962 | 0.689 | 0.029 | 0.243 | 0.038 | 0.001 |
+| B | avg (E1c.2) | 0.970 | 0.932 | 1.000 | 0.998 | 0.932 | 0.038 | 0.029 | 0.002 | 0.000 |
+| B | **sd** | 0.967 | 0.930 | 0.967 | 0.990 | 0.903 | 0.036 | 0.030 | 0.010 | 0.021 |
+| B | geo | 0.964 | 0.928 | 0.923 | 0.967 | 0.862 | 0.035 | 0.031 | 0.033 | 0.040 |
+| B | sd_ul_full | 0.731 | 0.797 | 0.967 | 0.990 | 0.713 | 0.005 | 0.193 | 0.010 | 0.080 |
+| B | geo_ul_full | 0.748 | 0.824 | 0.923 | 0.967 | 0.704 | 0.008 | 0.154 | 0.033 | 0.102 |
+| C | avg (E1c.2) | 0.922 | 0.851 | 1.000 | 1.000 | 0.851 | 0.071 | 0.078 | 0.000 | 0.000 |
+| C | **sd** | 0.917 | 0.849 | 0.966 | 0.997 | 0.827 | 0.068 | 0.082 | 0.003 | 0.020 |
+| C | geo | 0.911 | 0.846 | 0.926 | 0.988 | 0.796 | 0.064 | 0.085 | 0.012 | 0.043 |
+
+ISD 500 (qualified sensitivity), M2412, F2, `avg` / **`sd`** / `geo`:
+
+| Case | UL 7.2 | DL 3.5 | DL 7.2 |
+|---|---|---|---|
+| A | 0.509 / **0.496** / 0.483 | 0.981 / **0.901** / 0.805 | 0.926 / **0.850** / 0.763 |
+| B | 0.639 / **0.630** / 0.615 | 0.981 / **0.901** / 0.805 | 0.954 / **0.926** / 0.855 |
+| C | 0.403 / **0.400** / 0.397 | 0.987 / **0.910** / 0.824 | 0.974 / **0.964** / 0.938 |
+
+DL SINR at 7.2 GHz, case A, M2412 mix (1 / 5 / 50 / 95 %, dB):
+
+| ISD | avg | sd | geo |
+|---|---|---|---|
+| 200 | 14.9 / 17.9 / 25.9 / 43.9 | 9.2 / 13.9 / 25.4 / 44.5 | 5.1 / 10.4 / 27.5 / 47.8 |
+| 500 | −0.8 / 9.7 / 24.0 / 43.1 | −0.9 / 7.6 / 21.7 / 42.2 | −1.2 / 4.6 / 20.0 / 43.2 |
+
+Paired differences (ISD 200, A, F2; every SE ≤ 0.0003):
+- `sd` − `avg`: DL 7.2 −0.033, UL 7.2 −0.005.
+- `geo` − `avg`: DL 7.2 −0.076, UL 7.2 −0.011.
+- `sd` − `sd_iso72` (activating 7.2 GHz on neighbouring TRxPs): DL 7.2
+  −0.034, UL 7.2 −0.009. At ISD 500: −0.081 and −0.025.
+- Bernoulli − mean activity at η 0.2: DL 7.2 −0.005 (−0.009 at ISD 500).
+
+**Predictions.**
+- **P1 FAILED.**
+  - Its first clause held: the 5th percentile falls from 17.9 to 13.9 dB.
+  - Its second clause failed: the `sd` median (25.4 dB) is not above the
+    `avg` median (25.9 dB).
+  - The prediction assumed per-beam interference has the same mean as the
+    beam-averaged model. That premise is false. **Post-hoc diagnostic**
+    (declared; realization 0, case A, 7.2 GHz DL; scratch script, no
+    definition changed):
+    - Weighted by interference power, the vertical array factor toward the
+      victims averages 2.1–3.4 at both ISDs, not 1. Scheduled beams point at
+      ground-level UEs, in the victims' own elevation band.
+    - Indoors at ISD 200 the horizontal factor is also 2.9. 39% of those
+      UEs are served by neighbouring sites, whose beams point into site 0's
+      cell.
+    - Mean interference relative to `avg` is 0.99 for in-car victims at
+      ISD 200, but 1.9 indoors, and 2.9–3.4 at ISD 500.
+  - E1c.2's average therefore underestimated mean interference, not only
+    its tail.
+- **P2 held.** 1st percentile: `geo` 5.1 < `sd` 9.2 < `avg` 14.9 dB.
+
+**Decision rule applied (pre-registered).**
+- `sd` is now the primary interference-aware result, with [`avg`, `geo`]
+  as the beam-model range.
+- Robust to the beam model (|`sd` − `avg`| and |`geo` − `avg`| ≤ 0.02,
+  ISD 200):
+  - every UL fraction (both carriers, F2 and F3, cases A, B, C);
+  - DL 7.2 GHz in case C.
+- Not robust, reported with ranges:
+  - DL 3.5 GHz in every case (`sd` −0.033 to −0.037, `geo` −0.074 to
+    −0.082);
+  - DL 7.2 GHz in A (−0.033 / −0.076);
+  - DL 7.2 GHz in B (`geo` −0.031).
+
+What is established (gates passed):
+1. **UL feasibility is robust to the beam model** at ISD 200: at most 1.1
+   points in every case. The UL conclusions of E1c.2 stand: power control
+   decides the UL, not beam directivity.
+2. **The DL is beam-model-sensitive.**
+   - Directional interference costs 3.3–3.7 points of DL feasibility at
+     ISD 200 (`sd`, 8×16 arrays), and 7.4–8.2 in the `geo` bound.
+   - At ISD 500 it costs 7.6–8.0 points (`sd`, A) and 16–18 (`geo`).
+   - E1c.2's "DL stays feasible" holds only approximately at ISD 200.
+3. **A larger 7.2 GHz array protects the DL and now outperforms 3.5 GHz.**
+   - In B and C, DL 7.2 under `sd` is 0.990 / 0.997, against 0.967 for
+     DL 3.5 (8×16 in every case).
+   - K6 (7.2 GHz feasible in both directions while 3.5 GHz is not) appears
+     at 0.020–0.021.
+   - Under full-power UL, the larger-array UL advantage survives explicit
+     receive beams: B UL 7.2 is 0.797 (`sd`) and 0.824 (`geo`), against
+     UL 3.5 at 0.731 / 0.748. The audit's challenge is answered: the
+     advantage persists and grows with directivity. In A there is none.
+4. **Activating 7.2 GHz on neighbouring TRxPs is no longer free.** It costs
+   3.4 points of 7.2 GHz DL feasibility at ISD 200 and 8.1 at ISD 500
+   (case A), against ≤ 0.5 / 1.2 in E1c.2. Phase 3 must therefore model
+   the coupling between neighbouring cells' activation decisions.
+5. **Explicit collisions vs mean activity** differ by at most 0.6 points at
+   ISD 200 and 1.1 at ISD 500 (any fraction, η 0.5 or 0.2). A mean factor
+   is adequate for feasibility at partial load.
+6. **Stress test (not a network estimate).** One beam-aligned strongest
+   interferer halves DL feasibility (A, ISD 200: DL 7.2 from 0.962 to
+   0.466). The DL is exposed to single collisions; coordinated beam
+   management would matter.
+
+**Limits** (in addition to the pre-registered ones):
+- No mechanical downtilt, and ideal elevation steering. This is what
+  concentrates the interferers' energy in the UE elevation band (the
+  post-hoc diagnostic).
+- ISD 500 relies on synthetic DL targets for 21 of 57 TRxPs.
+
 ### Original options considered
 
 Recommended (adopted): geometry-aware 3GPP model as the main engine. TR 38.901 UMa path

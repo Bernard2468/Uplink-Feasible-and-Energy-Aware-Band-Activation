@@ -1,0 +1,73 @@
+{
+  "experiment": "E1.5.3a: diagnosis of hazard 16 (E1.5.3 first-transmission BLER above the 10% AMC target) and the NR link mapping with link adaptation that meets the TS 38.214 CQI definition",
+  "status": "PRE-REGISTERED 2026-11-09, committed before the full replay and before any Stage B run; checks, classifications and decision rules are not changed after results are seen",
+  "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.3a'",
+  "why": [
+    "E1.5.3 (a33d1ea) found 18 points above 0 dB with first-transmission BLER > 0.01, 12 of them > 0.1 (T2 UL 5, T2 DL 2, T1 UL 4, T1 DL 1), and 9 points where SE drops below a lower-SNR point. The cause was not isolated (hazard 16)",
+    "the raw curve is E1.5.3's pre-registered primary mapping; a mapping with undiagnosed 88% BLER points cannot carry E1.5.5's feasibility classification (also raised by the ChatGPT E1.5.4 memo of 2026-11-09)"
+  ],
+  "hypothesis_H16": "In NR cedceadd, NrAmc::CreateCqiFeedbackSiso (used for the UE's DL CQI, nr-ue-phy.cc:1429, and the gNB's UL MCS, nr-mac-scheduler-cqi-management.cc:79) evaluates the TBLER of a transport block sized for ONE OFDM symbol (CalculateTbSize(mcs, 1, number of RBs), nr-amc.cc:229). The transmitted TBs span 10-13 symbols, are 10-13 times larger and are segmented into more and longer code blocks, so their TBLER differs. The DL MCS is then CQI-quantized (GetMcsFromCqi). The MIMO path (NrAmc::GetMcs) sizes the TB for 12 symbols (NR_AMC_NUM_SYMBOLS_DEFAULT), as TS 38.214 5.2.2.5.1 defines the CSI reference resource ('The number of PDSCH and DM-RS symbols is equal to 12'; TBLER <= 0.1 per 5.2.2.1)",
+  "seen_before_registration": [
+    "source lines above; nr-eesm-error-model.cc GetPayloadSize does not depend on the DL/UL mode",
+    "E1.5.3 raw TB traces at t2 L89-L95 and L99-L100 (UL) and t2 L113-L116 (DL): MCS, symbols, TB size, SINR and the decoder's per-TB tbler (e.g. t2 L93 UL: MCS 26, tbler 0.8227 (12 sym) and 0.8835 (13 sym), 147/168 first transmissions corrupt)",
+    "allocation shapes over all E1.5.3 window TBs: UL 51 RB x {2, 12, 13} symbols, DL 51 RB x {10, 13} symbols",
+    "instrument smoke replay of two SINRs (t2 L93 UL, t2 L113 DL): SISO MCS 26 / 25, DL MCS from CQI 25, MIMO-path MCS 25 / 24, TB sizes and TBLERs equal to the trace values. No other replay output and no Stage B run"
+  ],
+  "stack": {
+    "ns3_commit": "d083a17a",
+    "nr_commit": "cedceadd",
+    "program": "ns3/scratch/cmwave/e15-link-validation.cc mode link; new options --amcReplay=<csv> (replay, no simulation), --fixedMcsDl/--fixedMcsUl (scheduler FixedMcsDl/Ul + StartingMcsDl/Ul); all off by default (checks R4a, R4b)"
+  },
+  "inputs": {
+    "e153_config": "configs/e1/e1_5_3_link_mapping.json",
+    "e153_results": "results/phase2/e1_5_3_link_mapping (manifest raw_sha256 verified before use)",
+    "window_s": [0.2, 0.6]
+  },
+  "stage_A_replay": {
+    "what": "for each error model (NrEesmIrT2, NrEesmIrT1) one program call in mode link with the E1.5.3 arguments plus --amcReplay. It takes the scheduler's own DL and UL NrAmc instances and a fresh decoding error model of the same type, and for every SINR (all distinct sinr_lin values of E1.5.3 first-transmission window TBs, as printed, plus the Python link-budget SINR of every grid point and direction) writes: SISO MCS and CQI (DL and UL AMC), GetMcsFromCqi(DL CQI), MIMO-path MCS (DL and UL AMC); and for 51 RB x {1, 2, 10, 12, 13} symbols and 5 RB x {12, 13} symbols, every MCS: TB size (NrAmc::CalculateTbSize(mcs, 1, nRb x nSym)) and first-transmission TBLER by the SISO and the MIMO error-model call",
+    "tb_population": "per E1.5.3 run and direction: unique TBs (by key, erratum 1 of E1.5.1) with rv = 0 and time in the window"
+  },
+  "checks_A": {
+    "A0_tb_size": "every first-transmission window TB: trace tb_size == replayed TB size for (rb_assigned, num_sym, mcs)",
+    "A1_mcs": "every first-transmission window TB: UL mcs == UL SISO MCS at the TB's sinr_lin; DL mcs == GetMcsFromCqi(DL SISO CQI) at the TB's sinr_lin (the AMC input is taken as the TB's own SINR: AWGN, constant per run, E1.5.3 check V)",
+    "A2_tbler": "every first-transmission window TB: |trace tbler - replayed TBLER| <= 1e-9 for its (sinr, rb, sym, mcs), by the SISO or the MIMO call (the path that matches is reported)",
+    "A3_classification": "every point (model, direction, run) with SNR > 0 dB and first-transmission BLER > 0.1 is classified as MISMATCH if TBLER_1sym(m_used) <= 0.1 < mean replayed TBLER of its TBs, or SAMPLING if the mean replayed TBLER <= 0.1 and the exact Poisson-binomial probability of at least the observed number of failures is >= 0.001; otherwise UNEXPLAINED. A3 passes if no point is UNEXPLAINED. The class of each of the 9 non-monotone points is reported",
+    "A4_rule": "for every replayed SINR: the 12-symbol rule computed in Python from the replayed MIMO TBLER table (first MCS with TBLER > 0.1, minus one; the maximum MCS if none) == the program's DL and UL MIMO-path MCS"
+  },
+  "stage_B_runs": {
+    "what": "E1.5.3 grid (75 losses x NrEesmIrT2 / NrEesmIrT1), all E1.5.3 arguments unchanged, plus --fixedMcsDl and --fixedMcsUl set to the C-AMC MCS of that run and direction",
+    "c_amc_rule": "C-AMC MCS = NrAmc::GetMcs (MIMO path, 12-symbol TB over the full band, TBLER <= 0.1) at the Python link-budget SINR of that loss (DL; UL with 51 RB), read from the Stage A replay. No CQI quantization (TS 38.214 defines the CQI; MCS choice and outer-loop link adaptation are gNB implementation)",
+    "metric": "E1.5.3 metric unchanged (SE per used resource, first-transmission BLER, retransmission share, SNR)"
+  },
+  "checks_B": {
+    "B0_mcs_consistency": "every run and direction: the C-AMC MCS at the Python SINR equals the MIMO-path MCS at every E1.5.3 trace SINR of that run and direction",
+    "R4a_link_mode_unchanged": "scripts/e1_5_2_0_conventions.py rerun with the E1.5.3a build: passes and its 98 raw data files are byte-identical to E1.5.2-0 run 3 (as E1.5.3 R3)",
+    "R4b_e153_reproduced": "E1.5.3 runs t2_L93, t2_L113 and t1_L113 rerun with the E1.5.3a build and the E1.5.3 arguments: losses.csv, e15_dl_tb.csv, e15_ul_tb.csv, e15_run_info.csv and e153_error_model.csv byte-identical to the E1.5.3 manifest",
+    "E0_error_model": "as E1.5.3",
+    "V_snr_identity": "as E1.5.3 (0.01 dB)",
+    "F1_fixed_mcs": "every run: e15_run_info.csv reads back sched_fixed_mcs_dl = sched_fixed_mcs_ul = 1 and starting MCS = requested; every TB of the run (any time, any rv) has the fixed MCS of its direction",
+    "C_coverage": "as E1.5.3"
+  },
+  "predictions_scored_not_gating": {
+    "P_mono": "C-AMC T2 and T1 curves: no decrease between consecutive grid points larger than 10% of the lower-SNR point's SE (MCS steps of 3-6% combined with a 10% BLER target can lower SE slightly; larger drops would indicate another mechanism)",
+    "P_bler": "C-AMC: every run and direction with >= 50 first transmissions and C-AMC MCS > 0 has first-transmission BLER <= 0.1 + 3 sqrt(0.09 / n)"
+  },
+  "reported_only": [
+    "per point: SISO-AMC MCS, DL MCS after CQI quantization, C-AMC MCS, TBLER of the transmitted TB under each",
+    "analytic first-transmission SE envelope max_m 8 TBS(m)(1 - TBLER(m)) / resource for the dominant shapes (DL 51 RB x 13 sym, UL 51 RB x 12 sym), labelled ideal link adaptation without HARQ",
+    "5 RB x 12/13 symbol (F3 allocation) C-AMC MCS and first-transmission SE versus SNR, and its shift against 51 RB (input to E1.5.4/E1.5.5; not a packet-level result)",
+    "F2/F3 required SNR (link SE 2.25 DL, 1.5 UL) under the C-AMC curves; pointwise check SE(x + 10 log10(51/5) dB) >= SE(x) on the raw and C-AMC curves (input to E1.5.5's dominance check S5)"
+  ],
+  "decision_rules": {
+    "H16_confirmed": "A0, A1, A2, A3 and A4 pass",
+    "c_amc_valid": "B0, R4a, R4b, E0, V, F1 and C pass",
+    "mapping_for_e1_5_5_and_e1c": "if H16_confirmed and c_amc_valid: the primary mapping is the C-AMC T2 curve (empirical, piecewise linear in SNR dB, as E1.5.3); sensitivities: the raw E1.5.3 T2 curve (labelled '5G-LENA v5.1 SISO AMC, 1-symbol reference'), C-AMC T1 and TR 36.942 V19 Table A.1. Hazard 15 handling is unchanged (TR 36.942 low-SNR end carried as a sensitivity; links failing only in -10..-1 dB labelled). This supersedes E1.5.3's choice of primary mapping before any E1.5.5 result exists",
+    "otherwise": "stop and diagnose; E1.5.5 does not start; evidence kept",
+    "upstream": "if H16_confirmed: a fourth upstream report is drafted (SISO AMC sizes its TBLER test for one symbol; MIMO path and TS 38.214 use 12); filing is the user's decision"
+  },
+  "limits": "AWGN, one UE, one layer, ideal control channels; the C-AMC curve is NR link adaptation at its 10% BLER target on the 12-symbol reference, not an outer-loop (OLLA) model; 5G-LENA EESM tables and hazard 15 unchanged",
+  "instrument_checks_before_commit": [
+    "program rebuilt (1 object, 0 warnings), SHA-256 recorded in the manifest",
+    "smoke replay of two seen SINRs (above): 0.7 s, 64 MB"
+  ]
+}

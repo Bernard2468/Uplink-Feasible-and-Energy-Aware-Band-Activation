@@ -1169,5 +1169,145 @@ sensitivities. Because of hazard 15, E1.5.5 must:
 E1.5.5's pre-registration fixes how this is done. The paper must not
 attribute cell-edge losses to NR physics on the strength of this curve.
 
+#### E1.5.3 errata (2026-11-09)
+
+Neither erratum changes a computed number.
+
+1. **Config `grid_note`.** The note in `configs/e1/e1_5_3_link_mapping.json`
+   swaps the two noise figures:
+   - The true offsets are DL SNR = 138.36 − L and UL full-band SNR =
+     119.36 − L.
+   - The grid therefore covers DL −11.6 to +62.4 dB and UL −30.6 to
+     +43.4 dB.
+   - Every SNR in the results came from the link-budget code, not from the
+     note. The config file is left as committed.
+2. **Count of BLER points.** Item 4 above is correct as written: 18 points
+   above 0 dB have first-transmission BLER > 0.01. Of these, **12 exceed
+   the 10% target**: T2 UL 5, T2 DL 2, T1 UL 4, T1 DL 1. The end-of-session
+   report and the project notes wrongly said that link adaptation misses
+   10% at 18 points. All 9 non-monotone points are among the 12. (Pointed
+   out by the ChatGPT E1.5.4 memo; recounted from `summary.json`.)
+
+### Review of the ChatGPT E1.5.4 decision memo (2026-11-09)
+
+Each point was checked against the data, the pinned source or the standard
+before it was accepted.
+
+| Memo point | Verdict | Action |
+|---|---|---|
+| 12 of the 18 BLER points exceed 10% | Correct | E1.5.3 erratum 2 |
+| A non-monotone curve undermines the F2 → F3 dominance argument | Partly correct. The pointwise check SE(x + 10.09 dB) ≥ SE(x) fails once on the raw T2 UL curve (16.4 dB: 3.33 vs 3.26 bit/s/Hz). The F2/F3 *classification* is not affected: F2-feasible UL needs ≥ 8.66 dB, and the raw curve's minimum above 18.7 dB is 3.26 > 1.5 | E1.5.3a reports both checks; E1.5.5 re-verifies S5 under each mapping |
+| Diagnose the BLER anomaly (E1.5.3a) before E1.5.5 | Agree. Source reading found a specific mechanism (below) | E1.5.3a. A deterministic replay of every TB replaces the proposed re-simulation of 18 points under varied loads, which would only sample what the replay computes exactly |
+| Compare raw curve, fixed-MCS envelope and TR low end; no silent substitution | Agree | E1.5.3a measures fixed-MCS link adaptation at the TS 38.214 reference and reports an analytic envelope. The choice of primary mapping is pre-registered before any E1.5.5 result |
+| Low-SNR floor is an error-model limit, not a standards outage | Already recorded (hazard 15) | Unchanged |
+| UL OFDMA: the header says DL only, but the code has `AssignULRBG` | Correct and important. At `cedceadd`, `AssignULRBG` (`nr-mac-scheduler-ofdma.cc:620`) gives UEs of the **same beam** disjoint RBGs, and `CreateUlDci` places them in the same symbols. The header comment (`nr-mac-scheduler-ofdma.h:43`) is stale. Across beams, symbols are still divided in time | E1.5.4 must show UL frequency sharing in the UL DCI bitmasks, not infer it |
+| The analog codebook + TdmaPF network is the "primary deployable" configuration | Disagree with the framing. 5G-LENA models one analog beam per symbol, a mmWave architecture. FR1 massive-MIMO radios beamform digitally per transceiver | E1.5.4 treats the gNB architecture as a stated dimension with two bounds: analog (time share across beams, F2) and digital FDMA (F3) |
+| Digital beamforming only as an analytic reference | Disagree for **FDMA**. With orthogonal RBs in one cell, unchanged per-RB power and constant-modulus DFT beams, each UE's SNR equals its single-UE codebook-beam SNR, and per-element power is unchanged. A 5G-LENA run with isotropic arrays and per-UE loss L − G_cb reproduces this at packet level. Agree that MU-MIMO on shared RBs needs an interference and power model and is excluded | E1.5.4 design after E1.5.3a |
+| Same-beam OFDMA arm and beamless arm | Same-beam DL co-scheduling is already established (E1.5.4-0 H1a: co-scheduled TBs carry the installed beam's gain to 4e-14 dB on 4,499 + 938 TBs). The beamless arm is the G = 0 case of the gain-folded FDMA arm | Merged into E1.5.4 |
+| Reproduce the 2–13 beam scheduler failures separately | Useful for upstream report 3; not on the paper's critical path | After E1.5.4 |
+| Gating checks: complete UE timelines, unserved UEs in denominators, throughput vs SE, spatial resampling | Agree | E1.5.4 pre-registration |
+| Upstream priority: receive-side DirectPath, many-beam starvation, shared BeamId | Agree. A fourth report is added if E1.5.3a confirms H16 | User's decision |
+| Repository hygiene before push | Agree. `git diff --check 76e0e72..HEAD` is clean. No e-mail address or credential is in any tracked file; the WSL user name appears in run paths of manifests | Push is the user's step |
+
+### E1.5.3a: hazard 16 diagnosis and standard-consistent link adaptation (PRE-REGISTERED 2026-11-09)
+
+Config: `configs/e1/e1_5_3a_amc_diagnostic.json`. Script:
+`scripts/e1_5_3a_amc_diagnostic.py`. Tests:
+`tests/test_e1_5_3a_amc_diagnostic.py`.
+
+**Hypothesis H16 (from the source, NR `cedceadd`).**
+- `NrAmc::CreateCqiFeedbackSiso` produces both the UE's DL CQI
+  (`nr-ue-phy.cc:1429`) and the gNB's UL MCS
+  (`nr-mac-scheduler-cqi-management.cc:79`).
+- It accepts an MCS if a transport block **sized for one OFDM symbol** has
+  TBLER ≤ 0.1: `CalculateTbSize(mcs, 1, nRBs)`, `nr-amc.cc:229`.
+- The transmitted TBs span 10–13 symbols, so they are 10–13 times larger and
+  are segmented into more and longer LDPC code blocks, with steeper BLER
+  curves. Their TBLER can be far above 0.1.
+- The DL MCS is further quantized through the 4-bit CQI
+  (`GetMcsFromCqi`).
+- 5G-LENA's own MIMO path (`NrAmc::GetMcs`) sizes the TB for 12 symbols
+  (`NR_AMC_NUM_SYMBOLS_DEFAULT`). This is what TS 38.214 defines:
+  - §5.2.2.5.1, CSI reference resource: "The number of PDSCH and DM-RS
+    symbols is equal to 12";
+  - §5.2.2.1: the CQI is the highest index whose transport block "could be
+    received with a transport block error probability not exceeding 0.1".
+
+**Seen before registration.**
+- The source lines above.
+- E1.5.3 raw traces at t2 L89–L95, L99–L100 (UL) and L113–L116 (DL). For
+  example, t2 L93 UL: MCS 26, decoder TBLER 0.8227 (12 symbols) and 0.8835
+  (13 symbols), 147 of 168 first transmissions corrupt.
+- One smoke replay of those two SINRs, which reproduced the trace TB sizes
+  and TBLERs. Nothing else.
+
+**Stage A: replay (no simulation).** For each error model, one program
+call (`--amcReplay`) takes the scheduler's own DL and UL `NrAmc` objects and
+a decoding error model of the same type. It evaluates every SINR that
+occurs in E1.5.3 TBs, plus the link-budget SINR of every grid point,
+and gives:
+- the SISO AMC choice and the DL CQI-to-MCS step;
+- the MIMO-path (12-symbol) choice;
+- for 51 RB × {1, 2, 10, 12, 13} and 5 RB × {12, 13} symbols, and every
+  MCS: the TB size and the first-transmission TBLER (SISO and MIMO error-model
+  calls).
+
+| Check | Requirement (all first-transmission window TBs of E1.5.3) |
+|---|---|
+| A0 TB size | trace TB size = replayed size for its RBs, symbols and MCS |
+| A1 MCS | UL MCS = SISO AMC at its SINR; DL MCS = GetMcsFromCqi(SISO CQI) at its SINR |
+| A2 TBLER | trace TBLER = replayed TBLER to 1e-9 (SISO or MIMO call; reported which) |
+| A3 classes | every point above 0 dB with first-transmission BLER > 0.1 is either **MISMATCH** (1-symbol TBLER of the used MCS ≤ 0.1 < mean TBLER of the transmitted TBs) or **SAMPLING** (mean transmitted TBLER ≤ 0.1, and the exact Poisson-binomial probability of at least the observed failures ≥ 0.001); none is UNEXPLAINED. The class of each non-monotone point is reported |
+| A4 rule | the 12-symbol rule computed in Python from the replayed table = the program's MIMO-path MCS at every SINR |
+
+H16 is confirmed only if A0–A4 all pass. Otherwise E1.5.3a stops, and
+E1.5.5 does not start.
+
+**Stage B: C-AMC link mapping.** C-AMC is link adaptation consistent with
+TS 38.214's CQI definition: the 12-symbol reference TB over the full band,
+TBLER ≤ 0.1, without 4-bit CQI quantization. MCS choice and outer-loop
+adaptation are gNB implementation.
+- It re-runs the E1.5.3 grid (75 losses × T2, T1) with all E1.5.3 arguments
+  unchanged.
+- The DL and UL MCS are fixed (`--fixedMcsDl/Ul`) to the C-AMC MCS at each
+  point's link-budget SINR.
+
+Checks:
+
+| Check | Requirement |
+|---|---|
+| B0 | C-AMC MCS at the link-budget SINR = at every E1.5.3 trace SINR of that point |
+| R4a | E1.5.2-0 rerun: passes, 98 data files byte-identical (link mode unchanged) |
+| R4b | E1.5.3 runs t2_L93, t2_L113, t1_L113 rerun: data files byte-identical to E1.5.3 |
+| E0, V, C | as E1.5.3 |
+| F1 | read-back FixedMcs = 1 and starting MCS = requested; every TB of the run carries the fixed MCS |
+
+Predictions are scored but do not gate the decision:
+- **P_mono:** no drop between consecutive points larger than 10% of SE.
+- **P_bler:** first-transmission BLER ≤ 0.1 + 3σ wherever the MCS is > 0.
+
+Reported only:
+- an analytic first-transmission envelope (ideal MCS choice, no HARQ);
+- the 5-RB (F3 allocation) C-AMC curve and its shift from 51 RB;
+- the F2 required SNR under C-AMC;
+- the pointwise F3 ≥ F2 check on the raw and C-AMC curves.
+
+**Decision (fixed now, before any E1.5.5 result).** If H16 is confirmed
+and B0, R4a, R4b, E0, V, F1 and C all pass:
+- **E1.5.5 and E1c use the C-AMC T2 curve as the primary mapping.**
+- Sensitivities: the raw E1.5.3 T2 curve (labelled "5G-LENA v5.1 SISO AMC,
+  1-symbol reference"), C-AMC T1, and TR 36.942.
+- Hazard 15 handling is unchanged.
+- This replaces E1.5.3's choice of primary mapping. It does so because
+  E1.5.3 found an anomaly its own rule did not foresee, not because of any
+  downstream outcome.
+- A fourth upstream report is drafted (filing is the user's decision).
+
+Otherwise: stop and diagnose.
+
+**Limits.** AWGN, one UE, one layer, ideal control channels. C-AMC is link
+adaptation at its BLER target on the standard's reference resource; it is
+not an OLLA model.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

@@ -7,6 +7,9 @@
 //                   (see RunNrFadingMode). E1.5.2-1 adds --gnbBeam=cb|eig.
 //   --mode=beams    E1.5.2-1: DirectPath, DFT codebook and eigen-beam gains on the
 //                   same stored channel realization (see RunBeamsMode).
+//   Mode link options added later (all off by default, mode link unchanged):
+//   --errorModel (E1.5.3), --fixedMcsDl/--fixedMcsUl and --amcReplay (E1.5.3a,
+//                   see RunAmcReplay).
 //
 // Mode "link" (E1.5.1):
 //
@@ -46,6 +49,7 @@
 #include <iomanip>
 #include <limits>
 #include <map>
+#include <numeric>
 #include <sstream>
 #include <sys/resource.h>
 #include <vector>
@@ -1546,6 +1550,108 @@ RunNrFadingMode(const std::string& linksFile,
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// E1.5.3a: AMC replay (mode link with --amcReplay). Uses the scheduler's own
+// DL and UL NrAmc instances and a fresh instance of the decoding error model
+// (same TypeId) on prescribed flat SINRs; no simulation is run.
+//   e153a_amc_choice.csv: per SINR, the SISO AMC (CreateCqiFeedbackSiso, used in
+//     this NR version for the UE's DL CQI and the gNB's UL MCS), the DL MCS the
+//     gNB derives from that CQI (GetMcsFromCqi), and the MIMO-path AMC
+//     (GetMcs, TB of NR_AMC_NUM_SYMBOLS_DEFAULT = 12 symbols).
+//   e153a_tbler.csv: per SINR, RB count, symbol count and MCS, the TB size from
+//     NrAmc::CalculateTbSize(mcs, 1, nRb * nSym) and the TBLER of a first
+//     transmission (empty HARQ history) by the SISO and the MIMO error-model call.
+// ---------------------------------------------------------------------------
+static void
+RunAmcReplay(const std::string& file,
+             const std::string& errorModel,
+             Ptr<const NrAmc> dlAmc,
+             Ptr<const NrAmc> ulAmc,
+             uint32_t rbNum,
+             Ptr<const SpectrumModel> sm)
+{
+    std::vector<std::pair<std::string, double>> rows;
+    {
+        std::ifstream in(file);
+        NS_ABORT_MSG_IF(!in, "cannot open " << file);
+        std::string line;
+        std::getline(in, line); // header key,sinr_lin
+        while (std::getline(in, line))
+        {
+            if (line.empty())
+            {
+                continue;
+            }
+            const auto c = line.find(',');
+            NS_ABORT_MSG_IF(c == std::string::npos, "bad replay row " << line);
+            rows.emplace_back(line.substr(0, c), std::stod(line.substr(c + 1)));
+        }
+    }
+    NS_ABORT_MSG_IF(rows.empty(), "no rows in " << file);
+    ObjectFactory f;
+    f.SetTypeId(TypeId::LookupByName(errorModel));
+    Ptr<NrErrorModel> em = DynamicCast<NrErrorModel>(f.Create());
+    NS_ABORT_MSG_IF(!em, "cannot create error model " << errorModel);
+    const uint32_t maxMcs = em->GetMaxMcs();
+    NS_ABORT_MSG_IF(sm->GetNumBands() != rbNum, "spectrum model has " << sm->GetNumBands() << " bands");
+
+    std::ofstream ch("e153a_amc_choice.csv");
+    ch << "key,sinr_lin,dl_siso_mcs,dl_siso_cqi,dl_mcs_from_cqi,ul_siso_mcs,ul_siso_cqi,dl_mimo_mcs,"
+          "ul_mimo_mcs,max_mcs,rb_num\n";
+    std::ofstream tb("e153a_tbler.csv");
+    tb << "key,n_rb,n_sym,mcs,tb_size,tbler_siso,tbler_mimo\n";
+    const std::vector<std::pair<uint32_t, std::vector<uint32_t>>> shapes = {
+        {rbNum, {1, 2, 10, 12, 13}},
+        {5, {12, 13}}};
+    for (const auto& [key, s] : rows)
+    {
+        SpectrumValue v(sm);
+        for (auto it = v.ValuesBegin(); it != v.ValuesEnd(); ++it)
+        {
+            *it = s;
+        }
+        NrSinrMatrix mat(1, rbNum);
+        for (uint32_t rb = 0; rb < rbNum; ++rb)
+        {
+            mat(0, rb) = s;
+        }
+        uint8_t dlMcs = 0;
+        const uint8_t dlCqi = dlAmc->CreateCqiFeedbackSiso(v, dlMcs);
+        uint8_t ulMcs = 0;
+        const uint8_t ulCqi = ulAmc->CreateCqiFeedbackSiso(v, ulMcs);
+        ch << key << ',' << std::setprecision(17) << s << ',' << +dlMcs << ',' << +dlCqi << ','
+           << +dlAmc->GetMcsFromCqi(dlCqi) << ',' << +ulMcs << ',' << +ulCqi << ','
+           << +dlAmc->GetMcs(mat) << ',' << +ulAmc->GetMcs(mat) << ',' << maxMcs << ',' << rbNum << '\n';
+        for (const auto& [nRb, syms] : shapes)
+        {
+            std::vector<int> map(nRb);
+            std::iota(map.begin(), map.end(), 0);
+            NrSinrMatrix sub(1, nRb);
+            for (uint32_t rb = 0; rb < nRb; ++rb)
+            {
+                sub(0, rb) = s;
+            }
+            const std::vector<MimoSinrChunk> chunks{MimoSinrChunk{sub, 0, 0, Seconds(1.0)}};
+            for (uint32_t nSym : syms)
+            {
+                for (uint32_t mcs = 0; mcs <= maxMcs; ++mcs)
+                {
+                    const uint32_t size = dlAmc->CalculateTbSize(mcs, 1, nRb * nSym);
+                    const double tSiso =
+                        em->GetTbDecodificationStats(v, map, size, mcs, NrErrorModel::NrErrorModelHistory())
+                            ->m_tbler;
+                    const double tMimo =
+                        em->GetTbDecodificationStatsMimo(chunks, map, size, mcs, 1,
+                                                         NrErrorModel::NrErrorModelHistory())
+                            ->m_tbler;
+                    tb << key << ',' << nRb << ',' << nSym << ',' << mcs << ',' << size << ','
+                       << std::setprecision(17) << tSiso << ',' << tMimo << '\n';
+                }
+            }
+        }
+    }
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -1590,6 +1696,18 @@ main(int argc, char* argv[])
     std::string errorModel; // E1.5.3, mode link: empty = NR default (unchanged)
     cmd.AddValue("errorModel", "mode link: DL and UL error model TypeId (e.g. ns3::NrEesmIrT2); empty = NR default",
                  errorModel);
+    // E1.5.3a, mode link: -1 / empty = unchanged
+    int fixedMcsDl = -1;
+    int fixedMcsUl = -1;
+    std::string amcReplay;
+    cmd.AddValue("fixedMcsDl", "mode link: fixed DL MCS (scheduler FixedMcsDl + StartingMcsDl); -1 = AMC",
+                 fixedMcsDl);
+    cmd.AddValue("fixedMcsUl", "mode link: fixed UL MCS (scheduler FixedMcsUl + StartingMcsUl); -1 = AMC",
+                 fixedMcsUl);
+    cmd.AddValue("amcReplay",
+                 "mode link: CSV key,sinr_lin; replay the scheduler AMCs and the error model on these SINRs "
+                 "(e153a_amc_choice.csv, e153a_tbler.csv) and exit without running",
+                 amcReplay);
     // E1.5.2 modes (the default mode "link" ignores these arguments)
     std::string mode = "link";
     std::string linksFile;
@@ -1797,6 +1915,17 @@ main(int argc, char* argv[])
         nrHelper->SetDlErrorModel(errorModel);
         nrHelper->SetUlErrorModel(errorModel);
     }
+    NS_ABORT_MSG_IF(fixedMcsDl > 255 || fixedMcsUl > 255, "fixed MCS out of range");
+    if (fixedMcsDl >= 0)
+    {
+        nrHelper->SetSchedulerAttribute("FixedMcsDl", BooleanValue(true));
+        nrHelper->SetSchedulerAttribute("StartingMcsDl", UintegerValue(fixedMcsDl));
+    }
+    if (fixedMcsUl >= 0)
+    {
+        nrHelper->SetSchedulerAttribute("FixedMcsUl", BooleanValue(true));
+        nrHelper->SetSchedulerAttribute("StartingMcsUl", UintegerValue(fixedMcsUl));
+    }
 
     NetDeviceContainer gnbDevs = nrHelper->InstallGnbDevice(gnbNodes, allBwps);
     NetDeviceContainer ueDevs = nrHelper->InstallUeDevice(ueNodes, allBwps);
@@ -1897,6 +2026,49 @@ main(int argc, char* argv[])
                  << "error_model_gnb_dl_amc," << sched->GetDlAmc()->GetErrorModelType().GetName() << '\n'
                  << "error_model_gnb_ul_amc," << sched->GetUlAmc()->GetErrorModelType().GetName() << '\n';
         }
+        if (fixedMcsDl >= 0 || fixedMcsUl >= 0)
+        {
+            // E1.5.3a: scheduler attributes read back from the installed scheduler
+            auto sched = DynamicCast<NrMacSchedulerNs3>(
+                DynamicCast<NrGnbNetDevice>(gnbDevs.Get(0))->GetScheduler(0));
+            NS_ABORT_MSG_IF(!sched, "scheduler is not an NrMacSchedulerNs3");
+            BooleanValue fdl;
+            BooleanValue ful;
+            UintegerValue sdl;
+            UintegerValue sul;
+            sched->GetAttribute("FixedMcsDl", fdl);
+            sched->GetAttribute("FixedMcsUl", ful);
+            sched->GetAttribute("StartingMcsDl", sdl);
+            sched->GetAttribute("StartingMcsUl", sul);
+            info << "fixed_mcs_dl_requested," << fixedMcsDl << '\n'
+                 << "fixed_mcs_ul_requested," << fixedMcsUl << '\n'
+                 << "sched_fixed_mcs_dl," << fdl.Get() << '\n'
+                 << "sched_fixed_mcs_ul," << ful.Get() << '\n'
+                 << "sched_starting_mcs_dl," << sdl.Get() << '\n'
+                 << "sched_starting_mcs_ul," << sul.Get() << '\n';
+        }
+    }
+
+    if (!amcReplay.empty())
+    {
+        // E1.5.3a: replay only; the simulation is not run
+        NS_ABORT_MSG_IF(errorModel.empty(), "--amcReplay needs --errorModel");
+        auto sched = DynamicCast<NrMacSchedulerNs3>(
+            DynamicCast<NrGnbNetDevice>(gnbDevs.Get(0))->GetScheduler(0));
+        NS_ABORT_MSG_IF(!sched, "scheduler is not an NrMacSchedulerNs3");
+        auto gp = NrHelper::GetGnbPhy(gnbDevs.Get(0), 0);
+        const uint32_t rbNum = gp->GetRbNum();
+        RunAmcReplay(amcReplay,
+                     errorModel,
+                     sched->GetDlAmc(),
+                     sched->GetUlAmc(),
+                     rbNum,
+                     NrSpectrumValueHelper::GetSpectrumModel(rbNum, frequency, 15e3 * (1 << numerology)));
+        g_dlTb.close();
+        g_ulTb.close();
+        g_rrc.close();
+        Simulator::Destroy();
+        return 0;
     }
 
     Simulator::Stop(Seconds(simTime));

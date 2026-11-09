@@ -1,0 +1,38 @@
+{
+  "checks": {
+    "R3_link_mode_unchanged": {
+      "exit_code": 0,
+      "runs": 21,
+      "files_compared": 98,
+      "differing_files": [],
+      "passed": true
+    },
+    "E0_error_model": {
+      "failed_runs": [],
+      "passed": true
+    },
+    "V_snr_identity": {
+      "failed": [],
+      "max_abs_err_db": 3.0309088572266774e-14,
+      "passed": true
+    },
+    "M_mcs_table": {
+      "t2": {
+        "max_mcs": 27,
+        "top_mcs_share_lowest_loss_dl": 1.0,
+        "passed": true
+      },
+      "t1": {
+        "max_mcs": 28,
+        "top_mcs_share_lowest_loss_dl": 1.0,
+        "passed": true
+      },
+      "passed": true
+    },
+    "C_coverage": {
+      "failed": [],
+      "passed": true
+    }
+  },
+  "all_checks_passed": true
+}

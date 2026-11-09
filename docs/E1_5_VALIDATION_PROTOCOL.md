@@ -1022,7 +1022,7 @@ What is established nonetheless, each by a passed check:
 DirectPath issue: DirectPath with OFDMA (shared empty BeamId), and hazard
 14. Filing them is the user's decision.
 
-### E1.5.3: single-UE NR link mapping (PRE-REGISTERED 2026-11-08)
+### E1.5.3: single-UE NR link mapping (PRE-REGISTERED 2026-11-08; PASSED in run 1)
 
 Config `configs/e1/e1_5_3_link_mapping.json`, script
 `scripts/e1_5_3_link_mapping.py`, tests `tests/test_e1_5_3_link_mapping.py`.
@@ -1077,6 +1077,97 @@ failure.
 
 **Limits.** AWGN only (fading enters through E1.5.2-1), one layer, ideal
 control channels, CQI from the exact SINR, no UL power control.
+
+#### E1.5.3 results: PASSED in run 1 (2026-11-09)
+
+Run from `ffc7e9b`: 150 runs plus R3, in 15 min. Files are in
+`results/phase2/e1_5_3_link_mapping/`.
+
+| Check | Result |
+|---|---|
+| R3 | E1.5.2-0 rerun: 98/98 files byte-identical |
+| E0 | every run: gNB DL/UL AMC and both decoders are the requested model |
+| V | every TB's SINR = Python SNR, max error 3.0e-14 dB |
+| M | T2: max MCS 27, 100% MCS 27 at the lowest loss; T1: max 28, 100% |
+| C | every point in [−10, 35] dB has ≥ 50 TBs per direction |
+
+| Mapping | Direction | α | Thr_max (bit/s/Hz) | SNR_min (dB) | max fit error | Shannon gap (dB) |
+|---|---|---|---|---|---|---|
+| TR 36.942 (E1.3) | DL | 0.6 | 4.4 | -10.0 | - | - |
+| 5G-LENA T2 (256QAM) | DL | 0.579 | 6.32 | -1.6 | 0.65 | 8.19 |
+| 5G-LENA T1 (64QAM) | DL | 0.539 | 4.74 | -1.6 | 0.55 | 7.57 |
+| TR 36.942 (E1.3) | UL | 0.4 | 2.0 | -10.0 | - | - |
+| 5G-LENA T2 (256QAM) | UL | 0.571 | 6.32 | -0.6 | 1.74 | 8.48 |
+| 5G-LENA T1 (64QAM) | UL | 0.550 | 4.74 | -0.6 | 0.80 | 6.99 |
+
+SNR needed for the F2 link SE, in dB:
+
+| Direction | target link SE | TR 36.942 | T2 fitted | T2 empirical | T1 fitted | T1 empirical |
+|---|---|---|---|---|---|---|
+| DL | 2.25 | 10.95 | 11.40 | 13.08 | 12.31 | 13.08 |
+| UL | 1.5 | 10.95 | 7.15 | 8.66 | 7.50 | 8.66 |
+
+Empirical T2 curve, SE in bit/s/Hz per used resource:
+
+| SNR (dB) | 0.4 | 3.4 | 6.4 | 9.4 | 12.4 | 15.4 | 18.4 | 21.4 | 24.4 | 27.4 | ≥ 30.4 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| DL | 0.20 | 0.32 | 0.75 | 1.63 | 2.05 | 2.83 | 3.85 | 4.36 | 5.31 | 5.51 | 6.32 |
+| UL | 0.20 | 0.51 | 1.00 | 1.63 | 2.19 | 3.07 | 3.36 | 4.46 | 5.29 | 5.49 | 6.32 |
+
+The tables are generated from `summary.json`. Below −1.6 dB (DL) and
+−0.6 dB (UL) the SE is 0.
+
+What is established (5G-LENA v5.1, simulator-internal, AWGN, one layer):
+1. **The TR 36.942 mapping misstates NR in opposite ways at the two ends.**
+   - Top end: NR reaches 6.32 bit/s/Hz (256QAM, MCS 27, with DMRS and CP
+     overheads) against TR's caps of 4.4 (DL) and 2.0 (UL). The UL cap of
+     2.0 is the most restrictive E1.3 assumption.
+   - Low end: 5G-LENA stops at about −1 dB against TR's −10 dB.
+2. **F2 thresholds move.**
+   - UL: 8.66 dB instead of 10.95 dB, i.e. 2.3 dB easier.
+   - DL: 13.08 dB instead of 10.95 dB, i.e. 2.1 dB harder.
+   - The TR 36.942 functional form fits poorly (maximum error 0.65 DL and
+     1.74 UL against the 0.3 limit), so by the pre-registered rule the
+     empirical T2 curve is primary.
+3. **The low-SNR end is a 5G-LENA model limit, not NR physics (hazard 15).**
+   - The MCS-0 table (base graph 2, code block 1544 bits) starts at
+     −1.88 dB with BLER 0.996 and reaches BLER 0.1 near −1 dB. Below its
+     first point the lookup returns BLER 1 (`nr-eesm-error-model.cc`).
+   - HARQ IR is modelled as moving to an equivalent lower-rate MCS of the
+     same modulation (`NrEesmIr::GetMcsEq`). MCS 0 has none, and the
+     combined effective SINR is an average, not an energy sum. So
+     retransmissions give **no gain at MCS 0**: at −3.6 dB all four
+     redundancy versions failed.
+   - For Table 2, MCS 0 and 1 of base graph 1 have no data at all (a
+     placeholder).
+   - The rate-0.12 QPSK Shannon limit is −7.5 dB. Real NR, with HARQ
+     energy combining and repetition, operates well below −1 dB.
+4. **Link adaptation misses its 10% target at some SNRs (hazard 16, not
+   diagnosed).** Above 0 dB, first-transmission BLER exceeds 0.01 at
+   18 points (T2: 7 UL and 2 DL; T1: 6 UL and 3 DL):
+   - in T2, UL BLER is 0.875 at 26.4 dB (MCS 26) and 0.29 at 25.4 dB, and
+     DL BLER is 0.30 at 25.4 dB;
+   - in T1, UL BLER is 0.30 at 6.4 dB;
+   - the affected points dip below lower-SNR points, so the empirical
+     curve is not monotone (e.g. T2 UL: 4.57 bit/s/Hz at 25.4 dB but 3.26
+     at 26.4 dB);
+   - the AMC and the decoder use the same error-model type (E0), so the
+     cause lies inside 5G-LENA's MCS selection (a code-block-size or
+     effective-SINR mismatch is plausible). It was not isolated tonight;
+   - a real link-adaptation loop (OLLA) would remove such dips, so they
+     understate NR at those points. E1.5.5's pre-registration must decide
+     whether a monotone envelope is used as a sensitivity.
+
+**Decision applied (pre-registered).** E1.5.5 and E1c use the empirical T2
+curve as the primary mapping per direction; T1 and TR 36.942 are
+sensitivities. Because of hazard 15, E1.5.5 must:
+- report every UL and DL coverage classification under both the primary
+  curve and TR 36.942's low-SNR end;
+- label any link that fails only between −10 and −1 dB as dependent on the
+  error-model limit, not as an NR result.
+
+E1.5.5's pre-registration fixes how this is done. The paper must not
+attribute cell-edge losses to NR physics on the strength of this curve.
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

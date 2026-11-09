@@ -1,0 +1,425 @@
+{
+  "generated_utc": "2026-11-09T00:01:24.698521+00:00",
+  "tool": "scripts/e1_5_2_0_conventions.py",
+  "git_head_at_run": "ffc7e9b",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "config_sha256": "09b2221c383d4b35ea8a03dae87c85fa58367d211c11d9d9d043b170b981910e",
+  "program_sha256": "cd4c144f9b0435904876fe3ab93f92a206982bce22d2773f7b7de861e92327e8",
+  "ns3_commit": "d083a17a",
+  "nr_commit": "cedceadd",
+  "e1_2_realizations_sha256": "f2e3ef18bf6c0b19f33f43af9f44c07d8b321e50d13ad19da42e8f31236505ea",
+  "positions_sha256": "125c0cbc8a04da79a5d77be20611fc3edca359ce7823e1821c83e999350282eb",
+  "runs": [
+    {
+      "tag": "r0_link_f3p5_ofdma",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/r0_link_f3p5_ofdma",
+        "e15-link-validation --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --ueTxPower=23.0 --nfGnb=5.0 --nfUe=7.0 --lossFile=/home/dhopes/cmwave-runs/e1_5_2_0/r0_link_f3p5_ofdma/losses.csv --scheduler=ns3::NrMacSchedulerOfdmaRR --dlRate=20000000.0 --ulRate=50000.0 --packetSize=1000 --ulPacketSize=100 --appStart=0.4 --simTime=1.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL| --enableRlf=0"
+      ],
+      "exit_code": 0
+    },
+    {
+      "tag": "n0_f3p5",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/n0_f3p5",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/n0_f3p5/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=1 --gnbCols=1 --gnbElement=iso --copies=20 --gnbRole=s --gnbWeights=dp"
+      ],
+      "exit_code": 0,
+      "runtime_s": 0.6924319267272949,
+      "raw_sha256": {
+        "links.csv": "fbfaa035819c0229abc89de1ef366291af94230a46f049875a61500f43645adf",
+        "e152_det.csv": "1b346c935ca5b3aac87385b6f8bf5e92d32330c49e6a42023ebbe4490c0dc80a",
+        "e152_real.csv": "34391f94191e106eea40e77f54a183d5fc00be4655af2ca6c0012654b36decac",
+        "e152_info.csv": "7dd4ac0ffd0a43b0e503332036503bfabe9ed607dd95623eefcd6ca5ee65fe7d",
+        "run.log": "fc228b7e35b0933bb87215cb14d21ba54b53392075fca7c4b46f2a539fc51f06"
+      }
+    },
+    {
+      "tag": "n0_f7p2",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/n0_f7p2",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/n0_f7p2/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=1 --gnbCols=1 --gnbElement=iso --copies=20 --gnbRole=s --gnbWeights=dp"
+      ],
+      "exit_code": 0,
+      "runtime_s": 0.7470536231994629,
+      "raw_sha256": {
+        "links.csv": "06a0374a091e819ae13e82a766c189309b9117b28db26c0fa2d91519c3be532f",
+        "e152_det.csv": "1b346c935ca5b3aac87385b6f8bf5e92d32330c49e6a42023ebbe4490c0dc80a",
+        "e152_real.csv": "1d7444ec3efe4bf5cd4f08aea1088705542c15942109d63d7d7b0331a60eb9b6",
+        "e152_info.csv": "f63abf10f9f3e20fefcdb3fd27a253645fb4f951339abecf3c5526cbc959067e",
+        "run.log": "e968e473910b0ea0a42dcd2a398d07ca6cd6c8aa1c7a59c06eeb40716c85335b"
+      }
+    },
+    {
+      "tag": "a_f3p5_s_dp",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_s_dp",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_s_dp/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --gnbElement=3gpp --copies=20 --gnbRole=s --gnbWeights=dp"
+      ],
+      "exit_code": 0,
+      "runtime_s": 3.204111337661743,
+      "raw_sha256": {
+        "links.csv": "fbfaa035819c0229abc89de1ef366291af94230a46f049875a61500f43645adf",
+        "e152_det.csv": "4e1315cf5c565587741fab0f485af47f74a212dcfb7647040a16d9e4dce76adc",
+        "e152_real.csv": "b17bfa03b14b2df9f6a98895d62f2a771374f8720a2502c485fee50a2b63528c",
+        "e152_info.csv": "3e4d5772a0a15684da81ee4d8870f5c130cb1840ed30c3d365c052741e354bdf",
+        "run.log": "d6441bdc88b3179895d6f6ccebde5f453828037b99558de783057ffb37a7c2d9"
+      }
+    },
+    {
+      "tag": "a_f3p5_u_dp",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_u_dp",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_u_dp/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --gnbElement=3gpp --copies=20 --gnbRole=u --gnbWeights=dp"
+      ],
+      "exit_code": 0,
+      "runtime_s": 3.2273473739624023,
+      "raw_sha256": {
+        "links.csv": "fbfaa035819c0229abc89de1ef366291af94230a46f049875a61500f43645adf",
+        "e152_det.csv": "4e1315cf5c565587741fab0f485af47f74a212dcfb7647040a16d9e4dce76adc",
+        "e152_real.csv": "2103898a18d63e57eb21500162b2ae75a50159f5f328290232cc613e50f96afa",
+        "e152_info.csv": "66b741dedeb9f118ab8602e438465df1f0e0b89c9ae54c3739cb8e7b53aa09c3",
+        "run.log": "0224c5d84deea3f5bad42a8b9fec622f3a11869cbeed97f2d2e08c7a39bdac56"
+      }
+    },
+    {
+      "tag": "a_f3p5_u_dpconj",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_u_dpconj",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_u_dpconj/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --gnbElement=3gpp --copies=20 --gnbRole=u --gnbWeights=dpconj"
+      ],
+      "exit_code": 0,
+      "runtime_s": 1.7130420207977295,
+      "raw_sha256": {
+        "links.csv": "fbfaa035819c0229abc89de1ef366291af94230a46f049875a61500f43645adf",
+        "e152_det.csv": "4e1315cf5c565587741fab0f485af47f74a212dcfb7647040a16d9e4dce76adc",
+        "e152_real.csv": "7f751c5fa1e54f3b6aad7ac317cc720fe210be39055bb48fd60eb6fb0b47717a",
+        "e152_info.csv": "880f77273c187eb6f4f9a9c06a717ee8be6f65e6c41376d7cb468c747908ac66",
+        "run.log": "90bcad947de8679044a2c3c8a4b380314e8c157450d65e31197f3a5f2cf41fd9"
+      }
+    },
+    {
+      "tag": "a_f3p5_s_dpconj",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_s_dpconj",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_s_dpconj/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --gnbElement=3gpp --copies=20 --gnbRole=s --gnbWeights=dpconj"
+      ],
+      "exit_code": 0,
+      "runtime_s": 3.2711527347564697,
+      "raw_sha256": {
+        "links.csv": "fbfaa035819c0229abc89de1ef366291af94230a46f049875a61500f43645adf",
+        "e152_det.csv": "4e1315cf5c565587741fab0f485af47f74a212dcfb7647040a16d9e4dce76adc",
+        "e152_real.csv": "06bd24db1d546144675e2e9b4c0df964508519dfc7c9f95e50fd9d5a1502d770",
+        "e152_info.csv": "216f7d70720792362ef1b6fc8a893bc31cb966011e98f18cd0d7399d114ec79e",
+        "run.log": "4abc7f06c44372a8851308286dfa77ec123c4132c4de161278ce070dcc4918ff"
+      }
+    },
+    {
+      "tag": "a_f7p2_s_dp",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_s_dp",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_s_dp/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --gnbElement=3gpp --copies=20 --gnbRole=s --gnbWeights=dp"
+      ],
+      "exit_code": 0,
+      "runtime_s": 3.211663246154785,
+      "raw_sha256": {
+        "links.csv": "06a0374a091e819ae13e82a766c189309b9117b28db26c0fa2d91519c3be532f",
+        "e152_det.csv": "4e1315cf5c565587741fab0f485af47f74a212dcfb7647040a16d9e4dce76adc",
+        "e152_real.csv": "4e161b11f504f346518958e25af719c7a9a907a425cfeb5f72e1e9399ecde212",
+        "e152_info.csv": "671fe263039c6d75c06c510ae7cb307afa74003f9296e7a4f3fff515c3c0891f",
+        "run.log": "4d1af0f7d4cb94766116bce6a0b3478a6a765bc40a231c83f12beca93541a52e"
+      }
+    },
+    {
+      "tag": "a_f7p2_u_dp",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_u_dp",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_u_dp/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --gnbElement=3gpp --copies=20 --gnbRole=u --gnbWeights=dp"
+      ],
+      "exit_code": 0,
+      "runtime_s": 3.288419485092163,
+      "raw_sha256": {
+        "links.csv": "06a0374a091e819ae13e82a766c189309b9117b28db26c0fa2d91519c3be532f",
+        "e152_det.csv": "4e1315cf5c565587741fab0f485af47f74a212dcfb7647040a16d9e4dce76adc",
+        "e152_real.csv": "bcd34a9bad654e6d21748cc41168f84c48aeb19e1fa059e483456376cc673ebd",
+        "e152_info.csv": "c91b2abe8d28d516b1a8a00780e9e158ffd7b5a7f824c08c3c1e359eb17807d4",
+        "run.log": "c7590bf8b249d837f7926d2e201548f9df35fe91da30c4a99c7e68c6015098df"
+      }
+    },
+    {
+      "tag": "a_f7p2_u_dpconj",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_u_dpconj",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_u_dpconj/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --gnbElement=3gpp --copies=20 --gnbRole=u --gnbWeights=dpconj"
+      ],
+      "exit_code": 0,
+      "runtime_s": 3.1646041870117188,
+      "raw_sha256": {
+        "links.csv": "06a0374a091e819ae13e82a766c189309b9117b28db26c0fa2d91519c3be532f",
+        "e152_det.csv": "4e1315cf5c565587741fab0f485af47f74a212dcfb7647040a16d9e4dce76adc",
+        "e152_real.csv": "0f10f2523e880787691015df5d2439561c9e0e506080f50ca428513495de5702",
+        "e152_info.csv": "c7d1bc8e957e56996c8e4000ea06d6e3decf91f71d097d472134067191e0e886",
+        "run.log": "21ca588432d26be369d7693cf2fd1df2701542e16a295d14aec79e2ba4055e44"
+      }
+    },
+    {
+      "tag": "a_f7p2_s_dpconj",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_s_dpconj",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_s_dpconj/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --gnbElement=3gpp --copies=20 --gnbRole=s --gnbWeights=dpconj"
+      ],
+      "exit_code": 0,
+      "runtime_s": 3.1297473907470703,
+      "raw_sha256": {
+        "links.csv": "06a0374a091e819ae13e82a766c189309b9117b28db26c0fa2d91519c3be532f",
+        "e152_det.csv": "4e1315cf5c565587741fab0f485af47f74a212dcfb7647040a16d9e4dce76adc",
+        "e152_real.csv": "e62f4182826e37e4690ee12f93cb953283b6124cffc1aeb0d674db28a41daca4",
+        "e152_info.csv": "249f9e219d7979b18db0ad70bd4b798fc013bd700ae742ae65f4b93ae977db64",
+        "run.log": "9b766a07be5d361dafa63395a3a3f690388b95128a3d9694aaae606d4026433d"
+      }
+    },
+    {
+      "tag": "b_f7p2_s_dp",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/b_f7p2_s_dp",
+        "e15-link-validation --mode=chan --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/b_f7p2_s_dp/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=16 --gnbCols=32 --gnbElement=3gpp --copies=20 --gnbRole=s --gnbWeights=dp"
+      ],
+      "exit_code": 0,
+      "runtime_s": 10.6544668674469,
+      "raw_sha256": {
+        "links.csv": "06a0374a091e819ae13e82a766c189309b9117b28db26c0fa2d91519c3be532f",
+        "e152_det.csv": "238a53e2144432af9757f2d1832b559771a80853ef8146c42f5d6ecfa00b3f44",
+        "e152_real.csv": "ac01e337d9ae60ef87153784022d82e12b257a79b6fdb23ee4bbeeb1b6de2069",
+        "e152_info.csv": "99d65e601a899ba7094087f9a383b283658a232835044e0da81c588a2de8d222",
+        "run.log": "328e8c5767bb3e3d9f5b341885c62d20209c42d723169afb4dbd708a4d34f5dd"
+      }
+    },
+    {
+      "tag": "a_f3p5_b30",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_b30",
+        "e15-link-validation --mode=nrfading --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_b30/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --nfGnb=5.0 --nfUe=7.0 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --bearingDeg=30.0 --scheduler=ns3::NrMacSchedulerTdmaRR --dlRate=1000000.0 --packetSize=1000 --appStart=0.1 --simTime=0.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL|"
+      ],
+      "exit_code": 0,
+      "runtime_s": 5.54077410697937,
+      "raw_sha256": {
+        "links.csv": "7bd61770be61ed3584b061f6f2ca53f7aed60120efc726c91b7092a7042a1be4",
+        "e15_dl_tb.csv": "b4ef447191baa3d10a4dd507b18d93b30d756e7f44db2b75ec3c98ebedda33fb",
+        "e152_nr_direct.csv": "17cade7c3c3ced533a7c476c613eba1b41bca1cf82276cffbf680d92c4baacb1",
+        "e15_run_info.csv": "558da29f08661ed760816b77447da20381d963c7913125efa3170e2983a0692d",
+        "e15_rrc_events.csv": "db99c36b42164f53ddd04cf1faf3293c088b82c5c3cfd2c33ae2b9ec09dc85cd",
+        "e15_rb_after_attach.csv": "4cad5632c1efa77e7e93966eb4711e6062da0eda526ea0a35e6343b84ebfa3d4",
+        "run.log": "366654230b45e0b47f4162a2e2feaee40a5aa33d8e3afe0ed6ce75c0ca5caee4"
+      }
+    },
+    {
+      "tag": "a_f3p5_b150",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_b150",
+        "e15-link-validation --mode=nrfading --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_b150/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --nfGnb=5.0 --nfUe=7.0 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --bearingDeg=150.0 --scheduler=ns3::NrMacSchedulerTdmaRR --dlRate=1000000.0 --packetSize=1000 --appStart=0.1 --simTime=0.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL|"
+      ],
+      "exit_code": 0,
+      "runtime_s": 2.1483163833618164,
+      "raw_sha256": {
+        "links.csv": "d4f675da789bf865169c91d4e1d364d3d5e0384ac43d33f88bd21f71ab11251f",
+        "e15_dl_tb.csv": "88a2ed712ce202bd9ee3d83af74119a42f2c678ff34a140c9ed50cb2c6826427",
+        "e152_nr_direct.csv": "238de7f1f2b0698829d3e15240f8dbf0ff5cd4fc6e570df5795de4f09055da37",
+        "e15_run_info.csv": "eee34438154905b2b30539eba04396b3845ddf775dfd9f622400abd5feecce67",
+        "e15_rrc_events.csv": "f93b2030011f7e3f61744e6d7fdfc097c7f9cf41dc662731b7ff975ce61a252c",
+        "e15_rb_after_attach.csv": "07e6a7c071c488921e8d4797764769e9dd3ed0bcbff8fca73be5a6e16da12f50",
+        "run.log": "047ed9a27a0cb04fc66e2993ed36f50b129816a0d297143a26a069972d42d374"
+      }
+    },
+    {
+      "tag": "a_f3p5_b270",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_b270",
+        "e15-link-validation --mode=nrfading --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f3p5_b270/links.csv --frequency=3500000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --nfGnb=5.0 --nfUe=7.0 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --bearingDeg=270.0 --scheduler=ns3::NrMacSchedulerTdmaRR --dlRate=1000000.0 --packetSize=1000 --appStart=0.1 --simTime=0.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL|"
+      ],
+      "exit_code": 0,
+      "runtime_s": 2.3392624855041504,
+      "raw_sha256": {
+        "links.csv": "2a92bf2a7d3409ec3cc722fc41bbaee2fdabccd861d705d57b4f77b35b5ceed9",
+        "e15_dl_tb.csv": "5b8648b2797ad1b29d3a521bdf7e597b4437409bac43ace51498cad209137abc",
+        "e152_nr_direct.csv": "c747c7c57bfc0fa5c3dbb221d2679c16296523906dbc6a9b70cb64ff0beafc89",
+        "e15_run_info.csv": "64d7716bf816edafff794e0c2bd77554f641d4e09fbc37421d7af20b88dccba9",
+        "e15_rrc_events.csv": "f93b2030011f7e3f61744e6d7fdfc097c7f9cf41dc662731b7ff975ce61a252c",
+        "e15_rb_after_attach.csv": "07e6a7c071c488921e8d4797764769e9dd3ed0bcbff8fca73be5a6e16da12f50",
+        "run.log": "401948253690315d15acc775449c21055b1d6fb988c513edeb92467729c61b3c"
+      }
+    },
+    {
+      "tag": "a_f7p2_b30",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_b30",
+        "e15-link-validation --mode=nrfading --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_b30/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --nfGnb=5.0 --nfUe=7.0 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --bearingDeg=30.0 --scheduler=ns3::NrMacSchedulerTdmaRR --dlRate=1000000.0 --packetSize=1000 --appStart=0.1 --simTime=0.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL|"
+      ],
+      "exit_code": 0,
+      "runtime_s": 7.073152780532837,
+      "raw_sha256": {
+        "links.csv": "e90a3e20942199ce67f13724d31c04cf11be550afeebccf3fd5c5df94ab460c6",
+        "e15_dl_tb.csv": "4707d932dc81d04c1d246051d8aa596b3b78f521eee2d69c587c5ba057c43b7a",
+        "e152_nr_direct.csv": "4cea92831c32fa6e18933005b8ff92129cca5076e0abf1b66532716d3ab83334",
+        "e15_run_info.csv": "366ccd1b1c245564eaa599878a03fee745fc179688415b92792d0019d617eee9",
+        "e15_rrc_events.csv": "db99c36b42164f53ddd04cf1faf3293c088b82c5c3cfd2c33ae2b9ec09dc85cd",
+        "e15_rb_after_attach.csv": "4cad5632c1efa77e7e93966eb4711e6062da0eda526ea0a35e6343b84ebfa3d4",
+        "run.log": "97a28b83c423da179af2d47075890f0adaf6dcc3d3bf19d75d05644bc15a9188"
+      }
+    },
+    {
+      "tag": "a_f7p2_b150",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_b150",
+        "e15-link-validation --mode=nrfading --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_b150/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --nfGnb=5.0 --nfUe=7.0 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --bearingDeg=150.0 --scheduler=ns3::NrMacSchedulerTdmaRR --dlRate=1000000.0 --packetSize=1000 --appStart=0.1 --simTime=0.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL|"
+      ],
+      "exit_code": 0,
+      "runtime_s": 2.028907299041748,
+      "raw_sha256": {
+        "links.csv": "05a601814fa263f16be545afcd005691c667a191f77d5392c4a4d7ce79de9d09",
+        "e15_dl_tb.csv": "af8197e622bee4c78400c0bb4b06a5ada893722b919edf0cc3d2a05bed7030ee",
+        "e152_nr_direct.csv": "1fcc1a79eaee8b41fdd58a2166ef964af6b1bb177911b493fe2a6e0406e0c88c",
+        "e15_run_info.csv": "a02c994405a4530c6258ef59194ce6b6c6f3f5f24fc27d58e30896586b45358b",
+        "e15_rrc_events.csv": "f93b2030011f7e3f61744e6d7fdfc097c7f9cf41dc662731b7ff975ce61a252c",
+        "e15_rb_after_attach.csv": "07e6a7c071c488921e8d4797764769e9dd3ed0bcbff8fca73be5a6e16da12f50",
+        "run.log": "6f43820fcdcbf2778ec49d601f4c43ddb9fb638ed52efa7b62eda9b4497361dc"
+      }
+    },
+    {
+      "tag": "a_f7p2_b270",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_b270",
+        "e15-link-validation --mode=nrfading --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/a_f7p2_b270/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --nfGnb=5.0 --nfUe=7.0 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=8 --gnbCols=16 --bearingDeg=270.0 --scheduler=ns3::NrMacSchedulerTdmaRR --dlRate=1000000.0 --packetSize=1000 --appStart=0.1 --simTime=0.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL|"
+      ],
+      "exit_code": 0,
+      "runtime_s": 2.4624178409576416,
+      "raw_sha256": {
+        "links.csv": "9a918808998cf6cd85e6befa28b72c4d293846dd4856fe125e9aec40419cc6b1",
+        "e15_dl_tb.csv": "22e3c517a98bddb1fa6401b086fc169672c5bd7131861a0f9b9023685041c319",
+        "e152_nr_direct.csv": "a53d4d438ac96cfa950671fbb04acaf19bd8121e6b18f9e0985536509df61ce8",
+        "e15_run_info.csv": "53c39c221bfe82f6c828ae324dcdcae15659962209d9e8774f6cd57620451769",
+        "e15_rrc_events.csv": "f93b2030011f7e3f61744e6d7fdfc097c7f9cf41dc662731b7ff975ce61a252c",
+        "e15_rb_after_attach.csv": "07e6a7c071c488921e8d4797764769e9dd3ed0bcbff8fca73be5a6e16da12f50",
+        "run.log": "94a9099e47716103957beae9d059a88e620af08b9282b7fb2a69636968dbd198"
+      }
+    },
+    {
+      "tag": "b_f7p2_b30",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/b_f7p2_b30",
+        "e15-link-validation --mode=nrfading --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/b_f7p2_b30/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --nfGnb=5.0 --nfUe=7.0 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=16 --gnbCols=32 --bearingDeg=30.0 --scheduler=ns3::NrMacSchedulerTdmaRR --dlRate=1000000.0 --packetSize=1000 --appStart=0.1 --simTime=0.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL|"
+      ],
+      "exit_code": 0,
+      "runtime_s": 14.77705979347229,
+      "raw_sha256": {
+        "links.csv": "e90a3e20942199ce67f13724d31c04cf11be550afeebccf3fd5c5df94ab460c6",
+        "e15_dl_tb.csv": "f0e64fd55592c61a5acf523c88f1637470c9141a07d72dd4b05e119cef9ef7ff",
+        "e152_nr_direct.csv": "36b1190c7ec659ebf9a0dfb956c2f6195784abddad06969440569a27e3aade23",
+        "e15_run_info.csv": "11d334de2f2393d7d7e43b42573ca0f05ea813ef7a5e3e66ee23eddd5b5bfe68",
+        "e15_rrc_events.csv": "db99c36b42164f53ddd04cf1faf3293c088b82c5c3cfd2c33ae2b9ec09dc85cd",
+        "e15_rb_after_attach.csv": "4cad5632c1efa77e7e93966eb4711e6062da0eda526ea0a35e6343b84ebfa3d4",
+        "run.log": "9209ff4daba4baac1641d6f23f2e38aff3374d90bd8be2b84e4a96f431662a93"
+      }
+    },
+    {
+      "tag": "b_f7p2_b150",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/b_f7p2_b150",
+        "e15-link-validation --mode=nrfading --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/b_f7p2_b150/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --nfGnb=5.0 --nfUe=7.0 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=16 --gnbCols=32 --bearingDeg=150.0 --scheduler=ns3::NrMacSchedulerTdmaRR --dlRate=1000000.0 --packetSize=1000 --appStart=0.1 --simTime=0.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL|"
+      ],
+      "exit_code": 0,
+      "runtime_s": 3.5471620559692383,
+      "raw_sha256": {
+        "links.csv": "05a601814fa263f16be545afcd005691c667a191f77d5392c4a4d7ce79de9d09",
+        "e15_dl_tb.csv": "6265522febfe1e0b52bdcee36c535f4bf7585378cc321bb115902d333ad1288c",
+        "e152_nr_direct.csv": "e3159bfcdcce8f7d3bc3922419e04769b2890159fc9e19ee064ea8878104037e",
+        "e15_run_info.csv": "074b5661a9bd3ef1e0df9792d2203a3164554fec35c66ef26bce00297c3e8ca0",
+        "e15_rrc_events.csv": "f93b2030011f7e3f61744e6d7fdfc097c7f9cf41dc662731b7ff975ce61a252c",
+        "e15_rb_after_attach.csv": "07e6a7c071c488921e8d4797764769e9dd3ed0bcbff8fca73be5a6e16da12f50",
+        "run.log": "87030f0237af1b2b5c877d1c447af699ed4d79ddd7dea76f3895f31a6854813c"
+      }
+    },
+    {
+      "tag": "b_f7p2_b270",
+      "cmd": [
+        "./ns3",
+        "run",
+        "--no-build",
+        "--cwd=/home/dhopes/cmwave-runs/e1_5_2_0/b_f7p2_b270",
+        "e15-link-validation --mode=nrfading --linksFile=/home/dhopes/cmwave-runs/e1_5_2_0/b_f7p2_b270/links.csv --frequency=7200000000.0 --bandwidth=20000000.0 --numerology=1 --rbOverhead=0.073 --gnbTxPower=44.0 --nfGnb=5.0 --nfUe=7.0 --gnbX=8.5 --gnbY=21.0 --gnbZ=27.0 --gnbRows=16 --gnbCols=32 --bearingDeg=270.0 --scheduler=ns3::NrMacSchedulerTdmaRR --dlRate=1000000.0 --packetSize=1000 --appStart=0.1 --simTime=0.4 --tddPattern=DL|DL|DL|F|UL|DL|DL|DL|F|UL|"
+      ],
+      "exit_code": 0,
+      "runtime_s": 4.039690017700195,
+      "raw_sha256": {
+        "links.csv": "9a918808998cf6cd85e6befa28b72c4d293846dd4856fe125e9aec40419cc6b1",
+        "e15_dl_tb.csv": "7272460d042d9c1da6e2199cd8ac54f04aa176213fd38d060ccdd0ea3b2510f8",
+        "e152_nr_direct.csv": "2671a02199484db7eae82db577316198de33f7a39b96f25e762dfa9d69ea01ca",
+        "e15_run_info.csv": "a008ecadd041ee519eb1f904e7456bead2b893a84252bc7c9644fe3239e8f0ca",
+        "e15_rrc_events.csv": "f93b2030011f7e3f61744e6d7fdfc097c7f9cf41dc662731b7ff975ce61a252c",
+        "e15_rb_after_attach.csv": "07e6a7c071c488921e8d4797764769e9dd3ed0bcbff8fca73be5a6e16da12f50",
+        "run.log": "67aca632f5556cf0bbc072fd681c5ea7eeab1b7ea32a5832296d06ef9b9a70c9"
+      }
+    }
+  ],
+  "all_checks_passed": true
+}

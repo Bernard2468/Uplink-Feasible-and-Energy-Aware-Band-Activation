@@ -857,6 +857,172 @@ E1c.1 remains the noise-limited bound.
   cells nearer site 0.
 - Single layer; ideal UE MRC; D_cb measured at hUT 1.5 m.
 
+#### E1c.2 results (run 1): all gates PASSED; P1 held (2026-11-09)
+
+**Run 1 (`4823444`)** took 280 s. Victims:
+
+| ISD | Victims (outdoor / indoor) | Candidate pool (outdoor / indoor) |
+|---|---|---|
+| 200 | 935 / 5,756 | 16,678 / 96,854 |
+| 500 | 4,541 / 38,921 | 30,888 / 145,135 |
+
+At ISD 500 the pool is the whole geometry.
+
+Gates:
+- **G0** passes.
+- **G1a:** site 0's link equals the E1c.1 rows: loss within 2.8e-14 dB, and
+  gains, σ, hE weights and d2D exactly.
+- **G1:** 324 tests per ISD. Maximum |difference|/SE is 1.71 (ISD 200) and
+  2.64 (ISD 500).
+- **G2:** 0.0 dB difference on 198,702 (ISD 200) and 1,149,196 (ISD 500)
+  victim link components at both carriers.
+- **G3:** 50 pairs per ISD, 0 association mismatches, 2.8e-14 dB.
+- **G4:** mappings monotone, 0 partition errors.
+
+Generated from `summary.json`. M2412 mix; Monte-Carlo SE ≤ 0.0004.
+"E1c.1 (site 0 only)" is E1c.1's exact engine on the same victims.
+
+F2:
+
+| ISD | Case | Setting | UL 3.5 | UL 7.2 | DL 7.2 | K1 | K2 | K3 | K4 | K6 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 200 | A | E1c.1 (site 0 only) | 0.936 | 0.835 | 0.985 | 0.835 | 0.101 | 0.049 | 0.015 | 0.000 |
+| 200 | A | noise_multi | 0.972 | 0.901 | 0.996 | 0.901 | 0.071 | 0.024 | 0.004 | 0.000 |
+| 200 | A | **primary** | 0.970 | 0.896 | 0.995 | 0.896 | 0.073 | 0.025 | 0.005 | 0.000 |
+| 200 | A | η 0.2 | 0.972 | 0.900 | 0.996 | 0.900 | 0.072 | 0.024 | 0.004 | 0.000 |
+| 200 | A | ul_full | 0.749 | 0.719 | 0.995 | 0.718 | 0.031 | 0.245 | 0.005 | 0.001 |
+| 200 | B | E1c.1 (site 0 only) | 0.936 | 0.886 | 0.992 | 0.886 | 0.051 | 0.056 | 0.008 | 0.000 |
+| 200 | B | noise_multi | 0.972 | 0.933 | 0.999 | 0.933 | 0.039 | 0.027 | 0.001 | 0.000 |
+| 200 | B | **primary** | 0.970 | 0.932 | 0.998 | 0.932 | 0.038 | 0.029 | 0.002 | 0.000 |
+| 200 | B | η 0.2 | 0.972 | 0.933 | 0.999 | 0.933 | 0.039 | 0.027 | 0.001 | 0.000 |
+| 200 | B | ul_full | 0.749 | 0.799 | 0.998 | 0.744 | 0.005 | 0.195 | 0.002 | 0.055 |
+| 200 | C | E1c.1 (site 0 only) | 0.857 | 0.767 | 0.996 | 0.767 | 0.090 | 0.139 | 0.004 | 0.000 |
+| 200 | C | noise_multi | 0.926 | 0.853 | 1.000 | 0.853 | 0.073 | 0.074 | 0.000 | 0.000 |
+| 200 | C | **primary** | 0.922 | 0.851 | 1.000 | 0.851 | 0.071 | 0.078 | 0.000 | 0.000 |
+| 200 | C | η 0.2 | 0.925 | 0.852 | 1.000 | 0.852 | 0.072 | 0.075 | 0.000 | 0.000 |
+| 200 | C | ul_full | 0.733 | 0.781 | 1.000 | 0.723 | 0.010 | 0.209 | 0.000 | 0.057 |
+| 500 | A | E1c.1 (site 0 only) | 0.639 | 0.447 | 0.866 | 0.447 | 0.192 | 0.228 | 0.134 | 0.000 |
+| 500 | A | noise_multi | 0.744 | 0.521 | 0.931 | 0.521 | 0.222 | 0.187 | 0.069 | 0.000 |
+| 500 | A | **primary** | 0.726 | 0.509 | 0.926 | 0.509 | 0.217 | 0.200 | 0.074 | 0.000 |
+| 500 | A | η 0.2 | 0.740 | 0.519 | 0.930 | 0.519 | 0.221 | 0.190 | 0.070 | 0.000 |
+| 500 | A | ul_full | 0.559 | 0.441 | 0.926 | 0.441 | 0.118 | 0.367 | 0.074 | 0.000 |
+| 500 | B | E1c.1 (site 0 only) | 0.639 | 0.553 | 0.904 | 0.553 | 0.086 | 0.266 | 0.096 | 0.000 |
+| 500 | B | noise_multi | 0.744 | 0.645 | 0.955 | 0.645 | 0.099 | 0.211 | 0.045 | 0.000 |
+| 500 | B | **primary** | 0.726 | 0.639 | 0.954 | 0.639 | 0.087 | 0.228 | 0.046 | 0.000 |
+| 500 | B | η 0.2 | 0.740 | 0.644 | 0.955 | 0.644 | 0.096 | 0.215 | 0.045 | 0.000 |
+| 500 | B | ul_full | 0.559 | 0.558 | 0.954 | 0.532 | 0.027 | 0.369 | 0.046 | 0.026 |
+| 500 | C | E1c.1 (site 0 only) | 0.457 | 0.350 | 0.935 | 0.350 | 0.107 | 0.478 | 0.065 | 0.000 |
+| 500 | C | noise_multi | 0.535 | 0.405 | 0.974 | 0.405 | 0.131 | 0.439 | 0.026 | 0.000 |
+| 500 | C | **primary** | 0.524 | 0.403 | 0.974 | 0.403 | 0.121 | 0.449 | 0.026 | 0.000 |
+| 500 | C | η 0.2 | 0.533 | 0.404 | 0.974 | 0.404 | 0.129 | 0.441 | 0.026 | 0.000 |
+| 500 | C | ul_full | 0.458 | 0.387 | 0.974 | 0.380 | 0.078 | 0.509 | 0.026 | 0.007 |
+
+F3:
+
+| ISD | Case | Setting | UL 3.5 | UL 7.2 | DL 7.2 | K1 | K2 | K3 | K4 | K6 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 200 | A | E1c.1 (site 0 only) | 0.985 | 0.939 | 0.984 | 0.939 | 0.044 | 0.001 | 0.016 | 0.000 |
+| 200 | A | **primary** | 0.996 | 0.965 | 0.994 | 0.965 | 0.029 | 0.000 | 0.006 | 0.000 |
+| 200 | A | ul_full | 0.749 | 0.728 | 0.994 | 0.727 | 0.022 | 0.244 | 0.006 | 0.002 |
+| 200 | B | E1c.1 (site 0 only) | 0.985 | 0.961 | 0.991 | 0.961 | 0.023 | 0.007 | 0.009 | 0.000 |
+| 200 | B | **primary** | 0.996 | 0.982 | 0.998 | 0.982 | 0.014 | 0.002 | 0.002 | 0.000 |
+| 200 | B | ul_full | 0.749 | 0.806 | 0.998 | 0.747 | 0.002 | 0.191 | 0.002 | 0.059 |
+| 200 | C | E1c.1 (site 0 only) | 0.957 | 0.907 | 0.996 | 0.907 | 0.050 | 0.039 | 0.004 | 0.000 |
+| 200 | C | **primary** | 0.982 | 0.947 | 1.000 | 0.947 | 0.035 | 0.018 | 0.000 | 0.000 |
+| 200 | C | ul_full | 0.744 | 0.830 | 1.000 | 0.744 | 0.000 | 0.170 | 0.000 | 0.086 |
+| 500 | A | E1c.1 (site 0 only) | 0.836 | 0.693 | 0.862 | 0.693 | 0.140 | 0.029 | 0.138 | 0.000 |
+| 500 | A | **primary** | 0.910 | 0.779 | 0.922 | 0.779 | 0.129 | 0.014 | 0.078 | 0.000 |
+| 500 | A | ul_full | 0.608 | 0.568 | 0.922 | 0.566 | 0.041 | 0.313 | 0.078 | 0.001 |
+| 500 | B | E1c.1 (site 0 only) | 0.836 | 0.768 | 0.901 | 0.768 | 0.067 | 0.065 | 0.099 | 0.000 |
+| 500 | B | **primary** | 0.910 | 0.855 | 0.951 | 0.855 | 0.055 | 0.041 | 0.049 | 0.000 |
+| 500 | B | ul_full | 0.608 | 0.667 | 0.951 | 0.602 | 0.006 | 0.278 | 0.049 | 0.065 |
+| 500 | C | E1c.1 (site 0 only) | 0.710 | 0.603 | 0.934 | 0.603 | 0.107 | 0.224 | 0.066 | 0.000 |
+| 500 | C | **primary** | 0.801 | 0.699 | 0.973 | 0.699 | 0.102 | 0.172 | 0.027 | 0.000 |
+| 500 | C | ul_full | 0.594 | 0.620 | 0.973 | 0.574 | 0.020 | 0.333 | 0.027 | 0.046 |
+
+SINR / SNR quantiles, case A, M2412 mix, 7.2 GHz (5 / 50 / 95 %, dB):
+
+| ISD | Setting | DL | UL F2 | UL F3 |
+|---|---|---|---|---|
+| 200 | noise_multi | 27.2 / 51.5 / 76.7 | 2.2 / 26.5 / 51.6 | 12.3 / 36.6 / 61.7 |
+| 200 | **primary** | 17.9 / 25.9 / 43.9 | 1.7 / 26.1 / 51.2 | 11.8 / 36.1 / 61.3 |
+| 200 | ul_full | 17.9 / 25.9 / 43.9 | -9.0 / 17.0 / 43.1 | -8.5 / 17.8 / 44.2 |
+| 500 | noise_multi | 10.0 / 34.4 / 63.4 | -15.0 / 9.3 / 38.4 | -4.9 / 19.4 / 48.5 |
+| 500 | **primary** | 9.7 / 24.0 / 43.1 | -15.4 / 8.9 / 38.0 | -5.7 / 18.7 / 47.8 |
+| 500 | ul_full | 9.7 / 24.0 / 43.1 | -19.5 / 6.6 / 36.5 | -16.5 / 11.4 / 42.0 |
+
+Other reported quantities (case A):
+
+| Quantity | ISD 200 | ISD 500 |
+|---|---|---|
+| Served by site 0: outdoor and in car | 0.866 | 0.748 |
+| Served by site 0: indoor | 0.61 | 0.63 |
+| UL interferers' target power at 7.2 GHz, F2: mean | 4.6 dBm | 15.7 dBm |
+| Share of those interferers at 23 dBm | 11.6% | 52.5% |
+| TRxPs without an UL interferer (of 57) | 0 | 21.0 (mostly ring 2) |
+
+`iso72` equals `noise_multi` in the 7.2 GHz columns and the primary in
+the 3.5 GHz columns, as defined. No histogram mass reached the end bins.
+
+**P1 held.** The M.2412-mix median 7.2 GHz DL SINR is 25.9 dB, against an
+SNR of 51.5 dB in `noise_multi`: 25.6 dB lower.
+
+What is established (gates passed; conditional on the limits below):
+
+1. **The 19-site layout raises feasibility above E1c.1.**
+   - Best-server association adds +6.6 points of F2 UL 7.2 at ISD 200 and
+     +7.4 at ISD 500 (case A, `noise_multi` against site 0 only).
+   - Full-load interference with target UL power then removes 0.5 and 1.2
+     points.
+   - Net: primary A F2 UL 7.2 is 0.896 at ISD 200 and 0.509 at ISD 500,
+     against E1c.1's 0.835 and 0.447 on the same victims.
+   - **Correction of wording, not of a definition:** the pre-registered
+     decision text calls E1c.1 "the noise-limited bound". It is the
+     single-site reference; `noise_multi` is the noise-limited multi-site
+     case, and E1c.1 lies below it.
+2. **The DL is interference-limited but stays feasible.** SINR is 25.6 dB
+   below SNR at the median, but the 5th percentile (17.9 dB at ISD 200)
+   stays above the F2 DL threshold. F2 DL 7.2 is ≥ 0.995 at ISD 200 and
+   0.926 / 0.954 / 0.974 (A / B / C) at ISD 500.
+3. **UL power control, not load, decides the UL.**
+   - With target power, UL interference costs at most 0.53 dB at the 5th
+     percentile at ISD 200 (every case, carrier and profile).
+   - With every interferer at 23 dBm, F2 UL falls to 0.749 (3.5 GHz) and
+     0.719 (7.2 GHz) at ISD 200 (A), and K3 rises to 0.245.
+   - Load matters little: η from 1 to 0.2 changes any fraction by ≤ 1.4
+     points.
+   - The [target, full] bracket is the main uncertainty of the UL result.
+4. **When the UL is interference-limited, 7.2 GHz can beat 3.5 GHz.**
+   At ISD 200 under `ul_full`, F2 UL 7.2 exceeds UL 3.5 for B (0.799
+   against 0.749) and C (0.781 against 0.733), and K6 appears (B 0.055,
+   C 0.057). The serving beam gain grows with the aperture; the
+   beam-averaged interference does not. At ISD 500, where noise still
+   matters, it does not happen (B 0.558 against 0.559).
+5. **Activating 7.2 GHz on neighbouring TRxPs costs almost no
+   feasibility here.** `iso72` against primary: ≤ 0.5 points at
+   ISD 200 and ≤ 1.2 at ISD 500 (A, F2).
+
+**Limits that bound these statements.**
+- **Beam-averaged interference.** Interference uses 0 dB array gain, the
+  average over beam directions. The model cannot produce the low-SINR
+  tail of a neighbour's beam pointing at the victim. Statements 2, 4 and
+  5 are therefore conditional on it. A per-beam model (each interfering
+  TRxP steering toward its own scheduled UE, with the explicit array
+  factor) is needed before "interference does not limit feasibility"
+  can be claimed.
+- **Target UL power is noise-limited,** a lower bound; `ul_full` is the
+  upper bound.
+- **The association gain relies on independent inter-site shadowing**
+  (TR 38.901 clause 7.5). Inter-site correlation would shrink it.
+- **ISD 500:** 21 of 57 TRxPs have no UL interferer, and ring-1
+  interferers are drawn from the part of their cells nearer site 0.
+
+**Decision applied (pre-registered).** All gates pass. The primary
+fractions, with the η, UL power, activation, ISD and case ranges, are the
+paper's interference-aware area results and the load-dependent input of
+Phase 3, under the limits above. The per-beam interference model is the
+recommended next step (E1c.3, to be pre-registered separately).
+
 ### Original options considered
 
 Recommended (adopted): geometry-aware 3GPP model as the main engine. TR 38.901 UMa path

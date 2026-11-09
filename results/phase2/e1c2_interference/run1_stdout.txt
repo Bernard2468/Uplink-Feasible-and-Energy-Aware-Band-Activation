@@ -1,0 +1,39 @@
+ISD 200: victims [935, 5756], pool [16678, 96854]
+G2 {'out': True, 'ind': True}
+G1a True
+ISD 200: realization 10/100, 11 s
+ISD 200: realization 20/100, 19 s
+ISD 200: realization 30/100, 28 s
+ISD 200: realization 40/100, 36 s
+ISD 200: realization 50/100, 44 s
+ISD 200: realization 60/100, 52 s
+ISD 200: realization 70/100, 61 s
+ISD 200: realization 80/100, 69 s
+ISD 200: realization 90/100, 77 s
+ISD 200: realization 100/100, 85 s
+G1 True max |diff|/SE 1.71
+G3 True 2.84e-14 dB
+ISD 200 done in 91 s
+ISD 500: victims [4541, 38921], pool [30888, 145135]
+G2 {'out': True, 'ind': True}
+G1a True
+ISD 500: realization 10/100, 30 s
+ISD 500: realization 20/100, 46 s
+ISD 500: realization 30/100, 63 s
+ISD 500: realization 40/100, 79 s
+ISD 500: realization 50/100, 95 s
+ISD 500: realization 60/100, 111 s
+ISD 500: realization 70/100, 128 s
+ISD 500: realization 80/100, 146 s
+ISD 500: realization 90/100, 162 s
+ISD 500: realization 100/100, 180 s
+G1 True max |diff|/SE 2.64
+G3 True 2.84e-14 dB
+ISD 500 done in 189 s
+G0_inputs PASS
+G4_mapping_partition PASS
+G1a_site0_link_budget PASS
+G1_single_site_limit PASS
+G2_path_loss PASS
+G3_scalar_recompute PASS
+E1c.2 GATES PASSED 280 s

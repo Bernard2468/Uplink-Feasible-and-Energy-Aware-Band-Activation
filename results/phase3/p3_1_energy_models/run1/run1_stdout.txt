@@ -1,0 +1,9 @@
+J0 True
+J1 False
+J2b True R1 False []
+R2 False {'printed': False}
+J2a_fr3_two_implementations True
+J3_rf_pa_consistency True
+J4_state_consistency True
+J5_units True
+GATES FAILED 0.5 s

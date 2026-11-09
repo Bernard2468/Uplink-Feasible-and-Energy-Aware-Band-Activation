@@ -3,7 +3,9 @@
 Pre-registered in configs/p3/p3_1_energy_models.json (docs/PHASE_3_ENERGY_PROTOCOL.md, P3.0 rev 1).
 - 3.5 GHz: Peschiera et al. arXiv 2505.15445v1 (IEEE TCOM 2026), compact model (5) with the closed forms of
   Sec. III-D and the parameters of Golard et al. (PIMRC 2024) Table II.
-- 7.2 GHz: Peschiera et al. arXiv 2510.10647v1 (IEEE ICASSP 2026), eqs. (5)-(17), implemented as printed.
+- 7.2 GHz: Peschiera et al. FR3 model. Pre-registered as arXiv 2510.10647v1 printed; AMENDMENT 1 (after run 1):
+  the project uses the published ICASSP 2026 version (Lirias manuscript + the authors' code), version 'published';
+  'v1' is kept to re-record run 1's failed reproduction.
 - Cell sleep ladder: TR 38.864 V18.1.0 Tables 5.1-3/4/5, attached at the FR3 micro-sleep state (D4).
 Units: W, s, J. Pure Python (math only).
 
@@ -144,13 +146,25 @@ def sub6_published_params(pub, case):
 
 # ---------------------------------------------------------------- FR3 model (2510.10647), closed form
 
-def fr3_hardware(conf, fc_hz, b_hz, m_ant, m_rf, k, p_t_w, pa, signalling, upsilon, r_dl_full, r_ul_full):
-    """Collect every input of the FR3 model for one hardware point."""
+def fr3_hardware(conf, fc_hz, b_hz, m_ant, m_rf, k, p_t_w, pa, signalling, upsilon, r_dl_full, r_ul_full,
+                 version='v1', rate_rule='scaled', df_hz=None):
+    """Collect every input of the FR3 model for one hardware point.
+    version 'v1' = arXiv v1 as printed; 'published' = ICASSP 2026 (amendment 1): static term xi Pmax/eta, data phase
+    x tau (1 - tau_sig), one LNA per antenna, eta_s/c 0.81. rate_rule 'scaled' (R_full x load) or 'fixed' (the code's).
+    df_hz None: subcarrier spacing scales with B (fixed FFT size)."""
     fr = conf['fr3_model']
+    ver = fr['versions'][version]
     return {'fc': fc_hz, 'B': b_hz, 'M_ant': m_ant, 'M_RF': m_rf, 'K': k, 'P_T': p_t_w, 'pa': dict(pa),
             'signalling': signalling, 'upsilon': upsilon, 'r_dl_full': r_dl_full, 'r_ul_full': r_ul_full,
             'dig': fr['digital'], 'ana': fr['analog'], 'pa_delta': {'micro': fr['pa']['delta_micro'], 'idle': fr['pa']['delta_idle']},
-            'frame': fr['frame'], 'eta_sc': fr['eta_sc']}
+            'frame': fr['frame'], 'version': version, 'static_form': ver['static_form'], 'frame_mode': ver['frame'],
+            'lna': ver['lna'], 'eta_sc': dict(ver['eta_sc']), 'rate_rule': rate_rule, 'df_hz': df_hz}
+
+
+def upsilon_published(conf, fc_hz):
+    """Samples per coherence block by the authors' code rule: (c / dist_max) (lambda_c / (2 v))."""
+    r = conf['fr3_model']['upsilon_rule_published']
+    return (3e8 / r['dist_max_m']) * ((3e8 / fc_hz) / (2.0 * r['velocity_mps']))
 
 
 def fr3_active_powers(hw, x_dl, x_ul):
@@ -158,13 +172,16 @@ def fr3_active_powers(hw, x_dl, x_ul):
     d, a = hw['dig'], hw['ana']
     B, m_rf, m_ant, K = hw['B'], hw['M_RF'], hw['M_ant'], hw['K']
     fs1 = d['mu'] * B
-    df = d['df_ref_hz'] * B / d['b_ref_hz']
+    df = hw['df_hz'] if hw['df_hz'] else d['df_ref_hz'] * B / d['b_ref_hz']
     fs2 = d['q_fft'] * df
     bt = d['bt_factor'] * B
     mt = math.ceil(m_rf / d['fpga']['share_rf_chains'])
     e_f, e_a = d['fpga']['eta_gops_per_w'] * 1e9, d['asic']['eta_gops_per_w'] * 1e9
     s_f, s_a = d['fpga']['p_static_w'], d['asic']['p_static_w']
-    r_dl, r_ul = hw['r_dl_full'] * x_dl, hw['r_ul_full'] * x_ul
+    if hw['rate_rule'] == 'scaled':
+        r_dl, r_ul = hw['r_dl_full'] * x_dl, hw['r_ul_full'] * x_ul
+    else:
+        r_dl, r_ul = hw['r_dl_full'], hw['r_ul_full']
     enc = s_a + fs1 / e_a * (14.0 / (3.0 * 8.0)) * (r_dl / bt)
     dec = s_a + fs1 / e_a * (5.0 * 35.0 / (2.0 * 3.0)) * (r_ul / bt)
     xi_pre = 2.0 * K + (K ** 3 / (3.0 * m_rf) + 3.0 * K ** 2 + K) / hw['upsilon']
@@ -179,8 +196,9 @@ def fr3_active_powers(hw, x_dl, x_ul):
     p_adc = a['adc_walden_j'] * a['adc_fs_hz'] * 2 ** a['adc_bits']
     p_mix, p_ps, p_lna = a['xi_mixer'] * hw['fc'], a['xi_ps'] * B, a['xi_lna'] * B
     m_ps = 0 if m_rf == m_ant else m_ant / m_rf
+    n_lna = m_ant / m_rf if hw['lna'] == 'per_antenna' else 1.0
     ana_dl = a['p_lo_w'] + m_rf * (2 * p_dac + 2 * a['p_rf_filter_w'] + 2 * p_mix + m_ps * p_ps)
-    ana_ul = a['p_lo_w'] + m_rf * (2 * p_adc + 2 * a['p_rf_filter_w'] + 2 * p_mix + m_ps * p_ps + p_lna)
+    ana_ul = a['p_lo_w'] + m_rf * (2 * p_adc + 2 * a['p_rf_filter_w'] + 2 * p_mix + m_ps * p_ps + n_lna * p_lna)
     return {'dig_dl': dig_dl, 'dig_ul': dig_ul, 'ana_dl': ana_dl, 'ana_ul': ana_ul,
             'enc_dec_dynamic_w': (enc - s_a) + (dec - s_a), 'm_ps': m_ps, 'fs2_hz': fs2}
 
@@ -192,8 +210,11 @@ def _frame_avg(p, x, tau, tau_sig, d_micro, d_idle, frame='printed'):
     return data + tau * tau_sig * p + tau * (1.0 - x) * (1.0 - tau_sig) * p * d_micro + (1.0 - tau) * p * d_idle
 
 
-def fr3_power(hw, x_dl, x_ul, static_form='printed', tau_sig=None, parts=False, frame='printed'):
-    """Frame-averaged consumption, eq. (5). tau_sig=None uses the frame value; 0 gives the micro-sleep anchor."""
+def fr3_power(hw, x_dl, x_ul, static_form=None, tau_sig=None, parts=False, frame=None):
+    """Frame-averaged consumption, eq. (5). tau_sig=None uses the frame value; 0 gives the micro-sleep anchor.
+    static_form / frame default to the hardware point's version."""
+    static_form = static_form or hw['static_form']
+    frame = frame or hw['frame_mode']
     fr = hw['frame']
     ts = fr['tau_sig'] if tau_sig is None else tau_sig
     tdl, tul = fr['tau_dl'], fr['tau_ul']
@@ -217,8 +238,9 @@ def fr3_power(hw, x_dl, x_ul, static_form='printed', tau_sig=None, parts=False, 
     return (total, out) if parts else total
 
 
-def fr3_dl_instant(hw, static_form='printed'):
+def fr3_dl_instant(hw, static_form=None):
     """Instantaneous power of a full-load DL data symbol: DL chains active, UL chains idle, every PA at P_a."""
+    static_form = static_form or hw['static_form']
     act = fr3_active_powers(hw, 1.0, 0.0)
     e = hw['eta_sc']
     pa = hw['M_ant'] * pa_power(hw['P_T'] / hw['M_ant'], hw['pa'], static_form)
@@ -228,21 +250,23 @@ def fr3_dl_instant(hw, static_form='printed'):
 
 # ---------------------------------------------------------------- FR3 model, independent phase ledger (J2a)
 
-def fr3_ledger(hw, x_dl, x_ul, static_form='printed', tau_sig=None):
+def fr3_ledger(hw, x_dl, x_ul, static_form=None, tau_sig=None):
     """Second implementation: enumerate (direction, phase, time fraction) and the state of every component group in
-    that phase, then sum fraction x power. Written separately from fr3_power; shares only fr3_active_powers' inputs
-    via its own recomputation of the component powers below."""
+    that phase, then sum fraction x power. Written separately from fr3_power; it recomputes every component power
+    itself instead of calling fr3_active_powers."""
+    static_form = static_form or hw['static_form']
     d, a, fr = hw['dig'], hw['ana'], hw['frame']
     ts = fr['tau_sig'] if tau_sig is None else tau_sig
     B, m_rf, m_ant, K = hw['B'], hw['M_RF'], hw['M_ant'], hw['K']
     # --- component powers, recomputed
     f1 = d['mu'] * B
-    f2 = d['q_fft'] * (d['df_ref_hz'] / d['b_ref_hz']) * B
+    f2 = d['q_fft'] * (hw['df_hz'] if hw['df_hz'] else (d['df_ref_hz'] / d['b_ref_hz']) * B)
     groups = -(-m_rf // d['fpga']['share_rf_chains'])
     fpga_w_per_op = 1.0 / (d['fpga']['eta_gops_per_w'] * 1e9)
     asic_w_per_op = 1.0 / (d['asic']['eta_gops_per_w'] * 1e9)
-    se_dl = hw['r_dl_full'] * x_dl / (d['bt_factor'] * B)
-    se_ul = hw['r_ul_full'] * x_ul / (d['bt_factor'] * B)
+    load_dl, load_ul = (x_dl, x_ul) if hw['rate_rule'] == 'scaled' else (1.0, 1.0)
+    se_dl = hw['r_dl_full'] * load_dl / (d['bt_factor'] * B)
+    se_ul = hw['r_ul_full'] * load_ul / (d['bt_factor'] * B)
     blocks_dl = [d['asic']['p_static_w'] + f1 * asic_w_per_op * (7.0 / 12.0) * se_dl,
                  groups * d['fpga']['p_static_w'] + f1 * fpga_w_per_op * m_rf * (2 * K + (K ** 3 / (3 * m_rf) + 3 * K * K + K) / hw['upsilon']),
                  d['asic']['p_static_w'] + f2 * asic_w_per_op * m_rf * 1.5 * math.log(d['q_fft'], 2),
@@ -255,8 +279,9 @@ def fr3_ledger(hw, x_dl, x_ul, static_form='printed', tau_sig=None):
     adc = a['adc_walden_j'] * a['adc_fs_hz'] * (1 << a['adc_bits'])
     n_ps = 0.0 if m_rf == m_ant else m_ant / m_rf
     chain_common = 2 * a['p_rf_filter_w'] + 2 * a['xi_mixer'] * hw['fc'] + n_ps * a['xi_ps'] * B
+    lnas_total = m_ant if hw['lna'] == 'per_antenna' else m_rf
     ana_w = {'DL': a['p_lo_w'] + m_rf * (2 * dac + chain_common),
-             'UL': a['p_lo_w'] + m_rf * (2 * adc + chain_common + a['xi_lna'] * B)}
+             'UL': a['p_lo_w'] + m_rf * (2 * adc + chain_common) + lnas_total * a['xi_lna'] * B}
     dig_w = {'DL': sum(blocks_dl), 'UL': sum(blocks_ul)}
     p_a = hw['P_T'] / m_ant
     pa_out = {'data': p_a, 'sig': fr['zeta_sig'] * (hw['pa']['p_max_w'] if hw['signalling'] == 'reference' else p_a),
@@ -269,7 +294,8 @@ def fr3_ledger(hw, x_dl, x_ul, static_form='printed', tau_sig=None):
     acc = {'dig': 0.0, 'ana': 0.0, 'pa': 0.0}
     for direction in ('DL', 'UL'):
         t, x = tau[direction], load[direction]
-        phases = [('data', x * t), ('sig', t * ts), ('micro', t * (1 - x) * (1 - ts)), ('idle', 1 - t)]
+        data_frac = x * t if hw['frame_mode'] == 'printed' else x * t * (1 - ts)
+        phases = [('data', data_frac), ('sig', t * ts), ('micro', t * (1 - x) * (1 - ts)), ('idle', 1 - t)]
         for ph, frac in phases:
             acc['dig'] += frac * dig_w[direction] * red['dig'][ph]
             acc['ana'] += frac * ana_w[direction] * red['ana'][ph]
@@ -277,6 +303,54 @@ def fr3_ledger(hw, x_dl, x_ul, static_form='printed', tau_sig=None):
                 acc['pa'] += frac * m_ant * pa_power(pa_out[ph], hw['pa'], static_form) * pa_red[ph]
     e = hw['eta_sc']
     return acc['dig'] / e['dig'] + acc['ana'] / e['ana'] + acc['pa'] / e['pa']
+
+
+# ---------------------------------------------------------------- authors' code, re-implemented (J2c, amendment 1)
+
+CODE_R_DL = [v * 1e9 * 0.93 for v in (1.6, 3.64, 6.06, 8.10, 10.93, 12.10, 13.44)]
+CODE_R_UL = [v * 1e9 * 0.93 for v in (1.02, 1.25, 1.5, 1.68, 1.98, 2.18, 2.35)]
+CODE_M_VEC = [16, 32, 64, 128, 256, 512, 1024]
+
+
+def fr3_code_reimpl(m_rf, m_ant, x):
+    """Formulas of the authors' Fig_2a.py (totals) and Fig_2b.py (PA), github.com/e-peschiera/FR3-power-model commit
+    255ed68, with their constants hard-coded here as in those files (read, not executed). Fig_2a.py's eta_DPD (2e12) is
+    used; Fig_2b.py's differs (0.2e12) but affects only digital power, which Fig_2b does not plot."""
+    K, f_c, B = 8, 10e9, 400e6
+    f_sI, f_sII, B_t = 0.9 * B, 4096 * 120e3, 0.9 * B
+    tdl, tds = 0.75, 1 / 14
+    tul, tus = 1 - tdl, 1 / 14
+    zeta, P_max, xi, eta_pa, alpha = 1 / 12, 0.1, 0.1, 0.15, 0.75
+    eta_sc = 0.81
+    i = CODE_M_VEC.index(m_rf)
+    ups = (3e8 / 300) * ((3e8 / f_c) / (2 * 30))
+    mps = 0 if m_rf == m_ant else m_ant / m_rf
+    st = 1 * math.ceil(m_rf / 32)
+    p_enc = 0.1 + 1 / 2e12 * (f_sI * 14 / (3 * 8) * CODE_R_DL[i] / B_t)
+    p_dec = 0.1 + 1 / 2e12 * (f_sI * (5 * 35) / (2 * 3) * CODE_R_UL[i] / B_t)
+    p_pre = st + 1 / 0.2e12 * m_rf * (f_sI * 2 * K + f_sI / ups * (K ** 3 / (3 * m_rf) + 3 * K ** 2 + K))
+    p_com = st + 1 / 0.2e12 * m_rf * f_sI * 2 * K
+    p_ifft = 0.1 + 1 / 2e12 * m_rf * f_sII * 3 / 2 * math.log2(4096)
+    p_dpd = 0.1 + 1 / 2e12 * m_rf * f_sII * 50
+    p_fbb = st + 1 / 0.2e12 * m_rf * f_sII * 20 * 4
+    p_dl, p_ul = p_enc + p_pre + p_ifft + p_dpd + p_fbb, p_dec + p_com + p_ifft + p_fbb
+    dig = ((x * tdl * (1 - tds) * p_dl + tdl * tds * p_dl + tdl * (1 - x) * (1 - tds) * p_dl * 0.5 + (1 - tdl) * p_dl * 0.25)
+           + (x * tul * (1 - tus) * p_ul + tul * tus * p_ul + tul * (1 - x) * (1 - tus) * p_ul * 0.5 + (1 - tul) * p_ul * 0.25))
+    p_dac = 1.5e-5 * 2 ** 8 + 1.5e-12 * 8 * 5e9
+    p_adc = 70e-15 * 5e9 * 2 ** 8
+    p_mix, p_ps, p_lna = 2.5e-13 * f_c, 3.5e-11 * B, 2.7e-11 * B
+    a_dl = 40e-3 + m_rf * (2 * p_dac + 2 * 5e-3 + 2 * p_mix + mps * p_ps)
+    a_ul = 40e-3 + m_rf * (2 * p_adc + 2 * 5e-3 + 2 * p_mix + mps * p_ps + m_ant / m_rf * p_lna)
+    ana = ((x * tdl * (1 - tds) * a_dl + tdl * tds * a_dl + tdl * (1 - x) * (1 - tds) * a_dl * 0.75 + (1 - tdl) * a_dl * 0.5)
+           + (x * tul * (1 - tds) * a_ul + tul * tus * a_ul + tul * (1 - x) * (1 - tus) * a_ul * 0.75 + (1 - tul) * a_ul * 0.5))
+
+    def p_pa(p):
+        return xi * P_max / eta_pa + (1 - xi) * P_max ** (1 - alpha) * p ** alpha / eta_pa
+
+    pa1 = (x * tdl * (1 - tds) * p_pa(100 * m_ant / 1024 / m_ant) + tdl * tds * p_pa(zeta * P_max)
+           + tdl * (1 - x) * (1 - tds) * p_pa(0) * 0.5 + (1 - tdl) * p_pa(0) * 0.25)
+    pa = m_ant * pa1
+    return {'dig': dig / eta_sc, 'ana': ana / eta_sc, 'pa': pa / eta_sc, 'tot': (dig + ana + pa) / eta_sc}
 
 
 # ---------------------------------------------------------------- TR 38.864 ladder and energy ledger
@@ -360,11 +434,13 @@ def docx_tables_after(docx_path, captions):
         xml = z.read('word/document.xml').decode('utf-8', errors='replace')
     out = {}
     for cap in captions:
-        i = xml.find(cap)
-        if i < 0 or xml.find(cap, i + 1) >= 0:
+        # amendment 1: a caption may be split over several XML runs ('Table 5.1-3' and ':'), so allow tags anywhere
+        rx = re.compile(r'(?:<[^>]+>)*'.join(re.escape(ch) for ch in cap))  # tags only BETWEEN characters
+        hits = list(rx.finditer(xml))
+        j = xml.find('<w:tbl>', hits[0].end()) if len(hits) == 1 else -1
+        if j < 0:
             out[cap] = None
             continue
-        j = xml.find('<w:tbl>', i)
         k = xml.find('</w:tbl>', j)
         rows = []
         for row in re.findall(r'<w:tr[ >].*?</w:tr>', xml[j:k], flags=re.S):
@@ -469,11 +545,57 @@ def run_j2b(conf):
 
 
 def reference_hw(conf, m_rf, m_ant, upsilon):
+    """arXiv v1 reference hardware, as pre-registered (run 1)."""
     ref = conf['fr3_reference_reproduction']['hardware']
     un = conf['fr3_unstated_inputs']
     pa = conf['fr3_model']['pa']['sige']
     return fr3_hardware(conf, ref['fc_hz'], ref['B_hz'], m_ant, m_rf, ref['K'], 100.0 * m_ant / 1024.0, pa,
-                        'reference', upsilon, un['rates']['r_dl_full_bps'], un['rates']['r_ul_full_bps'])
+                        'reference', upsilon, un['rates']['r_dl_full_bps'], un['rates']['r_ul_full_bps'], version='v1')
+
+
+def reference_hw_pub(conf, m_rf, m_ant):
+    """Published (ICASSP 2026) reference hardware: the code's rates (fixed per M_RF), upsilon rule and 120 kHz."""
+    ref = conf['fr3_published_reference']
+    hw0, rates = ref['hardware'], ref['rates_gbps_times_0p93']
+    i = ref['m_rf_vec'].index(m_rf)
+    return fr3_hardware(conf, hw0['fc_hz'], hw0['B_hz'], m_ant, m_rf, hw0['K'], 100.0 * m_ant / 1024.0,
+                        conf['fr3_model']['pa']['sige'], 'reference', upsilon_published(conf, hw0['fc_hz']),
+                        rates['dl'][i] * 1e9 * rates['factor'], rates['ul'][i] * 1e9 * rates['factor'],
+                        version='published', rate_rule='fixed', df_hz=hw0['df_hz'])
+
+
+def run_r2pub(conf):
+    ref = conf['fr3_published_reference']
+    out, ok_all = {}, True
+    for t in ref['targets']:
+        if 'M_RF' in t:
+            val = fr3_power(reference_hw_pub(conf, t['M_RF'], 1024), t['x'], t['x'])
+            _, parts = fr3_power(reference_hw_pub(conf, t['M_RF'], 1024), t['x'], t['x'], parts=True)
+        else:
+            _, parts = fr3_power(reference_hw_pub(conf, t['M_ant'], t['M_ant']), t['x'], t['x'], parts=True)
+            val = parts['pa']
+        tol = 0.02 * t['published_w'] if t['tol'].startswith('rel') else 0.1
+        ok = abs(val - t['published_w']) <= tol
+        ok_all &= ok
+        out[t['id']] = {'recomputed_w': val, 'published_w': t['published_w'], 'rel_err': val / t['published_w'] - 1,
+                        'ok': ok, 'parts_w': parts}
+    return dict(out, passed=bool(ok_all))
+
+
+def run_j2c(conf):
+    worst, n = 0.0, 0
+    for m_rf in conf['fr3_published_reference']['m_rf_vec']:
+        for x in (0.0, 0.3, 1.0):
+            a = fr3_power(reference_hw_pub(conf, m_rf, 1024), x, x)
+            worst, n = max(worst, rel_diff(a, fr3_code_reimpl(m_rf, 1024, x)['tot'])), n + 1
+            _, pa = fr3_power(reference_hw_pub(conf, m_rf, m_rf), x, x, parts=True)
+            worst, n = max(worst, rel_diff(pa['pa'], fr3_code_reimpl(m_rf, m_rf, x)['pa'])), n + 1
+    return {'cases': n, 'max_rel_diff': worst, 'passed': worst <= REL_EXACT}
+
+
+def run_r1u(r1):
+    row = r1['interpretations']['golard_nc1']['configs']['64T64R']
+    return {'values': row, 'passed': all(v['ok'] for k, v in row.items() if k != 'alpha')}
 
 
 def run_r2(conf, forms):
@@ -529,7 +651,8 @@ def project_points(conf, eta_3p5):
         for (lab, pa), m_rf in itertools.product(pas, [lay['m_rf_primary']] + lay['m_rf_sensitivity']):
             key = f'{pname}_{lab}_MRF{m_rf}'
             pts[key] = fr3_hardware(conf, lay['fc_hz'], lay['B_hz'], lay['M_ant'], m_rf, lay['K'], p_t, pa, 'project',
-                                    un['upsilon_coh']['value'], un['rates']['r_dl_full_bps'] * scale, un['rates']['r_ul_full_bps'] * scale)
+                                    upsilon_published(conf, lay['fc_hz']), un['rates']['r_dl_full_bps'] * scale,
+                                    un['rates']['r_ul_full_bps'] * scale, version='published')
     return pts
 
 
@@ -563,17 +686,17 @@ def main():
     r1 = run_r1(conf)
     validation['R1_sub6_table2'] = r1
     print('J2b', validation['J2b_sub6_compact_vs_direct']['passed'], 'R1', r1['passed'], r1['matching'], flush=True)
-    # ---- R2 FR3 published totals
+    validation['R1u_sub6_used_config'] = run_r1u(r1)
+    print('R1u', validation['R1u_sub6_used_config']['passed'], flush=True)
+    # ---- R2 (arXiv v1, recorded) and R2pub / J2c (published version, amendment 1)
     forms = ['printed']
-    ident_form = r1['identified'].split('_')[0] if r1['identified'] else None
-    if ident_form and ident_form != 'printed':
-        forms.append(ident_form)
     r2 = run_r2(conf, forms)
-    validation['R2_fr3_published'] = {'by_static_form': r2, 'passed': any(v['passed'] for v in r2.values())}
-    print('R2', validation['R2_fr3_published']['passed'], {k: v['passed'] for k, v in r2.items()}, flush=True)
-    # FR3 project form: the static form under which R2 passes; if both pass, the R1-identified form
-    passing = [f for f in forms if r2[f]['passed']]
-    project_form = (ident_form if ident_form in passing else passing[0]) if passing else 'printed'
+    validation['R2_fr3_published'] = {'by_static_form': r2, 'passed': any(v['passed'] for v in r2.values()),
+                                      'note': 'arXiv v1 targets; recorded, excluded from the pass rule by amendment 1'}
+    print('R2 (v1, recorded)', validation['R2_fr3_published']['passed'], flush=True)
+    validation['J2c_fr3_vs_authors_code'] = run_j2c(conf)
+    validation['R2pub_fr3_published'] = run_r2pub(conf)
+    print('J2c', validation['J2c_fr3_vs_authors_code']['passed'], 'R2pub', validation['R2pub_fr3_published']['passed'], flush=True)
     # ---- project: 3.5 GHz layer
     g = conf['golard_table2']
     pub64 = conf['sub6_table2_published']['configs']['64T64R']
@@ -584,10 +707,10 @@ def main():
         par = sub6_published_params(pub64, case)
         l3[case] = {str(L): sub6_compact(par, pub64['M'], L, pub64['M'], pub64['p_max_w']) for L in lay3['loads']}
     decomp = None
-    if r1['identified']:
-        sf, nc = r1['identified'].split('_')[0], int(r1['identified'].split('nc')[1])
+    if validation['R1u_sub6_used_config']['passed']:
+        # amendment 1: decomposition under (golard, N_C = 1), which reproduces all six 64T64R values
         cs = conf['sub6_table2_published']['cases'][lay3['case_primary']]
-        decomp = {str(L): sub6_direct(pub64, g, cs['delta_dtx'], cs['delta_idle_trx'], sf, nc, L, pub64['M'], pub64['p_max_w'], parts=True)[1]
+        decomp = {str(L): sub6_direct(pub64, g, cs['delta_dtx'], cs['delta_idle_trx'], 'golard', 1, L, pub64['M'], pub64['p_max_w'], parts=True)[1]
                   for L in lay3['loads']}
     summary['layer_3p5'] = {'P_w_by_case_and_load': l3, 'decomposition_primary_case': decomp, 'eta_max_golard_eq5': eta_3p5}
     # ---- project: 7.2 GHz layer
@@ -601,6 +724,12 @@ def main():
             xd, xu = t['x_dl'], t.get('x_ul', 0.3)
             j2a_worst = max(j2a_worst, rel_diff(fr3_power(hw, xd, xu, sf), fr3_ledger(hw, xd, xu, sf)))
             j2a_n += 1
+    for m_rf in conf['fr3_published_reference']['m_rf_vec']:
+        for hw in (reference_hw_pub(conf, m_rf, 1024), reference_hw_pub(conf, m_rf, m_rf)):
+            for x in (0.0, 0.3, 1.0):
+                j2a_worst = max(j2a_worst, rel_diff(fr3_power(hw, x, x), fr3_ledger(hw, x, x)))
+                j2a_n += 1
+    project_form = 'golard'  # amendment 1: published version
     p7, j4_ok, j4_fail = {}, True, []
     for key, hw in pts.items():
         rec = {'P_T_w': hw['P_T'], 'P_a_w': hw['P_T'] / hw['M_ant'], 'pa_params': hw['pa'], 'M_RF': hw['M_RF'],
@@ -636,8 +765,10 @@ def main():
         if rec['P_a_w'] > hw['pa']['p_max_w'] * (1 + 1e-12):
             j4_fail.append(f'{key} P_a > P_max')
         p7[key] = rec
-    summary['layer_7p2'] = {'form': project_form, 'points': p7,
+    summary['layer_7p2'] = {'version': 'published (ICASSP 2026; amendment 1)', 'static_form': project_form, 'points': p7,
+                            'upsilon_coh': upsilon_published(conf, lay7['fc_hz']),
                             'primary_point': '53dBm_assumedPA_eta0.15_MRF256'}
+    summary['fr3_published_reference'] = {k: v for k, v in validation['R2pub_fr3_published'].items() if k != 'passed'}
     validation['J2a_fr3_two_implementations'] = {'cases': j2a_n, 'max_rel_diff': j2a_worst, 'passed': j2a_worst <= REL_EXACT}
     # 3.5 GHz monotonicity / positivity
     for case, vals in l3.items():
@@ -671,7 +802,13 @@ def main():
                               'passed': abs(lad['w_per_unit_w'] - 2.0) <= 1e-12 and abs(lad['light']['e_add_j'] - 0.18) <= 1e-12}
     for k in ('J2a_fr3_two_implementations', 'J3_rf_pa_consistency', 'J4_state_consistency', 'J5_units'):
         print(k, validation[k]['passed'], flush=True)
-    gates_ok = all(v['passed'] for v in validation.values())
+    # amendment 1 pass rule: R1 and R2 (v1) are recorded but excluded
+    rule = ['J0_sources', 'J1_tr_transcription', 'J2a_fr3_two_implementations', 'J2b_sub6_compact_vs_direct',
+            'J2c_fr3_vs_authors_code', 'J3_rf_pa_consistency', 'J4_state_consistency', 'J5_units',
+            'R1u_sub6_used_config', 'R2pub_fr3_published']
+    gates_ok = all(validation[k]['passed'] for k in rule)
+    validation['pass_rule_amendment_1'] = rule
+    validation['recorded_not_in_rule'] = {k: validation[k]['passed'] for k in ('R1_sub6_table2', 'R2_fr3_published')}
     validation['all_checks_passed'] = gates_ok
     summary['runtime_s'] = time.time() - t0
     (outdir / 'summary.json').write_text(json.dumps(summary, indent=1, default=float), encoding='utf-8')

@@ -167,6 +167,24 @@ Reported totals (10 GHz, 400 MHz, 1024 antennas, 100 W, K = 8, τ_DL = 0.75):
 The PA alone at x̄_DL = 0.3 is 262 W for 1024 antennas. The best energy
 efficiency is at 256 RF chains.
 
+**Published version (found in P3.1, Amendment 1).**
+- **Sources:**
+  - the ICASSP accepted manuscript on KU Leuven Lirias (SHA-256
+    `212bcf8b…`);
+  - the authors' code, `github.com/e-peschiera/FR3-power-model` commit
+    `255ed68`, identical in `dramco-research/fr3-power-model-epeschiera-icassp26`
+    commit `9e9fafe`. Its README says it generates Fig. 2 of the ICASSP paper.
+- **Changes from v1:**
+  - static PA term ξ·P_max/η_max;
+  - data phase x·τ·(1 − τ_sig), so the frame fractions sum to 1;
+  - one LNA per antenna;
+  - υ_coh by the code's rule (500 at 10 GHz);
+  - η_s/c 0.81 in the code. The text still says 0.8, but only 0.81
+    produces the printed numbers.
+- **Published totals:** 643 / 1389 W at full load and 253 / 849 W at 30%
+  (16 / 1024 RF chains). PA: 3.3 W (16 antennas) to 209.9 W (1024).
+  These are 13–19% below v1. **The project uses this version.**
+
 ### 1.3 Peschiera et al., sub-6 GHz measurement-anchored model
 
 **Published version.** IEEE Transactions on Communications, vol. 74 (2026),
@@ -215,8 +233,10 @@ Read from the UCLouvain open-access PDF.
 papers print ξ·P_max^α/η_max.
 - The dynamic terms agree with α = 1 − n.
 - The two forms differ by 25% at P_max = 3.125 W and by 78% at 0.1 W.
-- P3.1 tests which form reproduces 1.3's Table II. This was not computed
-  before writing this file.
+- **Resolved by P3.1 run 1.**
+  - Golard's form reproduces all 15 γ, P0 and P1 values of 1.3's Table II
+    exactly. The printed ξ·P_max^α is a misprint.
+  - The published ICASSP version of 1.2 prints Golard's form.
 
 **PA efficiency, eq. (5):**
 η_max = η_tech / (1 + a·(P_max/P*)·(f/f*)² + b·(P*/P_max)).
@@ -526,6 +546,50 @@ frame variant (data term × (1 − τ_sig)) are diagnostics only.
 - 64T64R P_misc ≈ 63.9 W and P_TRX ≈ 3.18 W.
 
 No P0, P1, P_sleep or FR3 total was computed.
+
+#### P3.1 run 1 (commit 31aa0a4): FAILED J1, R1 and R2 (2026-11-09)
+
+Evidence is kept in `results/phase3/p3_1_energy_models/run1/`. J0, J2a,
+J2b, J3, J4 and J5 passed.
+
+| Gate | Result | Cause (diagnosed after the run) |
+|---|---|---|
+| J1 | Table 5.1-3 not found | **Our parser.** In the XML, "Table 5.1-3" and ":" are separate text runs. Tables 5.1-4/5 matched, and the config numbers equal the expected strings |
+| R1 | 17 of 18 values | Under (Golard static term, N_C = 1), every γ, P0 and P1 and the P_sleep of 4T4R and 64T64R reproduce exactly. **8T8R P_sleep: 389.88 W against 363.78 W (+7.2%)**, matched by neither N_C. The printed static term reproduces nothing but γ |
+| R2 | v1 totals at M_RF = 1024 miss | v1 printed equations: T1 747 / 740, T3 301 / 300, PA 264.9 / 262 and 4.1 / 4 (all ≤ 1.1%); **T2 1552.5 / 1658 (−6.4%), T4 925.2 / 1044 (−11.4%)**. υ_coh moves the totals by ≤ 6 W |
+
+**R2 diagnosis.**
+- The authors' code for the published version differs from v1 in the
+  points listed in §1.2.
+- A post-hoc reimplementation of that code (scratch diagnostic) gives
+  643.1 / 1389.3 / 252.9 / 848.8 W and 209.9 / 3.28 W.
+- The Lirias manuscript prints 643 / 1389 / 253 / 849 and 209.9 / 3.3.
+- **So v1 is superseded.** Its fully digital totals are not explained by
+  its own equations, and that remains unexplained and moot.
+
+#### P3.1 Amendment 1 (pre-registered before run 2)
+
+Recorded in the config (`amendments`).
+
+- **J1:** captions are matched with XML tags allowed between characters.
+- **FR3 version:** the project implements the **published** version.
+  - η_s/c 0.81, equal to the 3.5 GHz layer's PA and AFE value (0.9 × 0.9).
+  - One LNA per antenna.
+  - υ_coh by the code's rule (≈ 694 at 7.2 GHz).
+  - v1 is kept only to re-record its failed reproduction.
+- **New gates:**
+  - J2c: the published-mode implementation equals an independent
+    reimplementation of the authors' code formulas, for all 7 M_RF × loads
+    0 / 0.3 / 1 and the PA sweep, to 1e-12.
+  - R2pub: the published totals within 2%, PA 209.9 W within 2%, 3.3 W
+    within 0.1 W.
+  - R1u: 64T64R, the only sub-6 configuration used, in all 6 values.
+- **Pass rule:** J0–J5, J2c, R1u and R2pub.
+  - The original R1 and R2 stay in the validation output as failures and
+    are not re-scored.
+- **Not blind:** R1u and R2pub were already seen in run 1 and in the
+  diagnostic. Only J2c is a new test.
+- **New sources under J0:** the Lirias PDF and the code files.
 
 ## 4. Open items
 

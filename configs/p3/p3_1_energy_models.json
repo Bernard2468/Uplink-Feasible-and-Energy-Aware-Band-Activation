@@ -1,6 +1,24 @@
 {
   "experiment": "P3.1: source-reproduced hardware energy models of the 3.5 GHz and 7.2 GHz layers and the 7.2 GHz cell sleep ladder",
-  "status": "PRE-REGISTERED 2026-11-09, before the first measured run",
+  "status": "PRE-REGISTERED 2026-11-09, before the first measured run; AMENDMENT 1 (2026-11-09) after run 1 failed J1, R1 and R2, before run 2",
+  "amendments": [
+    {"id": 1, "date": "2026-11-09", "trigger": "run 1 (commit 31aa0a4): J1, R1 and R2 FAILED; evidence kept in results/phase3/p3_1_energy_models/run1/",
+     "diagnosis": [
+       "J1: defect of our parser. In the .docx XML the caption 'Table 5.1-3' and its ':' are separate text runs, so the literal 'Table 5.1-3:' is absent. Tables 5.1-4/5 parsed and matched; the config numbers equal the expected strings.",
+       "R1: the Golard static term xi P_max / eta reproduces all 15 gamma, P0 and P1 values of 2505.15445 Table II exactly; the printed xi P_max^alpha does not (it is a misprint). N_C = 1 reproduces P_sleep of 4T4R and 64T64R exactly. 8T8R P_sleep is 389.88 W against 363.78 published (+7.2%) under N_C = 1 and is reproduced by neither pre-declared N_C. Result: 17/18, R1 FAILED. 64T64R, the configuration the project uses, is reproduced in all 6 values.",
+       "R2: arXiv v1 is superseded. The authors' code (github.com/e-peschiera/FR3-power-model, commit 255ed68, and the identical dramco-research/fr3-power-model-epeschiera-icassp26, commit 9e9fafe; README: 'source code to generate Figure 2a, 2b, 2c' of the ICASSP 2026 paper) and the accepted manuscript on KU Leuven Lirias differ from v1 in: static PA term xi P_max/eta; data phase x tau (1 - tau_sig); one LNA per antenna (M_ant/M_RF per RF chain); eta_s/c 0.81 in the code (the text says 0.8); upsilon_coh = (c/300 m)(lambda/(2 x 30 m/s)) = 500 at 10 GHz; per-M_RF rates from Fig. 2c x 0.93. The published numbers are 643 / 1389 W (full load, M_RF 16 / 1024), 253 / 849 W (30%), PA 3.3 / 209.9 W. The v1 numbers (740/1658/300/1044, 262/4) are reproduced by the v1 printed equations within about 1% except the fully digital totals (-6.4% / -11.4%), which remain unexplained and are moot."
+     ],
+     "changes": [
+       "J1 parser matches captions on tag-stripped text.",
+       "The FR3 model implements the PUBLISHED version (ICASSP 2026: Lirias manuscript + authors' code) for the project; v1 is kept only to re-record its failed reproduction.",
+       "New gate J2c: our published-mode implementation equals an independent re-implementation of the code's formulas (Fig_2a.py totals for M_RF in {16..1024}, Fig_2b.py PA for M_ant in {16..1024}; loads 0, 0.3, 1) to rel 1e-12.",
+       "New gate R2pub replaces R2 in the pass rule: published totals 643 / 1389 / 253 / 849 W within 2% and PA 209.9 W within 2% and 3.3 W within 0.1 W.",
+       "New gate R1u: 64T64R (the only sub-6 configuration the project uses) reproduced in all 6 values within the R1 tolerance under (golard, N_C = 1). The original R1 stays recorded as FAILED and is not re-scored.",
+       "Project 7.2 GHz layer: published equations, eta_s/c 0.81 (equal to the 3.5 GHz layer's 0.9 x 0.9 for PA and AFE), one LNA per antenna, upsilon_coh by the code's rule at 7.2 GHz (about 694).",
+       "Pass rule: J0-J5, J2c, R1u and R2pub must pass; R1 and R2 (v1) are recorded, expected to fail as in run 1, and excluded from the pass rule by this amendment."
+     ],
+     "declared_not_blind": "R1u and R2pub are NOT blind: run 1 already showed the 64T64R values under (golard, N_C = 1), and a scratch re-implementation of the authors' code (post-hoc diagnostic, scratchpad/diag_p31_fr3_code.py) already gave 643.1 / 1389.3 / 252.9 / 848.8 W and 209.9 / 3.28 W. These gates check that the project implementation equals what was diagnosed. J2c is the substantive new check."}
+  ],
   "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, P3.0 revision 1, decisions D1-D4 and D10",
   "nature": "model construction and source reproduction; no scientific prediction is scored in P3.1",
   "declared_before_registration": [
@@ -15,7 +33,11 @@
     "sub6_pdf": {"cite": "Peschiera, Agram, Quitin, Van der Perre, Rottenberg, arXiv 2505.15445v1 (21 May 2025); published IEEE Trans. Commun. vol. 74 (2026) pp. 8961-8977, DOI 10.1109/TCOMM.2026.3693185 (published text not read)", "sha256": "1dabc722e528cba1c13dce90340bf1e6d7db8844b5067c87f2431ea267c34fea"},
     "sub6_html": {"cite": "arXiv HTML rendering of 2505.15445v1 as read on 2026-11-09 (Table II identical to the PDF)", "sha256": "16031c91bae1f472f9e43071b224a9884031d25d604e02fea73b1776791c590a"},
     "golard_pdf": {"cite": "Golard, Agram, Rottenberg, Quitin, Bol, Louveaux, PIMRC 2024, DOI 10.1109/PIMRC59610.2024.10817448 (UCLouvain open-access manuscript)", "sha256": "a45a409468aac8d8d7bc64f3a2f80b3df7dd4e617a459cf58bd5f7b7fe15aa9a"},
-    "nokia_pdf": {"cite": "Nokia, Coverage evaluation of 7-15 GHz bands from existing sites, white paper (2024)", "sha256": "c240137ffac12c85261bf80d66139bbe1e85267fbb303b5436305ece49d88376"}
+    "nokia_pdf": {"cite": "Nokia, Coverage evaluation of 7-15 GHz bands from existing sites, white paper (2024)", "sha256": "c240137ffac12c85261bf80d66139bbe1e85267fbb303b5436305ece49d88376"},
+    "fr3_lirias_pdf": {"cite": "amendment 1: accepted manuscript of the ICASSP 2026 paper, KU Leuven Lirias, https://lirias.kuleuven.be/retrieve/ad7e0f5e-feac-4eb5-8762-205a768f7ac4 (read 2026-11-09)", "sha256": "212bcf8b75f74cb4ed8c50b885cc60ed75e1f66e71979728dbe646814edf9dc2"},
+    "fr3_code_fig2a": {"cite": "amendment 1: authors' Fig_2a.py, github.com/e-peschiera/FR3-power-model commit 255ed686ad0637813bb79c6f64b2f5e445045d3d (identical in dramco-research/fr3-power-model-epeschiera-icassp26 commit 9e9fafe2423f8f6ea72622064cc0e631329eaad7); read, not executed", "sha256": "0f25e8eb3ebf555bf41d7cf81e4f45088da3aca5bf7ce8953b4bb394fcf0c658"},
+    "fr3_code_fig2b": {"cite": "amendment 1: authors' Fig_2b.py, same commits; read, not executed", "sha256": "508b91a9fbd7ad1053bc72e333cd148d88a99781c427f082714a7bc812b1402b"},
+    "fr3_code_readme": {"cite": "amendment 1: authors' README.md, same commits", "sha256": "fd14a73aa3de20e53308f2cfbe40df1abb5a41fad3442ca8f9a0548873c63021"}
   },
   "tr38864": {
     "relative_power": {
@@ -92,7 +114,27 @@
     "frame": {"tau_dl": 0.75, "tau_ul": 0.25, "tau_sig": 0.07142857142857142, "zeta_sig": 0.08333333333333333,
               "as_printed": "eqs. (6), (12), (16): data x tau P + signalling tau tau_sig P + micro tau (1-x)(1-tau_sig) P delta + idle (1-tau) P delta; the frame fractions sum to 1 + tau x tau_sig (data and signalling overlap); implemented as printed"},
     "eta_sc": {"dig": 0.8, "ana": 0.8, "pa": 0.8},
-    "signalling_power": {"reference": "zeta_sig P_max (eq. 16 as printed)", "project": "zeta_sig P_a (Golard's definition P_sig = zeta_sig P_full); identical when P_a = P_max"}
+    "signalling_power": {"reference": "zeta_sig P_max (eq. 16 as printed)", "project": "zeta_sig P_a (Golard's definition P_sig = zeta_sig P_full); identical when P_a = P_max"},
+    "versions": {
+      "v1": {"static_form": "printed", "frame": "printed", "lna": "per_chain", "eta_sc": {"dig": 0.8, "ana": 0.8, "pa": 0.8}, "use": "re-record run 1's v1 reproduction only"},
+      "published": {"static_form": "golard", "frame": "consistent", "lna": "per_antenna", "eta_sc": {"dig": 0.81, "ana": 0.81, "pa": 0.81}, "use": "amendment 1: reference reproduction and project",
+                    "note": "eta_s/c 0.81 is the code's value and the one that produces the published numbers; the printed text says 0.8"}
+    },
+    "upsilon_rule_published": {"dist_max_m": 300.0, "velocity_mps": 30.0, "formula": "upsilon_coh = (c / dist_max) x (lambda_c / (2 v)), the authors' code"}
+  },
+  "fr3_published_reference": {
+    "source": "amendment 1: ICASSP 2026 accepted manuscript (Lirias) Sec. 4 and the authors' Fig_2a.py / Fig_2b.py",
+    "hardware": {"fc_hz": 10e9, "B_hz": 400e6, "M_ant": 1024, "K": 8, "p_t_rule": "P_T,DL = 100 M_ant / 1024 W", "pa": "sige", "df_hz": 120e3},
+    "m_rf_vec": [16, 32, 64, 128, 256, 512, 1024],
+    "rates_gbps_times_0p93": {"dl": [1.6, 3.64, 6.06, 8.10, 10.93, 12.10, 13.44], "ul": [1.02, 1.25, 1.5, 1.68, 1.98, 2.18, 2.35], "factor": 0.93, "rule": "fixed per M_RF, independent of load (as in the code)"},
+    "targets": [
+      {"id": "P1", "what": "total P_cons", "M_RF": 16, "x": 1.0, "published_w": 643, "tol": "rel 0.02"},
+      {"id": "P2", "what": "total P_cons", "M_RF": 1024, "x": 1.0, "published_w": 1389, "tol": "rel 0.02"},
+      {"id": "P3", "what": "total P_cons", "M_RF": 16, "x": 0.3, "published_w": 253, "tol": "rel 0.02"},
+      {"id": "P4", "what": "total P_cons", "M_RF": 1024, "x": 0.3, "published_w": 849, "tol": "rel 0.02"},
+      {"id": "P5", "what": "PA of 1024 PAs at x_DL 0.3", "M_ant": 1024, "x": 0.3, "published_w": 209.9, "tol": "rel 0.02"},
+      {"id": "P6", "what": "PA of 16 PAs at x_DL 0.3", "M_ant": 16, "x": 0.3, "published_w": 3.3, "tol": "abs 0.1 W"}
+    ]
   },
   "fr3_unstated_inputs": {
     "upsilon_coh": {"value": 200, "sensitivity": [50, 1000], "rationale": "samples per coherence block are not stated; 200 is a common massive-MIMO coherence-block length; the term enters only the precoder-matrix computation and scales as 1/upsilon_coh"},
@@ -135,6 +177,7 @@
       "loads_extra": [[1.0, 0.0], [0.0, 1.0]],
       "signalling_power": "project rule (zeta_sig P_a)",
       "static_form": "the static PA form under which R2 passes; if both forms pass, the one identified by R1",
+      "version_amendment_1": "published (static golard, frame consistent, one LNA per antenna, eta_s/c 0.81); upsilon_coh by fr3_model.upsilon_rule_published at 7.2 GHz; supersedes static_form above",
       "frame": "as fr3_model.frame (TDD 0.75 / 0.25, as Golard NR TDD; TR 38.864 DDDSU with S = 10D:2G:2U gives 0.743 / 0.229)"
     },
     "ladder": {
@@ -162,7 +205,11 @@
     "J3_rf_pa_consistency": "D10: per-PA outputs and SiGe limits equal d10_expected; every project point has P_a <= P_max (assumed-PA points by construction, SiGe points checked); 53 dBm with SiGe is flagged infeasible",
     "J4_state_consistency": "for every project point and both layers: all powers > 0; P_deep < P_light < P_mu < P_empty <= P(load) non-decreasing over the equal-load grid; E_add >= 0; the ledger accepts the worked example with the exact energy and rejects a sleep shorter than T, two adjacent sleeps and a non-positive duration",
     "J5_units": "W, s, J only: the TR conversion relative-power x ms -> J is checked on a worked example (w = 2 W per unit, E = 90 units x ms -> 0.18 J)",
-    "rule": "all J and R gates must pass; a failed gate stops P3.1 and is diagnosed in an amendment; failed-run evidence is kept"
+    "rule": "all J and R gates must pass; a failed gate stops P3.1 and is diagnosed in an amendment; failed-run evidence is kept",
+    "J2c_fr3_vs_authors_code": "amendment 1: published-mode fr3_power equals an independent re-implementation of the authors' Fig_2a.py totals (M_RF in m_rf_vec, M_ant 1024) and Fig_2b.py PA (M_ant in m_rf_vec, M_RF = M_ant), loads 0, 0.3, 1, rel <= 1e-12",
+    "R1u_sub6_used_config": "amendment 1: 64T64R gamma, P0 left/right, P1 left/right, P_sleep within the R1 tolerance under (golard, N_C = 1) (not blind)",
+    "R2pub_fr3_published": "amendment 1: fr3_published_reference.targets within tolerance (not blind)",
+    "rule_amendment_1": "J0, J1, J2a, J2b, J2c, J3, J4, J5, R1u and R2pub must pass. R1 and R2 (v1) are recorded and excluded from the pass rule. J0 also covers the four amendment-1 sources."
   },
   "outputs": "results/phase3/p3_1_energy_models/{summary.json, validation.json, manifest.json, run1_stdout.txt}"
 }

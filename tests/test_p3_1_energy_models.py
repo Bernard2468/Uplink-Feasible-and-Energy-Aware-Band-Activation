@@ -2,6 +2,7 @@
 efficiency law, sub-6 closed forms vs direct sum, FR3 closed form vs phase ledger, frame fractions, TR ladder and
 units, the energy ledger rules, D10 arithmetic and the .docx table parser."""
 import copy
+import itertools
 import json
 import math
 import random
@@ -34,11 +35,12 @@ def synthetic_cfg(rng, protocol):
             'f_hz': rng.uniform(0.7e9, 4e9), 'B_hz': rng.uniform(10e6, 80e6), 'p_max_w': rng.uniform(1.0, 30.0)}
 
 
-def synthetic_hw(rng, m_rf, m_ant, signalling):
+def synthetic_hw(rng, m_rf, m_ant, signalling, version='v1', rate_rule='scaled', df_hz=None):
     pa = {'p_max_w': rng.uniform(0.05, 0.5), 'eta_max': rng.uniform(0.1, 0.4), 'alpha': 0.75, 'xi': rng.uniform(0.05, 0.3)}
     p_t = pa['p_max_w'] * m_ant * rng.uniform(0.2, 1.0)
     return m.fr3_hardware(CONF, rng.uniform(3e9, 15e9), rng.uniform(50e6, 300e6), m_ant, m_rf, rng.choice([2, 4, 6]),
-                          p_t, pa, signalling, rng.uniform(30, 500), rng.uniform(1e8, 5e9), rng.uniform(1e7, 1e9))
+                          p_t, pa, signalling, rng.uniform(30, 500), rng.uniform(1e8, 5e9), rng.uniform(1e7, 1e9),
+                          version=version, rate_rule=rate_rule, df_hz=df_hz)
 
 
 class PaLaw(unittest.TestCase):
@@ -101,8 +103,9 @@ class Fr3(unittest.TestCase):
     def test_closed_form_equals_ledger(self):
         rng = random.Random(11)
         for m_rf, m_ant in ((8, 64), (16, 64), (64, 64), (32, 256), (256, 1024), (1024, 1024)):
-            for signalling in ('reference', 'project'):
-                hw = synthetic_hw(rng, m_rf, m_ant, signalling)
+            for signalling, version, rule, df in itertools.product(('reference', 'project'), ('v1', 'published'),
+                                                                   ('scaled', 'fixed'), (None, 90e3)):
+                hw = synthetic_hw(rng, m_rf, m_ant, signalling, version, rule, df)
                 for sf in ('printed', 'golard'):
                     for xd, xu in ((0, 0), (0.2, 0.7), (1, 1), (1, 0)):
                         self.assertLessEqual(m.rel_diff(m.fr3_power(hw, xd, xu, sf), m.fr3_ledger(hw, xd, xu, sf)), 1e-12)
@@ -123,6 +126,21 @@ class Fr3(unittest.TestCase):
         vals = [m.fr3_power(hw, x, x) for x in (0, 0.1, 0.5, 1)]
         self.assertTrue(all(b > a for a, b in zip(vals, vals[1:])))
         self.assertLess(m.fr3_power(hw, 0, 0, tau_sig=0.0), vals[0])
+
+    def test_published_version_switches(self):
+        rng = random.Random(21)
+        v1 = synthetic_hw(random.Random(4), 16, 64, 'reference', 'v1')
+        pub = synthetic_hw(random.Random(4), 16, 64, 'reference', 'published')
+        a1, ap = m.fr3_active_powers(v1, 0.5, 0.5), m.fr3_active_powers(pub, 0.5, 0.5)
+        p_lna = CONF['fr3_model']['analog']['xi_lna'] * v1['B']
+        self.assertAlmostEqual(ap['ana_ul'] - a1['ana_ul'], (64 - 16) * p_lna, places=12)  # one LNA per antenna
+        self.assertEqual(ap['ana_dl'], a1['ana_dl'])
+        self.assertEqual((v1['static_form'], v1['frame_mode'], v1['eta_sc']['pa']), ('printed', 'printed', 0.8))
+        self.assertEqual((pub['static_form'], pub['frame_mode'], pub['eta_sc']['pa']), ('golard', 'consistent', 0.81))
+        fixed = synthetic_hw(rng, 16, 64, 'reference', 'published', 'fixed')
+        self.assertEqual(m.fr3_active_powers(fixed, 0.1, 0.1)['enc_dec_dynamic_w'],
+                         m.fr3_active_powers(fixed, 0.9, 0.9)['enc_dec_dynamic_w'])
+        self.assertAlmostEqual(m.upsilon_published(CONF, 10e9), 500.0, places=9)
 
     def test_pa_count_is_antenna_count(self):
         rng = random.Random(9)
@@ -193,6 +211,9 @@ class DocxParser(unittest.TestCase):
         got = m.docx_tables_after(self._docx(body), ['Table 9.9-1:', 'Table 0:'])
         self.assertEqual(got['Table 9.9-1:'], [['Deep sleep', '1', '2'], ['Light sleep', '3 ms', '4 s']])
         self.assertIsNone(got['Table 0:'])
+        split = ('<w:p><w:r><w:t>Table 9.9-2</w:t></w:r><w:r w:x="1"><w:t>:</w:t></w:r></w:p>'
+                 + '<w:tbl>' + row(['Deep sleep', '7']) + '</w:tbl>')
+        self.assertEqual(m.docx_tables_after(self._docx(split), ['Table 9.9-2:'])['Table 9.9-2:'], [['Deep sleep', '7']])
         dup = self._docx('<w:p><w:r><w:t>Table 1: a</w:t></w:r></w:p><w:p><w:r><w:t>Table 1: b</w:t></w:r></w:p>')
         self.assertIsNone(m.docx_tables_after(dup, ['Table 1:'])['Table 1:'])
         self.assertAlmostEqual(m._num('640 ms'), 0.64, places=12)

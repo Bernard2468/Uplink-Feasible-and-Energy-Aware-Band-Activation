@@ -1,0 +1,21 @@
+{
+  "generated_utc": "2026-11-09T21:12:03.630785+00:00",
+  "tool": "scripts/p3_1_energy_models.py",
+  "git_head_at_run": "31aa0a49591166a165fa6864761ea7d2d7033482",
+  "python": "3.12.16",
+  "config_sha256": "c21307cd06a88b2a8326c20cf9155589e8b461ba5cda96fe1a01419259fa1286",
+  "source_sha256": {
+    "tr38864_zip": "99770bf7a80e9ae26184e6c76f6c421464fcb8dd9bb56e5cf7d0f2bba5c08e1f",
+    "tr38864_docx": "2ad6b86b9c0ee116044649150a2a7d66f85893e9447bb1404355817910ff0e4a",
+    "fr3_pdf": "9ca1c6feb7a788777e623f074f0aaa592081018364de26aaf5f0899262fea760",
+    "sub6_pdf": "1dabc722e528cba1c13dce90340bf1e6d7db8844b5067c87f2431ea267c34fea",
+    "sub6_html": "16031c91bae1f472f9e43071b224a9884031d25d604e02fea73b1776791c590a",
+    "golard_pdf": "a45a409468aac8d8d7bc64f3a2f80b3df7dd4e617a459cf58bd5f7b7fe15aa9a",
+    "nokia_pdf": "c240137ffac12c85261bf80d66139bbe1e85267fbb303b5436305ece49d88376"
+  },
+  "outputs_sha256": {
+    "summary.json": "d95c9eff31e3373c03b4511bb00da378cee3e1e71f0d80e41344ab4e2ae2f1b6",
+    "validation.json": "f060d118f6fae1f01720b8c8029fe0e630a63f6638e3ffa831eb28505dfcac95"
+  },
+  "all_checks_passed": false
+}

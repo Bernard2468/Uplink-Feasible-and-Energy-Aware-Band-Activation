@@ -191,6 +191,9 @@ efficiency is at 256 RF chains.
 pp. 8961–8977, DOI 10.1109/TCOMM.2026.3693185.
 - Verified 2026-11-09 from Crossref and the arXiv "Related DOI".
 - Crossref gives the year only, so a publication day is not claimed.
+- The ChatGPT review (2026-11-09) reports 13 May 2026 from IEEE Xplore.
+  The Xplore page is not readable here, so this date is not independently
+  verified.
 
 **Implemented version.** arXiv 2505.15445v1.
 
@@ -480,12 +483,87 @@ gate).**
   reported for all three. A conclusion that changes sign between them is
   reported as hardware-dependent.
 
+### Revision 2 (2026-11-09, after P3.1 and the ChatGPT review of P3.2)
+
+These decisions were fixed before any P3.2 run.
+
+**D10 (revised): the primary 7.2 GHz hardware is 50 dBm with the SiGe PA.**
+- It is the only point where both the radio and the amplifier are sourced:
+  - 100 W over 1024 element PAs at 0.0977 W each, within P_max = 0.1 W;
+  - 256 RF chains.
+  - This is the FR3 paper's own reference power density, with Nokia's TRX
+    count.
+- 53 dBm becomes a **hypothetical upgraded-PA configuration** (η_max 0.15
+  and 0.287). 43 dBm is Nokia's lower level.
+- The radio at 50 and 43 dBm comes from the P3.2a engine (DL power offset of
+  −3 and −10 dB). E1c.3's case C is the 53 dBm point.
+- This reverses rev 1's primary (53 dBm, assumed PA). The reason is that
+  only 50 dBm needs no assumed amplifier.
+
+**D11: added 7.2 GHz equipment overhead P_aux (sensitivity; used in
+P3.2c).**
+- **The published models stay unchanged as the reference.**
+  P_7.2,adjusted = P_7.2,published + P_aux.
+- **Three scenarios, each defined by a rule rather than a chosen number:**
+  - **S0:** P_aux = 0, the published FR3 model.
+  - **S1, measured missing components:** the parts of Golard's
+    measurement-fitted model that have no counterpart in the FR3 model.
+    - Miscellaneous AFE (synthesis, clock, control): P_misc = 17 W ×
+      (N_PA·P_max / 1 W)^0.25.
+    - Link-layer baseband: P_link = 90 W, with N_C = 1 as in the 3.5 GHz
+      layer.
+    - Each is divided by its η_s/c.
+    - About 172 W at the primary point, to be computed by the P3.2c code.
+  - **S2, parity stress test:** the 7.2 GHz no-load power equals the measured
+    3.5 GHz no-load power (712.2 W). P_aux = 712.2 W − P_empty,7.2, about
+    541 W at the primary point.
+- **Labels:** these are stress tests, not measured 7.2 GHz values. A
+  conclusion that changes between S0 and S2 is reported as
+  "overhead-dependent".
+- **ChatGPT's proposal** was +250 / +500 W. The rules above give similar
+  magnitudes (about 172 / 541 W) that a reader can recompute.
+- **State rule:**
+  - P_aux is on in every in-frame state (data, signalling, micro sleep,
+    TDD idle). Golard's misc functions are "always in working mode when the
+    cell is active", and P_link is constant.
+  - The sleep anchor includes it: P_µ,adj = P_µ + P_aux.
+  - Light and deep sleep and E_add then follow the TR ratios of the total
+    (D4).
+  - A transitioning cell consumes its sleep-state power plus E_add and
+    cannot serve (D4).
+
+**D12: P3.2 is split into three separately pre-registered stages.** Their
+results are kept apart from P3.3:
+
+| Stage | Content | Must show |
+|---|---|---|
+| P3.2a | Coupled radio engine | Switching individual 7.2 GHz cells on or off changes interference, serving and feasibility exactly as the model says. All on reproduces E1c.3; all off removes 7.2 GHz service and interference |
+| P3.2b | Traffic and resources | Offered, scheduled, delivered and unserved traffic and occupied resources are accounted separately. Load classes are realized occupancy (D7). Identical offered workloads across policies |
+| P3.2c | Time-dependent energy | Active, idle, sleep, wake and switching energy without overlap. A sleeping or waking cell cannot serve. Decisions use only past information. P_aux scenarios S0–S2 |
+
+**D13: serving rule.**
+- A user's 7.2 GHz cell is the co-sited sector of its 3.5 GHz serving TRxP:
+  intra-site carrier aggregation with a 3.5 GHz anchor. There is no
+  cross-site 7.2 GHz association.
+- So switching a cell changes serving decisions only for that cell's users,
+  and interference for everyone.
+
+**D14: scoring scope of P3.3.** E1c.3 scores users only in site 0's cell. A
+coordinated controller needs neighbouring cells scored too, but ring-1 cells
+would miss their outer interferers. P3.2a's pre-registered truncation rule
+decides between scoring the 7-site cluster and site 0 only.
+
+**Three electrical states are distinguished** (ChatGPT's review, TR 38.864):
+- on with little or no traffic: the in-frame states, including micro sleep;
+- asleep: light or deep;
+- transitioning: unavailable, consuming the sleep power plus E_add.
+
 ## 3. Stages and gates
 
 | Stage | Content | Gate (to be pre-registered) |
 |---|---|---|
 | P3.1 | Hardware energy models of both layers; state ladder | Source versions and hashes recorded; 1.3 Table II recomputed from 1.4 (both static-term forms reported); 1.2's totals (740 / 1658 / 300 / 1044 W, PA 262 W) reproduced, or, where an input is not stated in the source, labelled "not independently reproducible" under a rule fixed before the run (no input tuned to force agreement); TR tables transcribed and checked against the .docx; D10 feasibility; D4 state consistency (powers ≥ 0, ordered deep < light < micro, legal transitions, D ≥ T, energy in J); unit tests on small worked examples |
-| P3.2 | Coupled feasibility engine; traffic and service model | Engine reproduces E1c.3 `sd` and `sd_iso72`; load accounting closes (served + unserved = offered); realized L per class reported |
+| P3.2 | Split into P3.2a (coupled radio engine), P3.2b (traffic and resources), P3.2c (time-dependent energy); see D12 | P3.2a: gates Q0–Q7. P3.2b: load accounting closes (served + unserved = offered); realized L per class; identical workloads. P3.2c: state-machine and energy-ledger gates, causality, no service while asleep or waking, P_aux S0–S2 |
 | P3.3 | Controllers and baselines | Causality checks; DP = brute force on small instances; Δ ≥ transition times; wake delay enforced |
 | P3.4 | Evaluation | Paired seeds, confidence intervals, held-out seeds/geometry/load/hardware; H1–H4 scored as pre-registered |
 
@@ -676,6 +754,65 @@ baseband are load-independent.
   7.2 GHz load-independent power raised to the 3.5 GHz measured
   load-independent level per unit of hardware.
 
+### P3.2a coupled radio-feasibility engine (PRE-REGISTERED 2026-11-09)
+
+Config `configs/p3/p3_2a_coupled_feasibility.json`, code
+`scripts/p3_2a_coupled_feasibility.py`, tests
+`tests/test_p3_2a_coupled_feasibility.py` (7). It imports the E1c.2/E1c.3
+code unchanged.
+
+**Engine.**
+- Per user, the serving signal and each other transmitter's interference
+  term are built exactly as E1c.3's `sd` builds them.
+- A 7.2 GHz state w72 ∈ [0, 1]^57 (0 = off) scales each transmitter's DL
+  term and its scheduled UE's UL term.
+- A user whose own 7.2 GHz cell is off has no 7.2 GHz service (D13).
+- The DL power offset applies network-wide (case C: 0 / −3 / −10 dB = 53 /
+  50 / 43 dBm).
+- Fractional weights (mean activity) are supported for P3.2b.
+
+**Scenarios** (both ISDs, all cases, 100 realizations, the E1c.3 random
+draws):
+- all on;
+- all off;
+- serving cell only (the E1c.3 iso72 counterfactual);
+- site 0 only;
+- ring 2 off;
+- nested random activation of the neighbours with q = 0.25 / 0.5 / 0.75
+  (site 0 on);
+- leave-one-out for every transmitter.
+
+**Gates:**
+
+| Gate | Check |
+|---|---|
+| Q0 | E1c.3 outputs and inputs match their manifests |
+| Q1a | All on is bit-identical to E1c.3 `sd`, for every array |
+| Q1b | Per-user counts equal E1c.3's raw `sd` counts |
+| Q2 | Serving-only is bit-identical to `sd_iso72` |
+| Q3 | All off has no 7.2 GHz service and the same 3.5 GHz SINR |
+| Q4 | An independent scalar path agrees within 1e-9 dB on 60 random (state, mask, offset) pairs per ISD, cases A and C |
+| Q5 | No user gains 7.2 GHz SINR when more cells switch on |
+| Q6 | DL 7.2 GHz SINR is monotone in power; UL and 3.5 GHz are untouched |
+| Q7 | Vectorized leave-one-out equals explicit masks |
+
+**Predictions** (site-0-served users, ISD 200, C at 50 dBm, M.2412, F2):
+- **P1:** switching ring 2 off recovers at most a quarter of what switching
+  all neighbours off recovers in 7.2 GHz DL feasibility.
+- **P2:** losing 3 dB of DL power costs less when the network is
+  interference-limited (all on) than when site 0 is alone.
+
+**Decision rule D14.** If ring 2 off moves 7.2 GHz DL and UL feasibility by
+≤ 1 point each, P3.3 may score the 7-site cluster with ring 2 as an
+interference guard. Otherwise it scores site 0 only.
+
+**Declared before registration.**
+- Tests on the synthetic 7-site layout only.
+- A debugging run showed that E1c.2's scalar candidate cache is keyed by
+  (ISD, realization) but depends on the case. P3.2a therefore keeps one cache
+  per case.
+- No P3.2a output on the real layout was computed.
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the
@@ -717,3 +854,18 @@ baseband are load-independent.
 
 Not adopted: the audit's review file is not stored verbatim, because of the
 unverified date and the D7 misreading above. This table is the record.
+
+## 6. Review of P3.1 and the P3.2 design (ChatGPT, 2026-11-09) and response
+
+| Point | Verdict | Action |
+|---|---|---|
+| Keep the published models unchanged; add equipment overhead as a labelled, state-dependent term | Agreed | D11 |
+| S1 +250 W, S2 +500 W | Agreed in substance; values set by rule | S1 = Golard's misc + link-layer components (about 172 W); S2 = no-load parity with the measured 3.5 GHz radio (about 541 W) |
+| Say what the overhead does in micro sleep, deep sleep and wake | Agreed | D11 state rule |
+| Source-matched amplifier as the primary; 53 dBm as a hypothetical upgrade | Agreed; reverses rev 1 | D10 (revised): 50 dBm SiGe primary |
+| ISD 200 primary; ISD 500 qualified | Agreed (already D6) | No change |
+| P3.2 in three stages with the five checks | Agreed | D12. P3.2a covers all-on/all-off and single-cell changes; causality, wake delay and identical workloads are P3.2b/c and P3.3 gates |
+| Three electrical states (low traffic, sleep, transitioning) | Agreed (already in D4) | Stated in revision 2 |
+| P_site = P_3.5 + P_7.2 + P_shared, with no double counting | Agreed | D1: shared site terms are omitted and stated; each model's η counts once |
+| IEEE TCOM date 13 May 2026 | Recorded, not verified here | §1.3 |
+| Addition of mine: cluster scoring needs a truncation test | — | D14, decided by P3.2a's rule |

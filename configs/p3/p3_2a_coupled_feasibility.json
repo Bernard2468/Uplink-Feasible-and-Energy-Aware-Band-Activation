@@ -1,0 +1,53 @@
+{
+  "experiment": "P3.2a: coupled radio-feasibility engine. Exact recomputation of every victim's SINR and UL/DL feasibility for any on/off (or activity-weighted) state of the 57 7.2 GHz cells, on the unchanged E1c.3 model",
+  "status": "PRE-REGISTERED 2026-11-09, before the first measured run",
+  "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, P3.0 revision 2 (D10 rev, D11-D14) and P3.2a",
+  "inherited_unchanged": "configs/e1/e1c3_directional.json and configs/e1/e1c2_interference.json: geometry, victims (site 0's cell), candidates, association, propagation, random streams 0-11, E1.5.5 V2 gains, specular calibration, thresholds; setting 'sd' (eta 1, full buffer, UL target power). scripts/e1c3_directional.py and scripts/e1c2_interference.py are imported, not modified",
+  "settings": {"seed": 20261110, "realizations": 100, "isds": [200, 500], "isd_primary": 200, "isd_500": "qualified sensitivity (virtual sites, synthetic DL targets for 21 of 57 TRxPs)"},
+  "engine": {
+    "terms": "per victim: serving signal and noise per carrier and direction; DL interference term of every other TRxP t (E1c.3 'sd': element x path gain x [a g + (1 - a)] x activity); UL interference term of the scheduled UE of every TRxP with a candidate, received by the victim's serving beam, per interferer profile F2/F3 (F1 = F2 / n_prb)",
+    "state": "w72[t] in [0, 1]: 7.2 GHz weight of TRxP t (0 = off, 1 = on at full activity); the 3.5 GHz layer is always on with E1c.3's full-buffer weights",
+    "serving_rule": "D13: a victim's 7.2 GHz cell is the co-sited sector of its 3.5 GHz serving TRxP (intra-site carrier aggregation, 3.5 GHz anchor); if w72 of that TRxP is 0 the victim has no 7.2 GHz service (SINR -inf, infeasible); no cross-site 7.2 GHz association",
+    "interference_rule": "a 7.2 GHz cell that is off contributes neither DL interference nor UL interference from its scheduled UE; contributions are scaled by w72[t]",
+    "dl_power": "case C 7.2 GHz DL power offset dp72 in {0, -3, -10} dB (53 = E1c.3, 50 = new primary, 43 dBm) applied to every TRxP: serving signal + dp72, interference x 10^(dp72/10); UL and 3.5 GHz unchanged",
+    "activity_weights": "w72 in (0,1) is supported for P3.2b (mean activity factors); P3.2a evaluates binary states only"
+  },
+  "scenarios": {
+    "all_on": "w72 = 1 for all 57 TRxPs (= E1c.3 'sd')",
+    "all_off": "w72 = 0 for all (no 7.2 GHz service, no 7.2 GHz interference)",
+    "serving_trxp_only": "every victim's own 7.2 GHz cell on, all others off (= E1c.3 'sd_iso72'; a per-victim counterfactual, not one network state)",
+    "site0_only": "site 0's three sectors on, all others off",
+    "ring2_off": "sites of rings 0 and 1 on, ring 2 off",
+    "q": {"levels": [0.25, 0.5, 0.75], "rule": "site 0's sectors on; every other TRxP on iff U_t < q, with U_t ~ U[0,1) drawn once per (ISD, realization) from stream 30 (rng_for(seed, isd, r, 30)), so the states are nested in q (q = 0 is site0_only, q = 1 is all_on)"},
+    "leave_one_out": "from all_on, each TRxP t switched off in turn (all t at once, vectorized); computed for (A, 0 dB), (B, 0 dB), (C, 0 dB), (C, -3 dB)",
+    "power_offsets": {"C_deployment": [0.0, -3.0, -10.0], "A_equal_elements": [0.0], "B_equal_aperture": [0.0]}
+  },
+  "outputs_reported": {
+    "per_scenario": "M2412 and highloss50 mixes (F1, F2, F3): K1-K6, DL/UL feasibility per carrier, OWN72_ON (victim's 7.2 GHz cell on), and the site-0-served subset (S0 = victims served by site 0; S0_DL_7.2GHz, S0_UL_7.2GHz) with per-victim Monte-Carlo SE as in E1c.3",
+    "pairs": "paired differences (n10, n01 per victim as in E1c.3) for: site0_only - all_on, ring2_off - all_on, q0.5 - all_on (all cases, offset 0), and for C: all_on(-3) - all_on(0), site0_only(-3) - site0_only(0), all_on(-10) - all_on(0)",
+    "leave_one_out_map": "per TRxP t: mean change of 7.2 GHz DL/UL feasibility (F2, F3; M2412 mix) when t is switched off from all_on, and the share of victims served by t; SE across realizations",
+    "primary_point": "ISD 200, case C at dp72 = -3 dB (50 dBm, D10 rev), M2412 mix, F2"
+  },
+  "gates": {
+    "Q0_inputs": "E1c.3 manifest all_checks_passed; SHA-256 of E1c.3 config, summary.json and raw/counts_isd{200,500}.npz equal its manifest; the E1c.2 inputs as in E1c.3 H0",
+    "Q1a_all_on_bitwise": "for every realization, case and state, the engine's all_on SINR arrays (both carriers, DL and UL F1/F2/F3) equal E1c.3 evaluate_pb 'sd' bitwise (np.array_equal)",
+    "Q1b_all_on_counts": "all_on (offset 0) per-victim class and feasibility counts equal E1c.3 raw 'sd' counts exactly for every case, state, profile and name, both ISDs",
+    "Q2_serving_only": "serving_trxp_only SINR arrays equal E1c.3 evaluate_pb 'sd_iso72' bitwise, and its mixes equal E1c.3 summary 'sd_iso72' within 1e-12",
+    "Q3_all_off": "all_off: every 7.2 GHz flag is 0 and OWN72_ON is 0 for every victim; every 3.5 GHz SINR array equals all_on's bitwise",
+    "Q4_scalar": "an independent scalar re-implementation (scalar_pb's 'sd' path with per-TRxP 7.2 GHz weights and the DL offset) equals the engine within 1e-9 dB on 60 pre-drawn (realization 0/1, state, victim, case A or C, scenario all_on/q0.5/ring2_off/site0_only, offset 0 or -3 for C) pairs per ISD, with identical association; and with all weights 1 and offset 0 it equals E1c.3 scalar_pb 'sd' within 1e-12 dB",
+    "Q5_nesting": "for nested states (site0_only <= q0.25 <= q0.5 <= q0.75 <= all_on; ring2_off <= all_on): wherever the victim's 7.2 GHz cell is on in the smaller state it is on in the larger one, and every 7.2 GHz SINR (DL; UL F1/F2/F3) is not larger in the larger state (tolerance 1e-12 dB); zero violations",
+    "Q6_power_offset": "case C: for every scenario and victim, 7.2 GHz DL SINR at -10 <= at -3 <= at 0 dB (tolerance 1e-12 dB); UL and 3.5 GHz arrays bitwise identical across offsets",
+    "Q7_leave_one_out": "on realization 0 of each ISD, for each LOO key and state, the vectorized leave-one-out flags equal flags recomputed by engine_sinr with the explicit mask for 6 TRxPs (indices 0, 1, 2, and 3 drawn with rng seed + 7), all victims",
+    "rule": "all gates must pass; a failure stops P3.2a and is diagnosed in an amendment; failed-run evidence is kept"
+  },
+  "predictions": {
+    "P1_ring2_small": "ISD 200, case C at -3 dB, M2412, F2, site-0-served subset: the gain in 7.2 GHz DL feasibility from switching ring 2 off (ring2_off - all_on) is at most one quarter of the gain from switching all other sites off (site0_only - all_on)",
+    "P2_power_matters_less_under_interference": "ISD 200, case C, M2412, F2, site-0-served subset: the loss in 7.2 GHz DL feasibility from 53 to 50 dBm is smaller under all_on than under site0_only"
+  },
+  "decision_rules": {
+    "D14_cluster_scope": "if |ring2_off - all_on| <= 0.01 for both 7.2 GHz DL and UL feasibility (F2, M2412, site-0-served subset, ISD 200, case C at -3 dB), P3.3 may score the 7-site cluster (rings 0-1) with ring 2 as an interference guard, stating the truncation bias; otherwise P3.3 scores only site 0's cell",
+    "all_gates_pass": "the engine is the radio layer of P3.2b, P3.2c and P3.3",
+    "gate_fails": "stop; diagnose in an amendment before any P3.2b work"
+  },
+  "outputs": "results/phase3/p3_2a_coupled_feasibility/{summary.json, validation.json, manifest.json, run1_stdout.txt}; raw/ (per-victim counts) git-ignored with hashes in the manifest"
+}

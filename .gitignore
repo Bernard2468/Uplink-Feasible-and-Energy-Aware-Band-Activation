@@ -10,6 +10,7 @@ results/*
 !results/phase3/
 # Raw per-path arrays are regenerable from the scripts and positions files.
 results/phase2/**/raw/
+results/phase3/**/raw/
 # Downloaded patch archives: their reviewed content is committed, not the archive.
 cmwave_phase2_patch_*.zip
 external/

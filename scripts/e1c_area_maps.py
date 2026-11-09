@@ -429,8 +429,12 @@ def main():
     print('C3', 'PASS' if validation['C3_e155_agreement']['passed'] else 'FAIL',
           validation['C3_e155_agreement']['min_p_value'], flush=True)
     # ---- populations
-    mask = np.load(E11_DIR / 'site_tx0_mask.npz')
-    geo = np.load(GEO_DIR / 'site_tx0_indoor.npz')
+    # Loaded into memory once: an NpzFile decompresses an array on every item access, which made
+    # run 1 (b7d5531) spend over 40 min in the per-sample loops on /mnt/c (stopped; no result).
+    with np.load(E11_DIR / 'site_tx0_mask.npz') as z:
+        mask = {k: z[k] for k in z.files}
+    with np.load(GEO_DIR / 'site_tx0_indoor.npz') as z:
+        geo = {k: z[k] for k in z.files}
     gnb = np.array(mask['gnb'], dtype=float)
     freqs = sorted(c['frequency_hz'] for c in conf14['cases']['A_equal_elements']['carriers'])
     out_rows = outdoor_rows(mask, gnb, freqs)

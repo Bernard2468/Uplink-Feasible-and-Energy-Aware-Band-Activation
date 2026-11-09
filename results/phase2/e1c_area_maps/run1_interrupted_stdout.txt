@@ -1,0 +1,3 @@
+C3 PASS 0.0013880118548927896
+EXIT 143
+--- run 1 (b7d5531) stopped by me at 2026-11-09T13:40:53Z after 40 min in population building (NpzFile re-decompressed per element access on /mnt/c); no area result produced

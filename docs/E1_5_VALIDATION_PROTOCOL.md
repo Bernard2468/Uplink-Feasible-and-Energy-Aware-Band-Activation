@@ -1196,7 +1196,7 @@ before it was accepted.
 | Memo point | Verdict | Action |
 |---|---|---|
 | 12 of the 18 BLER points exceed 10% | Correct | E1.5.3 erratum 2 |
-| A non-monotone curve undermines the F2 → F3 dominance argument | Partly correct. The pointwise check SE(x + 10.09 dB) ≥ SE(x) fails once on the raw T2 UL curve (16.4 dB: 3.33 vs 3.26 bit/s/Hz). The F2/F3 *classification* is not affected: F2-feasible UL needs ≥ 8.66 dB, and the raw curve's minimum above 18.7 dB is 3.26 > 1.5 | E1.5.3a reports both checks; E1.5.5 re-verifies S5 under each mapping |
+| A non-monotone curve undermines the F2 → F3 dominance argument | Partly correct. On the raw T2 UL curve, a shift of exactly +10.00 dB loses rate once (16.4 → 26.4 dB: 3.33 vs 3.26 bit/s/Hz). At the F3 shift of 10.09 dB (5 of 51 PRBs), computed in E1.5.3a, no point fails on the raw or C-AMC curves. *[Corrected after E1.5.3a: the pre-registration text gave the +10.00 dB failure as a +10.09 dB failure.]* The F2/F3 *classification* is not affected: F2-feasible UL needs ≥ 8.66 dB, and the raw curve's minimum above 18.7 dB is 3.26 > 1.5 | E1.5.3a reports both checks; E1.5.5 re-verifies S5 under each mapping |
 | Diagnose the BLER anomaly (E1.5.3a) before E1.5.5 | Agree. Source reading found a specific mechanism (below) | E1.5.3a. A deterministic replay of every TB replaces the proposed re-simulation of 18 points under varied loads, which would only sample what the replay computes exactly |
 | Compare raw curve, fixed-MCS envelope and TR low end; no silent substitution | Agree | E1.5.3a measures fixed-MCS link adaptation at the TS 38.214 reference and reports an analytic envelope. The choice of primary mapping is pre-registered before any E1.5.5 result |
 | Low-SNR floor is an error-model limit, not a standards outage | Already recorded (hazard 15) | Unchanged |
@@ -1308,6 +1308,128 @@ Otherwise: stop and diagnose.
 **Limits.** AWGN, one UE, one layer, ideal control channels. C-AMC is link
 adaptation at its BLER target on the standard's reference resource; it is
 not an OLLA model.
+
+#### E1.5.3a results: PASSED in run 1; H16 confirmed (2026-11-09)
+
+Run from `488193d` in 34 min (program SHA-256 `49d8825a8547…`):
+- Stage A replay: 250 SINRs per model, about 1 s each;
+- R4a and R4b;
+- 150 Stage B runs.
+
+Files are in `results/phase2/e1_5_3a_amc_diagnostic/`.
+
+| Check | Result |
+|---|---|
+| A0 TB size | every first-transmission window TB, T2 and T1: 0 mismatches |
+| A1 MCS | every first-transmission window TB: 0 mismatches (UL SISO AMC; DL SISO CQI → MCS) |
+| A2 TBLER | replayed = trace TBLER **exactly** (absolute difference 0.0), by both the SISO and the MIMO call |
+| A3 classes | all 12 points above 0 dB with BLER > 0.1 are MISMATCH; none is SAMPLING or UNEXPLAINED; all 9 non-monotone points are MISMATCH |
+| A4 rule | Python 12-symbol rule = program MIMO-path MCS at all 250 SINRs per model |
+| B0 | C-AMC MCS identical at the link-budget and every trace SINR |
+| R4a / R4b | 98/98 E1.5.2-0 files and all E1.5.3 files of 3 runs byte-identical |
+| E0, V, F1, C | pass; SINR identity 3.0e-14 dB; every TB carries the fixed MCS |
+
+**The mechanism, point by point.** Each point is a first-transmission BLER
+above 10%, all classified MISMATCH. "Assumed" is the TBLER the SISO AMC
+computed for a 1-symbol TB; "transmitted" is the replayed TBLER of the TBs
+actually sent.
+
+| Point | SNR (dB) | first-tx TBs | BLER observed | MCS | TBLER assumed (1 symbol) | TBLER of transmitted TBs |
+|---|---|---|---|---|---|---|
+| T2 DL | 25.36 | 371 | 0.296 | 25 | 0.0922 | 0.3189 |
+| T2 DL | 27.36 | 421 | 0.145 | 27 | 0.0208 | 0.1809 |
+| T2 UL | 13.36 | 285 | 0.109 | 12 | 0.0426 | 0.1141 |
+| T2 UL | 18.36 | 273 | 0.154 | 17 | 0.0159 | 0.1752 |
+| T2 UL | 25.36 | 244 | 0.291 | 25 | 0.0922 | 0.3189 |
+| T2 UL | 26.36 | 168 | 0.875 | 26 | 0.0127 | 0.8520 |
+| T2 UL | 27.36 | 275 | 0.149 | 27 | 0.0208 | 0.1686 |
+| T1 DL | 23.36 | 434 | 0.111 | 28 | 0.0258 | 0.1225 |
+| T1 UL | 6.36 | 180 | 0.300 | 10 | 0.0949 | 0.3066 |
+| T1 UL | 13.36 | 285 | 0.109 | 19 | 0.0426 | 0.1141 |
+| T1 UL | 18.36 | 273 | 0.154 | 24 | 0.0159 | 0.1752 |
+| T1 UL | 23.36 | 287 | 0.101 | 28 | 0.0258 | 0.1225 |
+
+Hazard 16 is therefore diagnosed:
+- 5G-LENA's SISO AMC tests a 1-symbol TB and transmits 10–13-symbol TBs.
+- Every anomalous point is this mismatch. None is sampling noise, even the
+  three points with BLER just above 0.10.
+
+**C-AMC T2 curve** (SE per used resource, bit/s/Hz; generated from
+`summary.json`):
+
+| SNR (dB) | 0.4 | 3.4 | 6.4 | 9.4 | 12.4 | 15.4 | 18.4 | 21.4 | 24.4 | 27.4 | ≥ 30.4 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| DL raw E1.5.3 | 0.20 | 0.32 | 0.75 | 1.63 | 2.05 | 2.83 | 3.85 | 4.36 | 5.31 | 5.51 | 6.32 |
+| DL C-AMC | 0.20 | 0.51 | 1.00 | 1.63 | 2.19 | 3.08 | 3.59 | 4.55 | 5.31 | 6.11 | 6.32 |
+| UL raw E1.5.3 | 0.20 | 0.51 | 1.00 | 1.63 | 2.19 | 3.07 | 3.36 | 4.46 | 5.29 | 5.49 | 6.32 |
+| UL C-AMC | 0.20 | 0.51 | 1.00 | 1.63 | 2.19 | 3.07 | 3.59 | 4.46 | 5.29 | 6.11 | 6.32 |
+
+SNR needed for the F2 link SE, in dB:
+
+| Direction | target link SE | TR 36.942 | raw E1.5.3 T2 | C-AMC T2 | C-AMC T1 |
+|---|---|---|---|---|---|
+| DL | 2.25 | 10.95 | 13.08 | 12.92 | 12.95 |
+| UL | 1.5 | 10.95 | 8.66 | 8.66 | 8.66 |
+
+What is established:
+1. **The F2 thresholds barely move.** UL is unchanged at 8.66 dB, and DL
+   drops by 0.16 dB to 12.92 dB. The E1.5.3 conclusion stands: against
+   TR 36.942, UL is 2.3 dB easier and DL about 2 dB harder.
+2. **The dips are gone.**
+   - The T2 C-AMC curves are monotone in both directions, and DL and UL now
+     agree within 0.09 bit/s/Hz at every point (largest gap at 21.4 dB).
+   - C-AMC is higher than the raw curve at 16 (DL) and 6 (UL) of 35 points
+     between 0 and 35 dB, by up to 2.64 bit/s/Hz (UL, 26.4 dB).
+   - It is lower at two DL points, by 0.03 and 0.26 (13.4 and 18.4 dB). The
+     cause is hazard 17, below.
+3. **Prediction scores.**
+   - P_mono held for all four curves. T1 DL has one 0.5% dip at 12.4 dB,
+     within the tolerance.
+   - P_bler held except at one point: T1 DL, 1.36 dB, BLER 0.143 against a
+     bound of 0.138. There MCS 3 meets the target on the 12-symbol
+     reference (TBLER 0.027), but the S-slot's 10-symbol TBs have TBLER
+     0.309 (53 of 160 failed, against 27 of 401 for 13-symbol TBs).
+4. **F3 pointwise check.** SE(x + 10.09 dB) ≥ SE(x) holds at every point of
+   the raw and C-AMC curves, for both models and directions.
+5. **Reported only.**
+   - The analytic first-transmission envelope (ideal MCS choice, no HARQ) is
+     at most 0.25 bit/s/Hz above C-AMC (T2 DL, 18.4 dB; ≤ 7% relative in
+     T2 DL).
+   - The TR 36.942 form still fits poorly (maximum error 0.50), so the
+     empirical curve remains the form used.
+   - For 5-RB TBs (the F3 allocation), C-AMC needs 0.18 dB more SNR than
+     for 51 RB to reach SE 1.5: 8.84 vs 8.66 dB, analytic first
+     transmission, both models.
+
+**New 5G-LENA property: hazard 17 (recorded, not diagnosed further).**
+- At fixed SINR and MCS, the EESM TBLER is **not monotone in TB size**.
+  For example, T2 at 18.36 dB, MCS 17, 51 RB gives TBLER 0.061 (10
+  symbols), 0.401 (12) and 0.0036 (13). The likely cause is code-block
+  segmentation and table selection by code-block size; this was not
+  isolated.
+- Consequences:
+  - no single reference TB size bounds the BLER of every allocation shape;
+  - the 12-symbol rule is one MCS step conservative or optimistic at a few
+    points (the two DL points and the P_bler point above);
+  - P_mono confirms the effect is bounded: no drop above 10% anywhere.
+
+**Decision applied (pre-registered).**
+- E1.5.5 and E1c use the **C-AMC T2 curve** as the primary mapping.
+- Sensitivities:
+  - the raw E1.5.3 T2 curve, labelled "5G-LENA v5.1 SISO AMC, 1-symbol
+    reference";
+  - C-AMC T1;
+  - TR 36.942.
+- Hazard 15 handling is unchanged.
+- E1.5.5's pre-registration must also fix whether F3 uses the 5-RB curve
+  (+0.18 dB) and how the F3 ≥ F2 check S5 is re-verified.
+- Upstream report 4 is drafted in
+  `docs/upstream/5g-lena-siso-amc-one-symbol-tb.md`; filing is the user's
+  decision.
+- **Consequence for E1.5.4.** Its multi-UE runs use the stock AMC, so they
+  carry the 1-symbol sizing. Its predictions must use the mapping the
+  stack actually applies. The Stage A replay can compute that mapping for
+  any allocation shape.
 
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

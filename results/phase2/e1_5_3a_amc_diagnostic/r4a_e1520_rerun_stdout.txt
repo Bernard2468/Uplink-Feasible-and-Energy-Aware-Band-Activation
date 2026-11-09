@@ -1,0 +1,26 @@
+R0 PASS
+n0_f3p5: exit 0, 1 s
+n0_f7p2: exit 0, 1 s
+a_f3p5_s_dp: exit 0, 6 s
+a_f3p5_u_dp: exit 0, 5 s
+a_f3p5_u_dpconj: exit 0, 5 s
+a_f3p5_s_dpconj: exit 0, 6 s
+a_f7p2_s_dp: exit 0, 5 s
+a_f7p2_u_dp: exit 0, 5 s
+a_f7p2_u_dpconj: exit 0, 6 s
+a_f7p2_s_dpconj: exit 0, 6 s
+b_f7p2_s_dp: exit 0, 16 s
+A0 PASS N0 PASS B0 ['B0_0_roles', 'B0_1_matched_s', 'B0_2_matched_u', 'B0_3_antimatched_u']
+a_f3p5_b30: exit 0, 13 s
+a_f3p5_b150: exit 0, 4 s
+a_f3p5_b270: exit 0, 4 s
+a_f7p2_b30: exit 0, 12 s
+a_f7p2_b150: exit 0, 3 s
+a_f7p2_b270: exit 0, 4 s
+b_f7p2_b30: exit 0, 27 s
+b_f7p2_b150: exit 0, 7 s
+b_f7p2_b270: exit 0, 8 s
+V0 PASS
+E1.5.2-0 PASSED
+
+--- stderr

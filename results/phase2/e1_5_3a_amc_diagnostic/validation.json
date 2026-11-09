@@ -1,0 +1,109 @@
+{
+  "checks": {
+    "A0_tb_size_t2": {
+      "failed": [],
+      "n_failed": 0,
+      "missing_replay_rows": [],
+      "passed": true
+    },
+    "A1_mcs_t2": {
+      "failed": [],
+      "n_failed": 0,
+      "passed": true
+    },
+    "A2_tbler_t2": {
+      "max_abs_err_siso": 0.0,
+      "max_abs_err_mimo": 0.0,
+      "matching_path": [
+        "siso",
+        "mimo"
+      ],
+      "passed": true
+    },
+    "A3_classification_t2": {
+      "n_points": 7,
+      "unexplained": [],
+      "classes": {
+        "MISMATCH": 7
+      },
+      "passed": true
+    },
+    "A4_rule_t2": {
+      "n_sinr": 250,
+      "failed": [],
+      "passed": true
+    },
+    "A0_tb_size_t1": {
+      "failed": [],
+      "n_failed": 0,
+      "missing_replay_rows": [],
+      "passed": true
+    },
+    "A1_mcs_t1": {
+      "failed": [],
+      "n_failed": 0,
+      "passed": true
+    },
+    "A2_tbler_t1": {
+      "max_abs_err_siso": 0.0,
+      "max_abs_err_mimo": 0.0,
+      "matching_path": [
+        "siso",
+        "mimo"
+      ],
+      "passed": true
+    },
+    "A3_classification_t1": {
+      "n_points": 5,
+      "unexplained": [],
+      "classes": {
+        "MISMATCH": 5
+      },
+      "passed": true
+    },
+    "A4_rule_t1": {
+      "n_sinr": 250,
+      "failed": [],
+      "passed": true
+    },
+    "B0_mcs_consistency": {
+      "failed": [],
+      "n_failed": 0,
+      "passed": true
+    },
+    "R4a_link_mode_unchanged": {
+      "exit_code": 0,
+      "runs": 21,
+      "files_compared": 98,
+      "differing_files": [],
+      "passed": true
+    },
+    "R4b_e153_reproduced": {
+      "runs": [
+        "t2_L93",
+        "t2_L113",
+        "t1_L113"
+      ],
+      "differing_files": [],
+      "passed": true
+    },
+    "E0_error_model": {
+      "failed_runs": [],
+      "passed": true
+    },
+    "V_snr_identity": {
+      "failed": [],
+      "max_abs_err_db": 3.0309088572266774e-14,
+      "passed": true
+    },
+    "F1_fixed_mcs": {
+      "failed": [],
+      "passed": true
+    },
+    "C_coverage": {
+      "failed": [],
+      "passed": true
+    }
+  },
+  "all_checks_passed": true
+}

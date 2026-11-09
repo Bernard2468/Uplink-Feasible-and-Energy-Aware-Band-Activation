@@ -124,8 +124,15 @@ traffic and ignoring additional transient QoS costs. This is a *simplified
 necessary tradeoff*, not a universal theorem for a real cellular system.
 
 Published prior-art anchors to evaluate:
-- Peschiera et al., FR3 base-station parametric power model (ICASSP 2026);
-  https://arxiv.org/abs/2510.10647
+- Peschiera et al., FR3 base-station parametric power model, arXiv
+  2510.10647v1 (Oct 2025); https://arxiv.org/abs/2510.10647. *Corrected
+  2026-11-09: an earlier version of this file said "ICASSP 2026", which is
+  not verified. The arXiv text states no venue.*
+- López-Pérez, Piovesan, Geraci, multi-layer 6G capacity and power with the
+  upper mid-band, arXiv 2411.09660 (ICC 2025); and López-Pérez, Piovesan,
+  Bernabè, arXiv 2601.13993 (real deployment data). These are the closest
+  prior art: DL-only, snapshot, always-on FR3 layer. See
+  `docs/PHASE_3_ENERGY_PROTOCOL.md` §1.4.
 - Ropitault et al., site-specific ray-tracing-driven ns-3 (CCNC 2026);
   https://www.nist.gov/publications/enabling-site-specific-cellular-network-simulation-through-ray-tracing-driven-ns-3
 - Upper-mid-band spectrum for 6G surveys and cmWave large-array trials.

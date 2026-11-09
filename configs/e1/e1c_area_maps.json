@@ -1,0 +1,85 @@
+{
+  "experiment": "E1c.1: single-site area-weighted uplink/downlink feasibility maps at 3.5 and 7.2 GHz with the E1.5 model, building-resolved indoor UEs on every floor",
+  "status": "PRE-REGISTERED 2026-11-09, committed before the first area evaluation; definitions, variants, gates, predictions and decision rules are not changed after results are seen",
+  "protocol": "docs/PHASE_2_RADIO_PROTOCOL.md section 6, 'E1c.1'",
+  "scope": {
+    "this_stage": "one site (site_tx0), noise-limited (SNR), the E1.5.5 primary model applied to every open outdoor grid point and every indoor (point, floor) sample within 600 m",
+    "not_this_stage": "multi-site layouts and interference (SINR): E1c.2, pre-registered separately; no energy, 'beneficial' or 'required' labels (Phase 3)"
+  },
+  "inputs": {
+    "e1_1": "results/phase2/e1_geometry (open outdoor mask: 30,888 points, geometric LOS)",
+    "e1c_geometry": "results/phase2/e1c_geometry/site_tx0_indoor.npz and manifest (scripts/e1c_geometry_indoor.py)",
+    "e1_5": "the E1.5.5 primary model: scripts/e1_5_5_reclassification.py mappings, gain table, packet offsets and selectivity factors from the E1.5.2-1, E1.5.3, E1.5.3a and E1.5.4 summaries",
+    "requirement": "every input manifest has all_checks_passed = true; input SHA-256 recorded in the E1c manifest"
+  },
+  "seen_before_registration": [
+    "all E1.5 results",
+    "geometry exploration and the geometry tool's two runs (run 1: C1d failed on 46 samples at 8 points of the gNB's own building, facade beyond the gNB; rule added: such samples are excluded; run 2: all checks pass): 67,186 annulus grid points (E1.1 count, mask reproduced bit-identically), 29,579 indoor points, 146,426 indoor samples (floors 1-8: 29,579 / 28,278 / 27,179 / 26,821 / 22,336 / 8,767 / 2,613 / 899), roof height median 16.7 m, d2D-in median 9.4 m (95% 40.9 m), facade LOS fraction 1.0% (floor 1) to 27% (floor 7)",
+    "instrument dry run of gate C3 only (the 27 E1.1 positions, whose E1.5.5 results are published): 8,100 per-position tests, minimum two-sided binomial p-value 0.0014, no pooled failure, 5 s",
+    "no feasibility value of any area sample has been computed"
+  ],
+  "population": {
+    "outdoor_points": "the 30,888 E1.1 open outdoor grid points (4 m grid, 20-600 m, hUT 1.5 m, geometric LOS); each represents 16 m2",
+    "indoor_samples": "every (indoor grid point, floor) of the E1c geometry: hUT = 3 (n_fl - 1) + 1.5 m, n_fl = 1..min(floor(H/3), 8); each represents 16 m2 of floor area; d2D = horizontal distance to the gNB, d3D with hBS - hUT, d2D-in = geometric distance to the facade toward the gNB, outdoor LOS state = facade LOS",
+    "states": {
+      "outdoor": "outdoor points, outdoor UMa loss + shadowing (pedestrian reference, not in the mix)",
+      "in_car": "outdoor points, + car penetration 9 + 5 x dB",
+      "indoor_low": "indoor samples, TR 38.901 low-loss building, PL_tw + 0.5 d2D-in + sigma_P x_P, O2I shadowing 7 dB",
+      "indoor_high": "as indoor_low, high-loss building"
+    },
+    "mixes": "M2412 (in_car 0.2, indoor_low 0.64, indoor_high 0.16; primary) and highloss50 (0.2 / 0.4 / 0.4), as E1.4; area-uniform within each state",
+    "radii_m": {
+      "isd200": "105.01: radius of the disk with the area of the hexagonal cell of a site at ISD 200 m (ITU-R M.2412 Dense Urban-eMBB macro layer), = 200 / sqrt(3) x sqrt(3 sqrt(3) / (2 pi))",
+      "isd500": "262.52: the same for ISD 500 m (TR 38.901 UMa)",
+      "all": "600 (the E1.1 annulus)",
+      "note": "UEs within 20 m of the site are not in the grid; results are also reported per E1.1 distance bin"
+    }
+  },
+  "propagation": {
+    "path_loss": "TR 38.901 UMa (cmwave.radio.uma_hybrid / pathloss_3gpp), hBS = 27 m, by the geometric LOS state; for hUT >= 13 m the effective environment height hE follows Table 7.4.1-1 Note 1 (hE = 1 m with probability 1/(1 + C(d2D, hUT)), else uniform on {12, 15, ..., hUT - 1.5}): exact finite mixture (pathloss_3gpp.uma_he_distribution, uma_los_he, uma_nlos_he), the same hE at both carriers",
+    "random_terms": "outdoor: shadowing N(0, 4 dB LOS / 6 dB NLOS); in_car: shadowing and 5 dB car variate; indoor: 7 dB O2I shadowing and sigma_P (4.4 low / 6.5 high) building variate. Every variate is shared by both carriers and both directions (shared-variate states of E1.4), so each sample's total random loss is sigma Z with one standard normal Z",
+    "o2i_version": "TR 38.901 V19.5.0 (E1.5.0 decision: reference from E1c onward); V16.1.0 as a variant"
+  },
+  "model": "the E1.5.5 primary model (V2): gNB gain = E1.4 ideal-steering gain toward the UE (zenith from its height) - D_cb(array, carrier, stratum: O2O LOS / O2O NLOS for outdoor and in_car, O2I for indoor), regime C 4.5 dB on links whose outdoor (facade) state is NLOS; UE n_rx MRC gain on DL; C-AMC T2 mapping with its floor for F1; F2 and F3 as E1.5.5 (F3 DL PRB-granular)",
+  "engine": {
+    "method": "exact, no Monte Carlo: every feasibility event of a sample is {Z <= m} with m = (SNR at Z = 0 - s*) / sigma, s* = the smallest SNR at which the mapping meets the profile threshold (bisection on the non-decreasing mapping); class probabilities are normal-interval probabilities (K1..K6 of scripts/e1_antennas_o2i.py classes14), mixtures over hE components and, in the stochastic d2D-in variant, Gauss-Legendre quadrature",
+    "aggregation": "area-weighted mean of the per-sample probabilities within a radius, a distance bin or a floor"
+  },
+  "variants": {
+    "primary": "E1.5.5 V2 model, O2I V19.5.0, building-resolved indoor samples on all floors",
+    "v16": "O2I V16.1.0",
+    "g_dp": "D_dp (DirectPath, lower gain)",
+    "g_eig": "D_eig (certified eigen bound, upper gain)",
+    "g_c_matched": "regime C with the matching measured array deficits",
+    "pkt": "E1.5.4 packet thresholds (SNR offsets, as E1.5.5)",
+    "sel": "E1.5.4 selectivity factor (regimes A and B, as E1.5.5)",
+    "m_trlow": "C-AMC T2 with TR 36.942 below its floor (hazard-15 label for F1)",
+    "indoor_ground": "indoor samples of floor 1 only (the E1.4 assumption)",
+    "indoor_stoch_din": "d2D-in from the TR 38.901 UMa distribution (min of two U(0, 25 m)) instead of the geometric distance, 24-point Gauss-Legendre quadrature",
+    "e14_model": "the E1.4 assumptions on the same area: TR 36.942, ideal steering (C cases keep their own NLOS loss), F3 DL = F2 DL (E1.5.0), O2I V16.1.0"
+  },
+  "cases": ["R0_isotropic_e13", "A_equal_elements", "B_equal_aperture", "C_deployment", "S1_A_ue1rx"],
+  "gates": {
+    "C0_inputs": "E1.1, E1c geometry, E1.5.2-1, E1.5.3, E1.5.3a, E1.5.4 and E1.5.5 manifests all_checks_passed; E1.1 mask and E1c geometry hashes equal their manifests",
+    "C2_engine_exact": "for a seeded subset (300 rows per variant, case and state), every event (carrier, direction, profile): the direct E1.5.5 pipeline (cmwave link_budget with the variant's mapping and gains) at loss = mean loss + sigma (m - 1e-6) is feasible and at sigma (m + 1e-6) is not (events with infinite m checked at Z = +-8)",
+    "C3_e155_agreement": "the engine with the E1.4 indoor model (stochastic d2D-in on the E1.4 facade geometry, 64-point quadrature) and O2I V16.1.0 at the 27 E1.1 positions against the E1.5.5 V2 Monte-Carlo records (200 realizations per position): for every case, state, profile, class and position, the two-sided exact binomial p-value of the Monte-Carlo count under the analytic probability is >= 1e-6; pooled over positions |difference| <= 5 standard errors",
+    "C4_probabilities": "every row: class probabilities in [0, 1] and K1 + K2 + K3 + K4 + K6 = 1 within 1e-12 (K6 reported, not required to be 0: beyond the 3.5 GHz LOS breakpoint of tall floors the carrier gap can fall below the 7.2 GHz array advantage)",
+    "C5_mapping": "the primary mapping and every transformed mapping used by the engine are non-decreasing on -60..120 dB (0.001 dB grid), except m_trlow below its seam, where only F1 (a threshold at -10 dB) is used",
+    "stop": "any gate fails: stop and diagnose; evidence kept"
+  },
+  "predictions_scored": {
+    "P1": "primary, M2412 mix, at both reference radii: K3 (F3) < K3 (F2) for A, B and C",
+    "P2": "primary vs indoor_ground, regime A, 7.2 GHz, radius isd500: the indoor_low F2 UL feasible fraction over all floors exceeds the floor-1-only fraction (UMa loss falls with hUT and upper floors see the gNB more often)"
+  },
+  "reported": [
+    "per variant, case, state, profile and radius: feasible fractions (DL/UL per carrier) and class fractions; mixes",
+    "primary: per distance bin; indoor per floor; outdoor per LOS state",
+    "maps (raw/, git-ignored, hashed): per outdoor point (in_car) and per indoor point (floor-averaged, 0.8 low / 0.2 high) class probabilities of A, B, C for F2 and F3",
+    "comparison with the E1.5.5 27-position fractions (the 27 positions are distance-stratified, not area-weighted)"
+  ],
+  "decision_rules": {
+    "all_gates_pass": "the primary area fractions at the two reference radii, with the variant ranges, are the single-site area results of the paper and the spatial input of Phase 3; E1c.2 (multi-site, interference) is pre-registered separately",
+    "gate_fails": "stop and diagnose"
+  },
+  "limits": "single site; no interference; one scene; geometric LOS from a city mesh without vegetation or vehicles; building interiors open (no internal walls beyond the 0.5 dB/m TR term); D_cb measured at hUT 1.5 m and applied to every floor; regime C gain not measured; UE MRC ideal mean-SNR gain; 20 MHz C-AMC curve"
+}

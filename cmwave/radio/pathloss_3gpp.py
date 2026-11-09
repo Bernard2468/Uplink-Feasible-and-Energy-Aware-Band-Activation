@@ -55,6 +55,50 @@ def uma_nlos(d2d: float, d3d: float, fc_hz: float, h_bs: float, h_ut: float) -> 
     return max(uma_los(d2d, d3d, fc_hz, h_bs, h_ut), pl_nlos)
 
 
+def uma_c(d2d: float, h_ut: float) -> float:
+    """TR 38.901 Table 7.4.1-1 Note 1: C(d2D, hUT) = 0 for hUT < 13 m, else
+    ((hUT - 13)/10)^1.5 g(d2D), g = 0 for d2D <= 18 m, (5/4)(d2D/100)^3 exp(-d2D/150) otherwise."""
+    if h_ut < 13.0:
+        return 0.0
+    g = 0.0 if d2d <= 18.0 else 1.25 * (d2d / 100.0) ** 3 * math.exp(-d2d / 150.0)
+    return ((h_ut - 13.0) / 10.0) ** 1.5 * g
+
+
+def uma_he_distribution(d2d: float, h_ut: float) -> list[tuple[float, float]]:
+    """TR 38.901 Table 7.4.1-1 Note 1 (E1c): hE = 1 m with probability 1/(1 + C), otherwise
+    discrete uniform over {12, 15, ..., hUT - 1.5}. Returns [(hE, probability)], probabilities sum
+    to 1. Valid for 1.5 <= hUT <= 22.5 m."""
+    if not 1.5 <= h_ut <= 22.5:
+        raise ValueError('UMa hUT must lie in [1.5, 22.5] m')
+    p1 = 1.0 / (1.0 + uma_c(d2d, h_ut))
+    others = [12.0 + 3.0 * k for k in range(int(math.floor((h_ut - 1.5 - 12.0) / 3.0 + 1e-9)) + 1)] \
+        if h_ut - 1.5 >= 12.0 else []
+    if not others or p1 == 1.0:
+        return [(1.0, 1.0)]
+    q = (1.0 - p1) / len(others)
+    return [(1.0, p1)] + [(h, q) for h in others]
+
+
+def uma_los_he(d2d: float, d3d: float, fc_hz: float, h_bs: float, h_ut: float, h_e: float) -> float:
+    """UMa LOS with an explicit effective environment height hE (E1c upper floors).
+    Equals uma_los for hE = 1 m and hUT < 13 m."""
+    _check(d2d, d3d, fc_hz, h_bs, h_ut)
+    if not 1.5 <= h_ut <= 22.5 or not (0 < h_e < h_ut and h_e < h_bs):
+        raise ValueError('require 1.5 <= hUT <= 22.5 m and 0 < hE < min(hUT, hBS)')
+    f_ghz = fc_hz / 1e9
+    dbp = breakpoint_distance(fc_hz, h_bs, h_ut, h_e)
+    if d2d <= dbp:
+        return 28.0 + 22.0 * math.log10(d3d) + 20.0 * math.log10(f_ghz)
+    return (28.0 + 40.0 * math.log10(d3d) + 20.0 * math.log10(f_ghz)
+            - 9.0 * math.log10(dbp ** 2 + (h_bs - h_ut) ** 2))
+
+
+def uma_nlos_he(d2d: float, d3d: float, fc_hz: float, h_bs: float, h_ut: float, h_e: float) -> float:
+    pl_nlos = (13.54 + 39.08 * math.log10(d3d) + 20.0 * math.log10(fc_hz / 1e9)
+               - 0.6 * (h_ut - 1.5))
+    return max(uma_los_he(d2d, d3d, fc_hz, h_bs, h_ut, h_e), pl_nlos)
+
+
 def umi_los(d2d: float, d3d: float, fc_hz: float, h_bs: float, h_ut: float) -> float:
     _check(d2d, d3d, fc_hz, h_bs, h_ut)
     f_ghz = fc_hz / 1e9

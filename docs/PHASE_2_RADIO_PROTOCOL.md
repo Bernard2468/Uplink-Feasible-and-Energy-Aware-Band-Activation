@@ -531,6 +531,107 @@ What E1.4 does NOT show (stated with every use of these numbers):
 - The 6.27 dB outdoor gap and the fully correlated O2I variates are model
   assumptions; the second is tested by the independent-variate sensitivity.
 
+### E1c.1 single-site area maps with the E1.5 model (PRE-REGISTERED 2026-11-09)
+
+E1.5 is complete: E1.5.5 V2 is the validated classification. E1c is split:
+- **E1c.1 (this stage)** is single-site, noise-limited and area-weighted,
+  with building-resolved indoor UEs on every floor.
+- **E1c.2** covers multiple sites and interference (SINR). It is
+  pre-registered separately, because interference couples to Phase 3's
+  activation decisions.
+
+Files:
+- Config: `configs/e1/e1c_area_maps.json`.
+- Geometry: `scripts/e1c_geometry_indoor.py`, outputs in
+  `results/phase2/e1c_geometry/`.
+- Engine: `scripts/e1c_area_maps.py`.
+- Tests: `tests/test_e1c_area_maps.py`.
+
+**Geometry (run before registration; geometry only).** The tool rebuilds
+the E1.1 grid with E1.1's own code and reproduces its 67,186 annulus points
+and 30,888-point outdoor mask bit-identically. Indoor UEs:
+- **indoor point:** a grid point that is on the ground, roofed and enclosed;
+- **floors:** n = 1 … min(⌊H/3⌋, 8), with hUT = 3(n − 1) + 1.5 m (TR 38.901
+  Table 7.2-1);
+- **indoor distance d2D-in:** the geometric distance to the facade toward
+  the gNB;
+- **O2I outdoor LOS state:** the facade-to-gNB segment test.
+
+Run 1 failed sanity check C1d. 46 samples, at 8 points inside the gNB's
+own building, have their facade beyond the gNB. They would be served
+through the roof, which the O2I model does not cover, so they are now
+excluded and counted (check C1e).
+
+Run 2 passes all checks:
+- 29,579 indoor points and 146,426 (point, floor) samples;
+- roof height median 16.7 m; d2D-in median 9.4 m;
+- facade LOS 1% on floor 1, 13% on floor 6, 27% on floor 7.
+The run-1 manifest is kept.
+
+**Model.** The E1.5.5 primary model V2 is applied to every outdoor point
+(states outdoor and in_car) and every indoor sample (states indoor_low and
+indoor_high).
+- O2I uses V19.5.0, the E1.5.0 decision for E1c onward.
+- For hUT ≥ 13 m, TR 38.901's random effective environment height hE is
+  handled as an exact finite mixture. New functions in
+  `cmwave/radio/pathloss_3gpp.py`; the earlier functions are unchanged and a
+  test checks they agree.
+
+**Area.** Each sample stands for 16 m².
+- Results are reported within the radius of a disk with the area of a
+  hexagonal cell: 105.0 m for ISD 200 (M.2412 Dense Urban) and 262.5 m for
+  ISD 500 (TR 38.901 UMa).
+- They are also reported to 600 m, per distance bin and per floor.
+- The E1.1 grid starts at 20 m.
+
+**Engine: exact, no Monte Carlo.**
+- Shadowing, car, building and O2I variates are normal and shared by both
+  carriers and directions. So every feasibility event is {Z ≤ m} for one
+  standard normal Z.
+- Class probabilities are closed-form normal intervals.
+
+**Gates:**
+
+| Gate | Requirement |
+|---|---|
+| C0 | Inputs validated and hashed |
+| C2 | The direct E1.5.5 pipeline agrees at m ± 1e-6 σ on 300 rows per variant, case and state |
+| C3 | Agreement with the E1.5.5 Monte-Carlo records at the 27 positions: two-sided binomial p ≥ 1e-6 on every test, and pooled agreement within 5 SE. Dry run before registration: 8,100 tests, minimum p = 0.0014 |
+| C4 | Classes partition to 1e-12 |
+| C5 | Mappings non-decreasing |
+
+K6 is reported, not required to be 0. Beyond the 3.5 GHz LOS breakpoint of
+tall floors, 7.2 GHz can be the better carrier.
+
+**Variants.**
+- **primary.**
+- **v16:** O2I V16.1.0.
+- **g_dp, g_eig:** DirectPath and eigen-bound gains.
+- **g_c_matched:** regime C with the matching measured array deficits.
+- **pkt:** E1.5.4 packet thresholds.
+- **sel:** E1.5.4 selectivity factor.
+- **m_trlow:** TR's low end below the C-AMC floor (hazard 15, F1 only).
+- **indoor_ground:** floor 1 only, as E1.4.
+- **indoor_stoch_din:** TR 38.901's stochastic d2D-in.
+- **e14_model:** E1.4's assumptions applied to the same area.
+
+**Predictions** (scored):
+- **P1:** K3 is smaller with F3 than with F2 at both radii, for A, B and C.
+- **P2:** In regime A, indoor-low F2 UL at 7.2 GHz is better over all floors
+  than on floor 1 only.
+
+**Decision (fixed now).** If every gate passes, the primary area fractions
+at the two radii, with the variant ranges, are the paper's single-site area
+results and the spatial input of Phase 3.
+
+**Limits.**
+- One site, no interference.
+- Geometric LOS from a city mesh, with no vegetation or vehicles.
+- Building interiors are open: no internal walls beyond the TR
+  0.5 dB/m term.
+- D_cb was measured at hUT 1.5 m and is applied to every floor.
+- Regime C is unmeasured.
+
 ### Original options considered
 
 Recommended (adopted): geometry-aware 3GPP model as the main engine. TR 38.901 UMa path

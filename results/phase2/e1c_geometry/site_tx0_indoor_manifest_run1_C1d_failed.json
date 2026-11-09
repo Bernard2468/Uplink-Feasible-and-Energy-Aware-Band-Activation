@@ -1,0 +1,92 @@
+{
+  "generated_utc": "2026-11-09T12:50:58.935774+00:00",
+  "tool": "scripts/e1c_geometry_indoor.py",
+  "site_id": "site_tx0",
+  "scene": "munich",
+  "gnb_position_m": [
+    8.5,
+    21.0,
+    27.0
+  ],
+  "versions": {
+    "python": "3.12.16",
+    "sionna_rt": "1.2.0",
+    "mitsuba": "3.7.1",
+    "drjit": "1.2.0"
+  },
+  "rules": {
+    "floor_m": 3.0,
+    "max_floors": 8,
+    "enclose_m": 300.0,
+    "step_out_m": 0.05
+  },
+  "e1_1_manifest_sha256": "be74a63a97e334ad5e8f6a21252b03289aa02626fb2e0b9ee5feea39163c6285",
+  "counts": {
+    "grid_points_in_annulus": 67186,
+    "on_ground": 67186,
+    "covered": 29579,
+    "enclosed": 54090,
+    "indoor_points": 29579,
+    "indoor_points_with_floor": 29579,
+    "indoor_samples": 146472
+  },
+  "stats": {
+    "roof_h_percentiles_0_5_25_50_75_95_100": [
+      4.02,
+      6.87,
+      15.04,
+      16.66,
+      18.55,
+      22.4,
+      65.12
+    ],
+    "floors_hist": {
+      "1": 29579,
+      "2": 28278,
+      "3": 27179,
+      "4": 26821,
+      "5": 22336,
+      "6": 8767,
+      "7": 2613,
+      "8": 899
+    },
+    "d2d_in_percentiles_0_25_50_75_95_100": [
+      0.0,
+      4.34,
+      9.45,
+      17.42,
+      40.92,
+      132.51
+    ],
+    "facade_los_fraction_by_floor": {
+      "1": 0.009973291862469995,
+      "2": 0.010467501237711296,
+      "3": 0.011221899260458442,
+      "4": 0.011856381193840648,
+      "5": 0.02677292263610315,
+      "6": 0.1311737196304323,
+      "7": 0.26942212016838885,
+      "8": 0.25583982202447164
+    }
+  },
+  "files": {
+    "site_tx0_indoor.npz": "a9d96a190834ce582c6b54b67b54498eddffed0fd0cbb57fe8b9ad1651a75bf9"
+  },
+  "checks": {
+    "C1a_e11_mask_reproduced": {
+      "passed": true,
+      "n_grid": 67186
+    },
+    "C1b_indoor_reproducible": {
+      "passed": true
+    },
+    "C1c_disjoint_from_outdoor": {
+      "passed": true,
+      "overlap": 0
+    },
+    "C1d_sample_sanity": {
+      "passed": false
+    }
+  },
+  "all_checks_passed": false
+}

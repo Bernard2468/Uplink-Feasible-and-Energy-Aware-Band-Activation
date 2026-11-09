@@ -1,0 +1,99 @@
+{
+  "generated_utc": "2026-11-09T12:52:05.762549+00:00",
+  "tool": "scripts/e1c_geometry_indoor.py",
+  "site_id": "site_tx0",
+  "scene": "munich",
+  "gnb_position_m": [
+    8.5,
+    21.0,
+    27.0
+  ],
+  "versions": {
+    "python": "3.12.16",
+    "sionna_rt": "1.2.0",
+    "mitsuba": "3.7.1",
+    "drjit": "1.2.0"
+  },
+  "rules": {
+    "floor_m": 3.0,
+    "max_floors": 8,
+    "enclose_m": 300.0,
+    "step_out_m": 0.05
+  },
+  "e1_1_manifest_sha256": "be74a63a97e334ad5e8f6a21252b03289aa02626fb2e0b9ee5feea39163c6285",
+  "counts": {
+    "grid_points_in_annulus": 67186,
+    "on_ground": 67186,
+    "covered": 29579,
+    "enclosed": 54090,
+    "indoor_points": 29579,
+    "indoor_points_with_floor": 29579,
+    "excluded_same_building_samples": 46,
+    "excluded_same_building_max_d2d_m": 40.0,
+    "indoor_samples": 146426
+  },
+  "stats": {
+    "roof_h_percentiles_0_5_25_50_75_95_100": [
+      4.02,
+      6.87,
+      15.04,
+      16.66,
+      18.55,
+      22.4,
+      65.12
+    ],
+    "floors_hist": {
+      "1": 29574,
+      "2": 28273,
+      "3": 27174,
+      "4": 26816,
+      "5": 22331,
+      "6": 8762,
+      "7": 2605,
+      "8": 891
+    },
+    "d2d_in_percentiles_0_25_50_75_95_100": [
+      0.0,
+      4.34,
+      9.44,
+      17.41,
+      40.92,
+      132.51
+    ],
+    "facade_los_fraction_by_floor": {
+      "1": 0.009974978021234869,
+      "2": 0.010469352385668306,
+      "3": 0.011223964083314933,
+      "4": 0.011858591885441527,
+      "5": 0.02677891720030451,
+      "6": 0.1312485733850719,
+      "7": 0.27024952015355086,
+      "8": 0.25813692480359146
+    }
+  },
+  "files": {
+    "site_tx0_indoor.npz": "4e72c069219fd5eb909e8df85a35398b5219c1088c7c3f25a965876a512c27b7"
+  },
+  "checks": {
+    "C1a_e11_mask_reproduced": {
+      "passed": true,
+      "n_grid": 67186
+    },
+    "C1b_indoor_reproducible": {
+      "passed": true
+    },
+    "C1c_disjoint_from_outdoor": {
+      "passed": true,
+      "overlap": 0
+    },
+    "C1d_sample_sanity": {
+      "passed": true
+    },
+    "C1e_same_building_exclusion": {
+      "passed": true,
+      "excluded": 46,
+      "max_d2d_m": 40.0
+    }
+  },
+  "all_checks_passed": true
+}

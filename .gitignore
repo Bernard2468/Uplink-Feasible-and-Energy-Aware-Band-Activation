@@ -7,6 +7,7 @@ results/*
 # Small text evidence logs are version-controlled (provenance for the paper).
 !results/verification/
 !results/phase2/
+!results/phase3/
 # Raw per-path arrays are regenerable from the scripts and positions files.
 results/phase2/**/raw/
 # Downloaded patch archives: their reviewed content is committed, not the archive.

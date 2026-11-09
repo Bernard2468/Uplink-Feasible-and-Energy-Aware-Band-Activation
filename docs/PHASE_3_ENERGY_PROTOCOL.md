@@ -469,6 +469,64 @@ gate).**
 | P3.3 | Controllers and baselines | Causality checks; DP = brute force on small instances; Δ ≥ transition times; wake delay enforced |
 | P3.4 | Evaluation | Paired seeds, confidence intervals, held-out seeds/geometry/load/hardware; H1–H4 scored as pre-registered |
 
+### P3.1 source-reproduced hardware energy models (PRE-REGISTERED 2026-11-09)
+
+Config `configs/p3/p3_1_energy_models.json`, code
+`scripts/p3_1_energy_models.py` (pure Python), tests
+`tests/test_p3_1_energy_models.py` (14, synthetic parameters only). This is a
+model-construction stage; no scientific prediction is scored.
+
+**What it computes:**
+- **3.5 GHz:** P(L) of the published 64T64R Table II. Primary: the µDTX
+  case.
+- **7.2 GHz:** the FR3 model at 16 hardware points:
+  - 53 dBm with the assumed PA (η_max 0.15 and the 3.5 GHz layer's η_max);
+  - 50 dBm and 43 dBm with the SiGe PA;
+  - each at M_RF 256 (primary), 64, 128 and 1024.
+- **Per point:**
+  - P_µ and P_empty;
+  - the TR ladder (Cat 1/2 × Set 1/3);
+  - the DL-anchored ladder (sensitivity);
+  - break-even sleep durations.
+- **The D10 table.**
+
+**Interpretations fixed before the run:**
+- The sub-6 recompute tries four interpretations: the static PA term
+  (printed ξ·P_max^α vs Golard's ξ·P_max) × N_C ∈ {1, 3}. The one that
+  reproduces Table II is "identified".
+- The FR3 reference reproduction:
+  - υ_coh = 200 (sensitivity 50 and 1000);
+  - rates 13 / 2 Gbit/s × load, used only by the encoder and decoder, whose
+    bound is reported;
+  - the Fig. 2 PA bar read as the P_cons contribution, or, as the
+    alternative, without η_s/c.
+- The FR3 static form used for the project is the one under which R2
+  passes.
+
+**Gates (all must pass; a failure stops P3.1 for an amendment):**
+
+| Gate | Check |
+|---|---|
+| J0 | The seven source files match their SHA-256 |
+| J1 | TR Tables 5.1-3/4/5 parsed from the .docx equal the config |
+| J2a | FR3 closed form = independent phase ledger (≤ 1e-12) |
+| J2b | Sub-6 compact model = direct per-state sum (≤ 1e-12) |
+| R1 | One interpretation reproduces all 18 Table II values within max(1%, 0.005) |
+| R2 | FR3 totals 740 / 1658 / 300 / 1044 W within 2%, and PA 262 W (2%) and 4 W (±0.5 W) |
+| J3 | D10 arithmetic; every project point has P_a ≤ P_max |
+| J4 | Positive and ordered states, load-monotone power, legal transitions |
+| J5 | Unit conversion |
+
+**Not routes to a pass:** the υ_coh sensitivity and the time-consistent
+frame variant (data term × (1 − τ_sig)) are diagnostics only.
+
+**Declared before registration:** hand arithmetic while reading:
+- γ of 64T64R ≈ 3.50, which depends on neither the static form nor N_C;
+- a rough FR3 PA term of about 690 W at 100 W and full load;
+- 64T64R P_misc ≈ 63.9 W and P_TRX ≈ 3.18 W.
+
+No P0, P1, P_sleep or FR3 total was computed.
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the

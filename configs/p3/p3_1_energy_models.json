@@ -1,0 +1,168 @@
+{
+  "experiment": "P3.1: source-reproduced hardware energy models of the 3.5 GHz and 7.2 GHz layers and the 7.2 GHz cell sleep ladder",
+  "status": "PRE-REGISTERED 2026-11-09, before the first measured run",
+  "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, P3.0 revision 1, decisions D1-D4 and D10",
+  "nature": "model construction and source reproduction; no scientific prediction is scored in P3.1",
+  "declared_before_registration": [
+    "All sources were read before registration (P3.0 and its revision 1); the TR 38.864 tables were re-read from the .docx while writing the table parser (same values as P3.0).",
+    "Partial arithmetic done by hand while reading, and nothing else: (i) gamma of 64T64R with Golard eq. 5 (eta_max about 0.287, gamma about 3.50 with eta_s/c 0.81), which does not depend on the static-term form or on N_C; (ii) a rough FR3 PA term at 100 W and full load (about 690 W, printed static form, signalling and idle terms ignored), against the published 740 W total at 16 RF chains; (iii) P_misc and P_TRX of 64T64R (about 63.9 W and 3.18 W).",
+    "No P0, P1 or P_sleep of Table II and no FR3 total or component sum was computed before registration."
+  ],
+  "sources": {
+    "tr38864_zip": {"cite": "3GPP TR 38.864 V18.1.0 (2023-03), 38864-i10.zip", "sha256": "99770bf7a80e9ae26184e6c76f6c421464fcb8dd9bb56e5cf7d0f2bba5c08e1f"},
+    "tr38864_docx": {"cite": "38864-i10.docx extracted from the zip", "sha256": "2ad6b86b9c0ee116044649150a2a7d66f85893e9447bb1404355817910ff0e4a"},
+    "fr3_pdf": {"cite": "Peschiera, Yun, Lee, Van der Perre, Rottenberg, arXiv 2510.10647v1 (12 Oct 2025); published IEEE ICASSP 2026, pp. 21476-21480, DOI 10.1109/ICASSP55912.2026.11464669 (published text not read)", "sha256": "9ca1c6feb7a788777e623f074f0aaa592081018364de26aaf5f0899262fea760"},
+    "sub6_pdf": {"cite": "Peschiera, Agram, Quitin, Van der Perre, Rottenberg, arXiv 2505.15445v1 (21 May 2025); published IEEE Trans. Commun. vol. 74 (2026) pp. 8961-8977, DOI 10.1109/TCOMM.2026.3693185 (published text not read)", "sha256": "1dabc722e528cba1c13dce90340bf1e6d7db8844b5067c87f2431ea267c34fea"},
+    "sub6_html": {"cite": "arXiv HTML rendering of 2505.15445v1 as read on 2026-11-09 (Table II identical to the PDF)", "sha256": "16031c91bae1f472f9e43071b224a9884031d25d604e02fea73b1776791c590a"},
+    "golard_pdf": {"cite": "Golard, Agram, Rottenberg, Quitin, Bol, Louveaux, PIMRC 2024, DOI 10.1109/PIMRC59610.2024.10817448 (UCLouvain open-access manuscript)", "sha256": "a45a409468aac8d8d7bc64f3a2f80b3df7dd4e617a459cf58bd5f7b7fe15aa9a"},
+    "nokia_pdf": {"cite": "Nokia, Coverage evaluation of 7-15 GHz bands from existing sites, white paper (2024)", "sha256": "c240137ffac12c85261bf80d66139bbe1e85267fbb303b5436305ece49d88376"}
+  },
+  "tr38864": {
+    "relative_power": {
+      "cat1": {"set1": {"deep": 1, "light": 25, "micro": 55, "active_dl": 280, "active_ul": 110},
+               "set2": {"deep": 1, "light": 25, "micro": 50, "active_dl": 200, "active_ul": 90},
+               "set3": {"deep": 1, "light": 25, "micro": 38, "active_dl": 152, "active_ul": 80}},
+      "cat2": {"set1": {"deep": 1, "light": 2.1, "micro": 5.5, "active_dl": 32, "active_ul": 6.5},
+               "set2": {"deep": 1, "light": 2.1, "micro": 5, "active_dl": 26, "active_ul": 5.8},
+               "set3": {"deep": 1, "light": 2.1, "micro": 3, "active_dl": 17.6, "active_ul": 4.2}}
+    },
+    "transition_time_s": {"cat1": {"deep": 0.05, "light": 0.006}, "cat2": {"deep": 10.0, "light": 0.64}},
+    "transition_energy_rel_ms": {"cat1": {"deep": 1000, "light": 90}, "cat2": {"deep": 17000, "light": 1088}},
+    "transition_rule": "during the total transition time T the relative power of the sleep state is consumed; the additional transition energy E comes on top (Table 5.1-2); T and E are the same for every set of a category",
+    "docx_expected_rows": {
+      "Table 5.1-3:": [["", "Set 1", "Set 2", "Set 3", "Set 1", "Set 2", "Set 3"], ["Deep sleep", "1", "1"], ["Light sleep", "25", "2.1"], ["Micro sleep", "55", "50", "38", "5.5", "5", "3"], ["Active DL", "280", "200", "152", "32", "26", "17.6"], ["Active UL", "110", "90", "80", "6.5", "5.8", "4.2"]],
+      "Table 5.1-4:": [["Deep sleep", "50 ms", "10 s"], ["Light sleep", "6 ms", "640 ms"]],
+      "Table 5.1-5:": [["Deep sleep", "1000", "17000"], ["Light sleep", "90", "1088"]]
+    },
+    "not_used": "the TR active-state scaling (P_static, P_dyn, A, s_a, s_f, s_p) is not used: active and micro-sleep powers come from the component models (D4)"
+  },
+  "golard_table2": {
+    "f_star_hz": 1e9, "b_star_hz": 1e6, "p_star_w": 1.0,
+    "pa": {"xi": 0.12, "n": 0.25, "eta_tech": 0.38, "a": 1e-4, "b": 1.0, "delta_idle": 0.25, "delta_sleep": 0.0},
+    "afe": {"p_misc_ref_w": {"RRU": 22.0, "AAU": 17.0}, "alpha11": 0.0, "alpha12": 0.25, "delta_sleep_misc": 0.75,
+            "p_trx_ref_w": 0.18, "alpha21": 0.5, "alpha22": 0.5, "delta_sleep_trx": 0.5},
+    "dbb": {"p_link_ref_w": 90.0, "p_phy_ref_w": 0.07, "alpha3": 0.5, "alpha4": 1.0, "delta_idle_phy": 0.75, "delta_sleep_phy": 0.75},
+    "psc": {"eta_supply": 0.90, "eta_cool_pa": 0.90, "eta_cool_afe": 0.90, "eta_cool_bb": 0.95},
+    "protocol": {"LTE_FDD": {"tau_dl": 1.0, "tau_ul": 1.0, "tau_sig": 0.2857142857142857, "zeta_sig": 0.3333333333333333},
+                 "NR_TDD": {"tau_dl": 0.75, "tau_ul": 0.25, "tau_sig": 0.07142857142857142, "zeta_sig": 0.08333333333333333}},
+    "notes": "LTE tau_sig 2/7 and zeta_sig 2/6, NR 1/14 and 1/12; alpha of 2505.15445 = 1 - n = 0.75; eta_max by Golard eq. 5: eta_tech / (1 + a (P_max/P*) (f/f*)^2 + b (P*/P_max))"
+  },
+  "sub6_table2_published": {
+    "source": "arXiv 2505.15445v1 Table II (PDF = HTML); left value delta_dtx_PA = 1 and delta_idle_TRX = 1, right value 0.25 and 0.5",
+    "cases": {"left": {"delta_dtx": 1.0, "delta_idle_trx": 1.0}, "right": {"delta_dtx": 0.25, "delta_idle_trx": 0.5}},
+    "configs": {
+      "4T4R": {"ru": "RRU", "protocol": "LTE_FDD", "M": 4, "K": 2, "f_hz": 1.8e9, "B_hz": 20e6, "p_max_w": 40.0,
+               "alpha": 0.75, "gamma": 5.33, "P0_w": {"left": 0.0, "right": 34.69}, "P1_w": {"left": 149.40, "right": 114.71}, "Psleep_w": 233.55},
+      "8T8R": {"ru": "RRU", "protocol": "NR_TDD", "M": 8, "K": 4, "f_hz": 3.5e9, "B_hz": 100e6, "p_max_w": 40.0,
+               "alpha": 0.75, "gamma": 5.38, "P0_w": {"left": 0.0, "right": 69.98}, "P1_w": {"left": 229.47, "right": 103.26}, "Psleep_w": 363.78},
+      "64T64R": {"ru": "AAU", "protocol": "NR_TDD", "M": 64, "K": 8, "f_hz": 3.5e9, "B_hz": 100e6, "p_max_w": 3.125,
+                 "alpha": 0.75, "gamma": 3.50, "P0_w": {"left": 0.0, "right": 53.92}, "P1_w": {"left": 341.57, "right": 161.95}, "Psleep_w": 550.23}
+    }
+  },
+  "sub6_recompute": {
+    "equations": "2505.15445 Sec. III-D closed forms (gamma, P0/M, P1/M, P_sleep) with eqs. (6)-(9) and Golard eqs. (5), (8)-(11)",
+    "interpretations": {
+      "static_form": {"printed": "xi P_max^alpha / eta_max (2505.15445 and 2510.10647 as printed)", "golard": "xi P_max / eta_max (Golard eq. 4)"},
+      "n_c": {"values": [1, 3], "meaning": "number of cells N_C in Golard's P_link^ref / N_C^alpha3; 2505.15445 calls P_link^ref 'a constant' and considers 'one cell', without fixing N_C; 3 = a three-sector site"}
+    },
+    "tolerance": "|recomputed - published| <= max(0.01 x |published|, 0.005)",
+    "gate_R1": "PASS if at least one of the four (static_form, n_c) interpretations reproduces all 18 published values (3 configurations x gamma, P0 left/right, P1 left/right, P_sleep) within tolerance; that interpretation is then the identified one. Every interpretation's errors are reported. FAIL stops P3.1."
+  },
+  "fr3_model": {
+    "source": "arXiv 2510.10647v1 eqs. (5)-(17), Sec. 3-4, implemented as printed",
+    "digital": {
+      "mu": 0.9, "bt_factor": 0.9, "q_fft": 4096, "df_ref_hz": 120e3, "b_ref_hz": 400e6,
+      "subcarrier_rule": "fixed FFT size; subcarrier spacing scales with bandwidth (Sec. 3.1: 'the number of subcarriers is fixed and different subcarrier spacings give different bandwidths'): df = 120 kHz x B / 400 MHz",
+      "fpga": {"p_static_w": 1.0, "eta_gops_per_w": 200.0, "share_rf_chains": 32},
+      "asic": {"p_static_w": 0.1, "eta_gops_per_w": 2000.0},
+      "encoder": "ASIC; Xi = 14/(3*8) * R_DL/Btilde", "decoder": "ASIC; Xi = 5*35/(2*3) * R_UL/Btilde",
+      "precoder": "FPGA, static x ceil(M_RF/32); Xi = 2K + (K^3/(3 M_RF) + 3K^2 + K)/upsilon_coh", "combiner": "FPGA, static x ceil(M_RF/32); Xi = 2K",
+      "fft": "ASIC; Xi = 1.5 log2(Q); IFFT (DL) and FFT (UL)", "dpd": "ASIC; Xi = 50; DL only", "bb_filter": "FPGA, static x ceil(M_RF/32); Xi = n o = 20 x 4; DL and UL",
+      "delta_micro": 0.5, "delta_idle": 0.25
+    },
+    "analog": {
+      "dac_bits": 8, "dac_fs_hz": 5e9, "adc_bits": 8, "adc_fs_hz": 5e9, "adc_walden_j": 70e-15,
+      "xi_mixer": 2.5e-13, "xi_ps": 3.5e-11, "xi_lna": 2.7e-11, "p_lo_w": 0.040, "p_rf_filter_w": 0.005,
+      "chains": "P_ana,DL,1 = 2 DAC + 2 RF filter + 2 mixer + M_PS PS; P_ana,UL,1 = 2 ADC + 2 RF filter + 2 mixer + M_PS PS + LNA; P_ana,i = LO + M_RF P_ana,i,1; hybrid partially connected M_PS = M_ant/M_RF, fully digital M_PS = 0",
+      "delta_micro": 0.75, "delta_idle": 0.5
+    },
+    "pa": {"sige": {"p_max_w": 0.1, "eta_max": 0.15, "alpha": 0.75, "xi": 0.1, "backoff_db": 8.0},
+           "delta_micro": 0.5, "delta_idle": 0.25,
+           "count": "one PA per antenna; P_a = P_T,DL / M_ant"},
+    "frame": {"tau_dl": 0.75, "tau_ul": 0.25, "tau_sig": 0.07142857142857142, "zeta_sig": 0.08333333333333333,
+              "as_printed": "eqs. (6), (12), (16): data x tau P + signalling tau tau_sig P + micro tau (1-x)(1-tau_sig) P delta + idle (1-tau) P delta; the frame fractions sum to 1 + tau x tau_sig (data and signalling overlap); implemented as printed"},
+    "eta_sc": {"dig": 0.8, "ana": 0.8, "pa": 0.8},
+    "signalling_power": {"reference": "zeta_sig P_max (eq. 16 as printed)", "project": "zeta_sig P_a (Golard's definition P_sig = zeta_sig P_full); identical when P_a = P_max"}
+  },
+  "fr3_unstated_inputs": {
+    "upsilon_coh": {"value": 200, "sensitivity": [50, 1000], "rationale": "samples per coherence block are not stated; 200 is a common massive-MIMO coherence-block length; the term enters only the precoder-matrix computation and scales as 1/upsilon_coh"},
+    "rates": {"r_dl_full_bps": 13e9, "r_ul_full_bps": 2e9, "rule": "R_i = R_i,full x_i for every M_RF (the text gives 'more than 13 Gbit/s' DL and 'more than 2 Gbit/s' UL for fully digital at full load); they enter only the encoder and decoder, whose dynamic power is reported as a bound"},
+    "project_rates": "R_i,full scaled by B / 400 MHz"
+  },
+  "fr3_reference_reproduction": {
+    "hardware": {"fc_hz": 10e9, "B_hz": 400e6, "M_ant": 1024, "K": 8, "p_t_rule": "P_T,DL = 100 M_ant / 1024 W", "pa": "sige"},
+    "targets": [
+      {"id": "T1", "what": "total P_cons", "M_RF": 16, "x_dl": 1.0, "x_ul": 1.0, "published_w": 740, "tol": "rel 0.02"},
+      {"id": "T2", "what": "total P_cons", "M_RF": 1024, "x_dl": 1.0, "x_ul": 1.0, "published_w": 1658, "tol": "rel 0.02"},
+      {"id": "T3", "what": "total P_cons", "M_RF": 16, "x_dl": 0.3, "x_ul": 0.3, "published_w": 300, "tol": "rel 0.02"},
+      {"id": "T4", "what": "total P_cons", "M_RF": 1024, "x_dl": 0.3, "x_ul": 0.3, "published_w": 1044, "tol": "rel 0.02"},
+      {"id": "T5", "what": "PA of M_ant = 1024 PAs", "M_ant": 1024, "x_dl": 0.3, "published_w": 262, "tol": "rel 0.02"},
+      {"id": "T6", "what": "PA of M_ant = 16 PAs (P_T = 100 x 16/1024 W)", "M_ant": 16, "x_dl": 0.3, "published_w": 4, "tol": "abs 0.5 W (published value rounded to 1 W)"}
+    ],
+    "pa_bar_interpretations": {"primary": "P_PA / eta_PA,s/c (the contribution to P_cons; Fig. 2's axis is P_cons)", "alternative": "P_PA without eta_PA,s/c"},
+    "gate_R2": "PASS if T1-T4 are within tolerance with upsilon_coh = 200 and T5-T6 are both within tolerance under one PA-bar interpretation, all with the printed static form, or, if R1 identifies the Golard form, with that form. The upsilon_coh sensitivity, the encoder/decoder bound and a time-consistent frame variant are reported as diagnostics only and are not routes to a pass. FAIL stops P3.1."
+  },
+  "project": {
+    "layer_3p5": {
+      "model": "2505.15445 compact model (5), published Table II 64T64R (AAU, TDD, 3.5 GHz, 100 MHz, 64 PAs x 3.125 W = 53 dBm); this is case C at 3.5 GHz",
+      "case_primary": "right", "case_sensitivity": "left",
+      "operating_point": "M_a = M = 64 (no antenna muting), P_a = P_max, time-domain load N_a/N = L",
+      "loads": [0.0, 0.05, 0.15, 0.3, 0.5, 1.0],
+      "decomposition": "PA / AFE / DBB parts from the recompute, only under the interpretation identified by R1"
+    },
+    "layer_7p2": {
+      "fc_hz": 7.2e9, "B_hz": 200e6, "M_ant": 1024, "K": 8,
+      "m_rf_primary": 256, "m_rf_sensitivity": [64, 128, 1024],
+      "architecture": "M_RF < M_ant: hybrid partially connected, M_PS = M_ant / M_RF; M_RF = M_ant: fully digital, M_PS = 0",
+      "power_points": {
+        "53dBm_assumedPA": {"p_t_dbm": 53.0, "pa": "sized", "p_max_rule": "P_max = P_T / M_ant", "eta_max": [0.15, "eta_3p5"], "eta_primary": 0.15, "alpha": 0.75, "xi": 0.1,
+                            "label": "assumed PA: an element PA sized to the 53 dBm requirement with the SiGe reference's efficiency parameters; eta_3p5 = Golard eq. 5 at 3.125 W and 3.5 GHz (the 3.5 GHz layer's own PA), an optimistic bound"},
+        "50dBm_SiGe": {"p_t_dbm": 50.0, "pa": "sige", "label": "source-exact: the FR3 paper's 100 W, 1024-antenna hardware at 7.2 GHz / 200 MHz"},
+        "43dBm_SiGe": {"p_t_dbm": 43.0, "pa": "sige", "label": "source-exact SiGe at Nokia's second 7 GHz level"}
+      },
+      "primary_point": "53dBm_assumedPA, eta_max 0.15, M_RF 256",
+      "loads_equal_dl_ul": [0.0, 0.05, 0.15, 0.3, 0.5, 1.0],
+      "loads_extra": [[1.0, 0.0], [0.0, 1.0]],
+      "signalling_power": "project rule (zeta_sig P_a)",
+      "static_form": "the static PA form under which R2 passes; if both forms pass, the one identified by R1",
+      "frame": "as fr3_model.frame (TDD 0.75 / 0.25, as Golard NR TDD; TR 38.864 DDDSU with S = 10D:2G:2U gives 0.743 / 0.229)"
+    },
+    "ladder": {
+      "anchor": "P_mu = FR3 P_cons with x_DL = x_UL = 0 and tau_sig = 0: every chain in micro sleep in its own direction and idle in the other (D4)",
+      "w_per_unit": "P_mu / P_micro,TR(category, set)",
+      "states": "P_light = w P_light,TR; P_deep = w P_deep,TR; E_add = w E_TR x 1e-3 J; T from Table 5.1-4",
+      "categories": ["cat1", "cat2"], "set_primary": "set1", "set_sensitivity": "set3",
+      "dl_anchor_sensitivity": "w_DL = P_DL,inst / P_active_dl,TR(set1), with P_DL,inst the instantaneous power of a full-load DL data symbol (DL chains active, UL chains idle, PAs at P_a); reported only to show the anchoring effect (P3.0's original rule)",
+      "breakeven": "for each sleep state, the shortest sleep that saves energy against staying on and empty (P_empty, signalling on): max(T, E_add / (P_empty - P_sleep))",
+      "availability": "full T after a wake request (primary), T/2 (sensitivity); used in P3.3, recorded here"
+    },
+    "d10_expected": {
+      "per_pa_w": {"53_1024": 0.194849835, "53_256": 0.779399340, "50_1024": 0.09765625, "50_256": 0.390625, "43_1024": 0.0194849835, "43_256": 0.0779399340},
+      "sige_max_total_dbm": {"1024": 50.1030, "256": 44.0824},
+      "tolerance": "rel 1e-5 (per PA), abs 1e-3 dB"
+    }
+  },
+  "gates": {
+    "J0_sources": "every file in 'sources' is supplied to the run and matches its SHA-256",
+    "J1_tr_transcription": "the rows of TR Tables 5.1-3, 5.1-4, 5.1-5 parsed from the .docx equal docx_expected_rows, and the numeric tables of this config equal those strings",
+    "J2a_fr3_two_implementations": "the closed-form FR3 implementation equals an independently written phase-ledger implementation (rel <= 1e-12) on every reference target, every project point and load, and for P_mu",
+    "J2b_sub6_compact_vs_direct": "the compact model (5) with the closed-form parameters equals the direct per-state sum of eqs. (6)-(9) (rel <= 1e-12) for every configuration, case and interpretation on a grid of L in {0, 0.3, 1}, M_a in {K+1, M}, P_a in {0.5 P_max, P_max}",
+    "R1_sub6_table2": "see sub6_recompute.gate_R1",
+    "R2_fr3_published": "see fr3_reference_reproduction.gate_R2",
+    "J3_rf_pa_consistency": "D10: per-PA outputs and SiGe limits equal d10_expected; every project point has P_a <= P_max (assumed-PA points by construction, SiGe points checked); 53 dBm with SiGe is flagged infeasible",
+    "J4_state_consistency": "for every project point and both layers: all powers > 0; P_deep < P_light < P_mu < P_empty <= P(load) non-decreasing over the equal-load grid; E_add >= 0; the ledger accepts the worked example with the exact energy and rejects a sleep shorter than T, two adjacent sleeps and a non-positive duration",
+    "J5_units": "W, s, J only: the TR conversion relative-power x ms -> J is checked on a worked example (w = 2 W per unit, E = 90 units x ms -> 0.18 J)",
+    "rule": "all J and R gates must pass; a failed gate stops P3.1 and is diagnosed in an amendment; failed-run evidence is kept"
+  },
+  "outputs": "results/phase3/p3_1_energy_models/{summary.json, validation.json, manifest.json, run1_stdout.txt}"
+}

@@ -1,0 +1,20 @@
+{
+  "generated_utc": "2026-11-09T22:58:59.833765+00:00",
+  "tool": "scripts/p3_2a_coupled_feasibility.py",
+  "git_head_at_run": "86df67d12354a5141290e5cb4fcaaa1805188e3e",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "config_sha256": "178357fb0b8d0c7fb64cb99cca7ed6ed9e50364a2446212900aaf0009d3a44a1",
+  "input_sha256": {
+    "e1c3_directional/manifest.json": "56e1deccd3a223d37d4eb949b500f9b2fc7b3f566f53bdf59b309d97198f9792",
+    "e1c3_directional/summary.json": "8c880e5f7911f7f4e4df2e9e75507ebfce60f9d380c1ffebff4f767c9b80b5c3",
+    "e1c3_directional/raw/counts_isd200.npz": "16d11155185251befa8b4fa12b0b489d5c5c489c442c9ce9b1151757f5d787b2",
+    "e1c3_directional/raw/counts_isd500.npz": "b1052c0322494b6013c2438333b909cbb96411410453f7e62ed388e7133c5ec3"
+  },
+  "outputs_sha256": {
+    "summary.json": "4e3e0c319a19f2f8cac0f9db47b007326a39ec58ef54eaba67ad613a40237904",
+    "raw/counts_isd200.npz": "956fcd306828800e74fe677fddeb2af35133379f05d777d006ec5c5d502464c5",
+    "raw/counts_isd500.npz": "944f941d791e96034a3cc7c8cfaddded35c5d0d7d855e21096f53daeb7c73319"
+  },
+  "all_checks_passed": true
+}

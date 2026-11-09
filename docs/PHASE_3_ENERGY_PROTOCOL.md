@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revision 1 (2026-11-09); P3.1 complete (run 2, amendment 1).** Revision 1
+Status: **P3.0 design proposal, revisions 1-2 (2026-11-09); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1).** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -837,6 +837,89 @@ is kept as `run1_stdout.txt`.
 - D14: DL 0.00024, UL 0.00009.
 
 Predictions, the D14 rule and every threshold are unchanged.
+
+#### P3.2a run 2 (commit 86df67d): all gates PASSED (2026-11-09, 2603 s)
+
+| Gate | Result |
+|---|---|
+| Q0 | Inputs pass |
+| Q1a | All on is bit-identical to E1c.3 `sd` (0 differing arrays) |
+| Q1b | 324 raw count arrays per ISD equal E1c.3's |
+| Q2 | Serving-only is bit-identical to `sd_iso72`; summary difference 0.0 |
+| Q3 | All off: 0 violations |
+| Q4 | Scalar path within 7.8e-14 dB (ISD 200) and 9.9e-14 dB (ISD 500) on 60 pairs each, cases A and C. The copy equals E1c.3's scalar exactly. This extends E1c.3's scalar check, which only covered case A, to case C |
+| Q5, Q6 | 0 violations |
+| Q7 | 384 / 384 leave-one-out comparisons equal |
+
+**Finding 1: a third of site 0's users are served by a neighbour.**
+- Best-server association gives 65–66% of the users in site 0's nominal
+  cell to site 0. About 31% go to ring-1 sectors and 3–4% to ring 2.
+- Switching a neighbour's 7.2 GHz cell off removes 7.2 GHz service from
+  users who are physically in site 0's area. This is the largest coupling
+  effect.
+- With site 0 alone, 7.2 GHz DL feasibility over all users falls from
+  0.996 to 0.650 (ISD 200, C, 50 dBm).
+- Controllers must therefore act per serving cell, as D13 implies.
+
+**Finding 2: interference coupling through feasibility is small in the
+primary configuration.**
+
+Users served by site 0, M.2412, F2:
+
+| Case | All on | q 0.75 / 0.5 / 0.25 | Site 0 only | Change |
+|---|---|---|---|---|
+| ISD 200, C 50 dBm, DL | 0.9977 | 0.9981 / 0.9986 / 0.9989 | 0.9994 | +0.17 points |
+| ISD 200, C 50 dBm, UL | 0.8866 | 0.8871 / 0.8875 / 0.8878 | 0.8883 | +0.17 |
+| ISD 200, A, DL | 0.9768 | 0.9821 / 0.9874 / 0.9916 | 0.9963 | +1.95 |
+| ISD 200, A, UL | 0.9206 | — | 0.9254 | +0.48 |
+| ISD 500, A, DL | 0.9031 | 0.9169 / 0.9293 / 0.9402 | 0.9496 | +4.65 |
+| ISD 500, C 50 dBm, DL | 0.9689 | — | 0.9742 | +0.53 |
+
+- Feasibility falls steadily as more neighbours switch on, nearly linearly
+  in q.
+- Case C's 16×32 arrays leave the F2 thresholds almost saturated. In the
+  primary configuration the activation coupling therefore acts through
+  service availability (Finding 1) and spectral efficiency (P3.2b), not
+  through the feasible/infeasible boundary.
+- E1c.3's "3–8 points" was the per-user serving-only counterfactual in
+  case A, which includes neighbour-served cell-edge users. It is consistent:
+  case A at ISD 200 gives 0.9618 against 0.9960 over all users.
+
+**Finding 3: 50 dBm costs little at ISD 200.** 7.2 GHz DL feasibility
+(case C, all on, all users):
+
+| ISD | 53 dBm | 50 dBm (primary) | 43 dBm |
+|---|---|---|---|
+| 200 | 0.9967 | 0.9960 (−0.07 points) | 0.9901 (−0.65) |
+| 500 | 0.9638 | 0.9505 (−1.3) | 0.9034 (−6.0) |
+
+UL and the 3.5 GHz layer are unchanged by construction (Q6).
+
+**Predictions.**
+- **P1 held.** Ring 2 off gains 0.025 points, against 0.172 points for all
+  neighbours off (a quarter would be 0.043).
+- **P2 failed.** The 53 → 50 dBm loss is 0.035 points with all on and
+  0.034 points with site 0 alone, the reverse of the predicted order.
+  - Both are negligible.
+  - At ISD 200 the few users that a 3 dB cut affects in case C are
+    noise-limited whether or not the neighbours are on.
+
+**Decision D14: cluster scoring is admissible for the primary point.**
+- Ring 2 off − all on: DL +0.025 points and UL +0.038 points, against the
+  1-point limit (users served by site 0, ISD 200, C at 50 dBm).
+- P3.3 may score the 7-site cluster at ISD 200, with ring 2 as an
+  interference guard and the truncation bias stated.
+- **Caveat, outside the rule:** the same quantity at ISD 500, case A, is
+  2.0 points (0.9031 → 0.9232). At ISD 500, P3.3 should score site 0 only
+  or carry the bias explicitly.
+
+**Limit of the leave-one-out map.**
+- Single-transmitter effects are dominated by the switched cell's own users
+  losing service. The ranking is site 0's sectors first, then the ring-1
+  sectors facing site 0.
+- The run did not separate the interference relief to other users, which
+  would need a served/unserved split that was not pre-registered. So the
+  map is not read as an interference ranking.
 
 ## 4. Open items
 

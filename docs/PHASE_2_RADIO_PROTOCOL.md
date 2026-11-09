@@ -632,6 +632,108 @@ results and the spatial input of Phase 3.
 - D_cb was measured at hUT 1.5 m and is applied to every floor.
 - Regime C is unmeasured.
 
+#### E1c.1 results (run 3): all gates PASSED; P1 and P2 held (2026-11-09)
+
+**Runs.** None of the runs below changed a definition.
+- **Run 1 (`b7d5531`)** passed C5 and C3. I stopped it after 40 min in the
+  sample loops: an NpzFile decompresses an array on every access. No
+  result was produced; its log is kept.
+- **Run 2 (`5bcc341`)** loads the arrays once. It passed every gate, but its
+  raw map file listed indoor-point coordinates only for points with
+  samples. 5 points lost every floor to the same-building rule, so the
+  coordinates were misaligned with the maps.
+- **Run 3 (`a666cd7`)** fixes the coordinates. Its `summary.json` and
+  `validation.json` are byte-identical to run 2's, whose manifest and
+  validation are kept.
+
+Gates:
+- C0, C2 (0 mismatches), C3 (minimum p 0.0014 over 8,100 tests), C4
+  (partition error 2.2e-16) and C5 pass.
+- K6 is at most 0.048 for a single sample and 0.000 in every mix.
+
+Generated from `summary.json`. M2412 mix, primary model. UL is feasible at
+both carriers; DL at 7.2 GHz. The radii are the disks with the area of
+the cell at ISD 200 m (105.0 m) and ISD 500 m (262.5 m), plus the whole
+20–600 m annulus. The E1.5.5 27-position values are shown for comparison:
+
+| Regime | Profile | Radius | UL 3.5 | UL 7.2 | DL 7.2 | K1 | K2 | K3 | K4 | K6 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| R0 | F2 | isd200 | 0.571 | 0.380 | 0.746 | 0.380 | 0.191 | 0.175 | 0.254 | 0.000 |
+| R0 | F2 | isd500 | 0.164 | 0.094 | 0.298 | 0.094 | 0.070 | 0.134 | 0.702 | 0.000 |
+| R0 | F2 | all | 0.039 | 0.021 | 0.080 | 0.021 | 0.019 | 0.040 | 0.920 | 0.000 |
+| R0 | F2 | 27 positions (E1.5.5) | 0.381 | 0.275 | 0.474 | 0.275 | 0.106 | 0.092 | 0.526 | 0.000 |
+| R0 | F3 | isd200 | 0.811 | 0.633 | 0.737 | 0.633 | 0.104 | 0.000 | 0.263 | 0.000 |
+| R0 | F3 | isd500 | 0.355 | 0.204 | 0.289 | 0.204 | 0.084 | 0.000 | 0.711 | 0.000 |
+| R0 | F3 | all | 0.100 | 0.050 | 0.077 | 0.050 | 0.026 | 0.000 | 0.923 | 0.000 |
+| R0 | F3 | 27 positions (E1.5.5) | 0.511 | 0.413 | 0.468 | 0.413 | 0.055 | 0.000 | 0.532 | 0.000 |
+| A | F2 | isd200 | 0.940 | 0.841 | 0.986 | 0.841 | 0.099 | 0.046 | 0.014 | 0.000 |
+| A | F2 | isd500 | 0.644 | 0.450 | 0.870 | 0.450 | 0.194 | 0.226 | 0.130 | 0.000 |
+| A | F2 | all | 0.282 | 0.148 | 0.647 | 0.148 | 0.134 | 0.365 | 0.353 | 0.000 |
+| A | F2 | 27 positions (E1.5.5) | 0.669 | 0.558 | 0.841 | 0.558 | 0.111 | 0.171 | 0.159 | 0.000 |
+| A | F3 | isd200 | 0.986 | 0.942 | 0.985 | 0.942 | 0.042 | 0.001 | 0.015 | 0.000 |
+| A | F3 | isd500 | 0.840 | 0.698 | 0.865 | 0.698 | 0.139 | 0.028 | 0.135 | 0.000 |
+| A | F3 | all | 0.555 | 0.352 | 0.637 | 0.352 | 0.201 | 0.084 | 0.363 | 0.000 |
+| A | F3 | 27 positions (E1.5.5) | 0.798 | 0.698 | 0.835 | 0.698 | 0.099 | 0.037 | 0.165 | 0.000 |
+| B | F2 | isd200 | 0.940 | 0.891 | 0.993 | 0.891 | 0.050 | 0.052 | 0.007 | 0.000 |
+| B | F2 | isd500 | 0.644 | 0.557 | 0.907 | 0.557 | 0.087 | 0.263 | 0.093 | 0.000 |
+| B | F2 | all | 0.282 | 0.218 | 0.737 | 0.218 | 0.063 | 0.455 | 0.263 | 0.000 |
+| B | F2 | 27 positions (E1.5.5) | 0.669 | 0.615 | 0.882 | 0.615 | 0.055 | 0.213 | 0.118 | 0.000 |
+| B | F3 | isd200 | 0.986 | 0.963 | 0.992 | 0.963 | 0.023 | 0.006 | 0.008 | 0.000 |
+| B | F3 | isd500 | 0.840 | 0.773 | 0.903 | 0.773 | 0.067 | 0.063 | 0.097 | 0.000 |
+| B | F3 | all | 0.555 | 0.465 | 0.728 | 0.465 | 0.090 | 0.174 | 0.272 | 0.000 |
+| B | F3 | 27 positions (E1.5.5) | 0.798 | 0.753 | 0.878 | 0.753 | 0.045 | 0.080 | 0.122 | 0.000 |
+| C | F2 | isd200 | 0.863 | 0.773 | 0.997 | 0.773 | 0.090 | 0.133 | 0.003 | 0.000 |
+| C | F2 | isd500 | 0.460 | 0.352 | 0.937 | 0.352 | 0.108 | 0.477 | 0.063 | 0.000 |
+| C | F2 | all | 0.152 | 0.103 | 0.809 | 0.103 | 0.049 | 0.657 | 0.191 | 0.000 |
+| C | F2 | 27 positions (E1.5.5) | 0.574 | 0.512 | 0.918 | 0.512 | 0.061 | 0.344 | 0.082 | 0.000 |
+| C | F3 | isd200 | 0.960 | 0.911 | 0.997 | 0.911 | 0.049 | 0.037 | 0.003 | 0.000 |
+| C | F3 | isd500 | 0.715 | 0.608 | 0.936 | 0.608 | 0.107 | 0.220 | 0.064 | 0.000 |
+| C | F3 | all | 0.359 | 0.258 | 0.806 | 0.258 | 0.101 | 0.447 | 0.194 | 0.000 |
+| C | F3 | 27 positions (E1.5.5) | 0.710 | 0.650 | 0.916 | 0.650 | 0.059 | 0.207 | 0.084 | 0.000 |
+
+What is established (one site, noise-limited, M2412 mix, primary model):
+
+1. **The cell size decides the 7.2 GHz uplink question.**
+   - **ISD 200 (Dense Urban):** the 7.2 GHz UL meets the per-user service
+     level (F2) for 84% (A), 89% (B) and 77% (C) of the area, and DL for
+     ≥ 98.6%. With a static frequency partition (F3), UL rises to 94%,
+     96% and 91%.
+   - **ISD 500:** F2 UL falls to 45% / 56% / 35%, and F3 UL to 70% / 77% /
+     61%. "7.2 DL works but no UL meets the service level" (K3) covers
+     23% / 26% / 48% of the area under F2, and 3% / 6% / 22% under F3.
+2. **The 27 positions misstate the area.** They are distance-stratified,
+   with 6 of the 27 at 450–600 m.
+   - Their UL fractions lie between the ISD 200 and ISD 500 area values.
+   - Their 7.2 GHz DL fractions are below both (A: 0.841 against 0.870 and
+     0.986).
+   - They must not be quoted as coverage.
+3. **The asymmetric option (7.2 GHz DL with 3.5 GHz UL, K2) is
+   substantial at ISD 500.** It covers 19% of the area (A, F2), against 11%
+   at the 27 positions. Outdoors it is 30% of NLOS area and 0 in LOS.
+4. **Upper floors matter.**
+   - F2 UL at 7.2 GHz in low-loss buildings rises from 9.6% on floor 1 to
+     70.6% on floor 8 (A, whole area).
+   - E1.4's ground-floor assumption understates indoor UL: 32% against 46%
+     over all floors (A, ISD 500, P2).
+   - The geometric indoor distance (median 9.4 m) costs more than TR's
+     stochastic one: 46% against 51%.
+5. **E1.4's assumptions on the same area are optimistic**, as in E1.5.5.
+   At ISD 500, A, F2: UL 7.2 is 0.519 → 0.450, DL 7.2 is 0.932 → 0.870, and
+   K4 is 0.068 → 0.130.
+6. **Uncertainty.** At ISD 500, the variant ranges are dominated by:
+   - the beam gain (DirectPath / eigen bound): A F2 K1 0.323–0.492;
+   - the indoor model (ground only / stochastic d2D-in).
+   The O2I version does not affect low-loss buildings, and its effect
+   overall is small.
+7. **Hazard-15 label (F1 only).** At ISD 500, F1 UL 7.2 is 0.921 (A)
+   against 0.971 with TR's low end. For the isotropic reference R0 it is
+   0.602 against 0.800.
+
+**Decision applied (pre-registered).** The primary area fractions at the
+two radii, with the variant ranges, are the paper's single-site area
+results and the spatial input of Phase 3. E1c.2 (multiple sites,
+interference) is next and is pre-registered separately.
+
 ### Original options considered
 
 Recommended (adopted): geometry-aware 3GPP model as the main engine. TR 38.901 UMa path

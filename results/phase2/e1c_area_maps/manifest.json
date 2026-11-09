@@ -1,0 +1,23 @@
+{
+  "generated_utc": "2026-11-09T13:56:41.507411+00:00",
+  "tool": "scripts/e1c_area_maps.py",
+  "git_head_at_run": "a666cd7",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "config_sha256": "712ee4677687c17fb872ff17b27ae1a2d4f8211a965264c76e629f40e390fd4f",
+  "input_sha256": {
+    "e1_5_2_1_beams/manifest.json": "6d8551bd95c93c56e02a0f1fcd98dea9c07cd972fb316bd6f9305b3e59758021",
+    "e1_5_3_link_mapping/manifest.json": "ce7ac5516490031cc90af3c9062deb158749dacf9a6d48cf1f83a7d890ccb47b",
+    "e1_5_3a_amc_diagnostic/manifest.json": "80559d904c5e57597ea4e366c5b898e6a3a57a4fa338f5ae09974c235d0fdaac",
+    "e1_5_4_multiuser/manifest.json": "a86df31223fab38796787df80f7532609f59ce30e5b8768748f993be5caaba59",
+    "e1_5_5_reclassification/manifest.json": "4f35d289e08f9769c6722dc412ebd6ea7d46f51016f8fe7b248de353e5989e43",
+    "e1_geometry/site_tx0_mask.npz": "d1cd5abd4ef71204ef3d80d591909ddb0042d622bc92897de132ed72c127a7c8",
+    "e1c_geometry/site_tx0_indoor.npz": "4e72c069219fd5eb909e8df85a35398b5219c1088c7c3f25a965876a512c27b7",
+    "e1c_geometry/site_tx0_indoor_manifest.json": "9e588939c8c8a3dd36261ca0dffa5d4e63b62def580331ed45aa6bfb198ecdc3"
+  },
+  "outputs_sha256": {
+    "summary.json": "796a0c31a8fa929090b92f1419e4f5f101f7294fa9ddcaf2eb097593f665f13d",
+    "raw/maps.npz": "a1845055e4340f834931556798c975a8ba59f10175310ea22a75ab45b4db75d3"
+  },
+  "all_checks_passed": true
+}

@@ -1,0 +1,36 @@
+{
+  "C0_inputs": {
+    "input_sha256": {
+      "e1_5_2_1_beams/manifest.json": "6d8551bd95c93c56e02a0f1fcd98dea9c07cd972fb316bd6f9305b3e59758021",
+      "e1_5_3_link_mapping/manifest.json": "ce7ac5516490031cc90af3c9062deb158749dacf9a6d48cf1f83a7d890ccb47b",
+      "e1_5_3a_amc_diagnostic/manifest.json": "80559d904c5e57597ea4e366c5b898e6a3a57a4fa338f5ae09974c235d0fdaac",
+      "e1_5_4_multiuser/manifest.json": "a86df31223fab38796787df80f7532609f59ce30e5b8768748f993be5caaba59",
+      "e1_5_5_reclassification/manifest.json": "4f35d289e08f9769c6722dc412ebd6ea7d46f51016f8fe7b248de353e5989e43",
+      "e1_geometry/site_tx0_mask.npz": "d1cd5abd4ef71204ef3d80d591909ddb0042d622bc92897de132ed72c127a7c8",
+      "e1c_geometry/site_tx0_indoor.npz": "4e72c069219fd5eb909e8df85a35398b5219c1088c7c3f25a965876a512c27b7",
+      "e1c_geometry/site_tx0_indoor_manifest.json": "9e588939c8c8a3dd36261ca0dffa5d4e63b62def580331ed45aa6bfb198ecdc3"
+    },
+    "passed": true
+  },
+  "C5_mapping": {
+    "non_monotone": [],
+    "passed": true
+  },
+  "C3_e155_agreement": {
+    "min_p_value": 0.0013880118548927896,
+    "n_tests": 8100,
+    "pooled_failures": [],
+    "passed": true
+  },
+  "C2_engine_exact": {
+    "mismatches": 0,
+    "passed": true
+  },
+  "C4_probabilities": {
+    "max_partition_err": 2.220446049250313e-16,
+    "min_prob": 0.0,
+    "max_k6": 0.04766147387880232,
+    "passed": true
+  },
+  "all_checks_passed": true
+}

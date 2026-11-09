@@ -1,0 +1,70 @@
+{
+  "experiment": "E1c.3: directional (per-beam) interference in the E1c.2 19-site layout: every interfering TRxP steers toward its own scheduled UE, every serving TRxP receives with a beam steered at its victim",
+  "status": "PRE-REGISTERED 2026-11-09, committed before the first directional-interference evaluation; models, settings, gates, predictions and decision rules are not changed after results are seen",
+  "protocol": "docs/PHASE_2_RADIO_PROTOCOL.md section 6, 'E1c.3'",
+  "code": {"engine": "scripts/e1c3_directional.py (imports scripts/e1c2_interference.py unchanged)", "tests": "tests/test_e1c3_directional.py"},
+  "why": "E1c.2 gave interferers 0 dB array gain (the average over beam directions). The average interference power is right, but its distribution is not: a neighbour's main lobe on the victim (or the victim's receive beam on an interferer) produces low-SINR events that an average cannot. E1c.2's findings 2, 4 and 5 were declared conditional on this.",
+  "seen_before_registration": [
+    "all E1c.2 results (run 1, e3e1c3f) and the ChatGPT audit of them (2026-11-09; its proposed protocol file was not provided, this pre-registration is written independently and covers its four requirements)",
+    "the E1.5.2-1 gain table and the specular fractions it implies (computed from the table, no SINR): array a (8x16) LOS 0.870/0.874, NLOS 0.307/0.299, O2I 0.326/0.333 at 3.5/7.2 GHz; array b (16x32, 7.2 GHz) LOS 0.872, NLOS 0.235, O2I 0.203",
+    "unit tests on synthetic 7-site layouts (per-beam code with a = 0 equals E1c.2 within 1e-9 dB; sd and sd_stress equal the independent scalar implementation within 1e-9 dB, also with sparse candidates so that synthetic DL targets are used) and a timing run on synthetic data of ISD-500 size (about 23 s and 1.8 GB per realization); no directional SINR of a real sample has been computed"
+  ],
+  "inherited_unchanged": "everything in configs/e1/e1c2_interference.json (geometry, victims, candidates, association, propagation, random terms, E1.5.5 V2 serving gains, thresholds, UL power rules) and its random streams: E1c.2's draws are reproduced exactly (gate H1a), so every comparison with E1c.2 is paired",
+  "beam_model": {
+    "array": "each TRxP: a uniform planar array per polarisation (rows along z, columns along the sector's local y axis, half-wavelength spacing; TR 38.901 clause 7.3), rows x cols of the case at that carrier (A: 8x16 both carriers; B and C: 8x16 at 3.5 GHz, 16x32 at 7.2 GHz)",
+    "steering": "ideal steering toward the geometric direction of the target (E1.4 convention): DL, each TRxP toward its own scheduled UE; UL, each serving TRxP toward its victim",
+    "pattern": "normalized power pattern g = |AF|^2 / N, the product of two Dirichlet kernels; g = N at the target (the E1.4 serving gain), mean 1 over steering directions (the E1c.2 value)",
+    "link_gain": "power gain of a beam toward a link = element gain x [a g + (1 - a)]: a fraction a of the link power arrives from the geometric direction (specular, sees the array pattern) and 1 - a is diffuse (sees the direction average, 1). a is calibrated per link so that the beam's gain toward its own target equals the E1.5.5 V2 serving gain: a N + 1 - a = N 10^(-D/10), with D = the V2 deficit of that link's stratum (E1.5.2-1 D_cb for A and B; C: 4.5 dB on NLOS links, 0 on LOS). The calibration uses only measured inputs and no shape parameter",
+    "brackets": "'avg' (a = 0): E1c.2; 'geo' (a = 1): pure geometric pattern, no angular spread (the most directive case, heaviest tail); 'sd' (calibrated a): primary"
+  },
+  "scheduling": {
+    "dl_target": "the DL beam of TRxP t points at t's scheduled UE: the E1c.2 UL candidate selected for t in that realization and case (one UE per TRxP on the victim's PRBs, synchronized TDD, full buffer); a TRxP serving no candidate (ISD 500 only) points at a uniform position (h 1.5 m) of its nominal cell and sector (count reported)",
+    "ul": "as E1c.2: one scheduled UE per other TRxP on the victim's PRBs, received with the victim's serving beam",
+    "activity": "'bern' (primary for eta < 1): each TRxP is active on the victim's resources with probability eta, independently per TRxP, DL and UL and realization (explicit collisions); 'mean': interference x eta (E1c.2). Both reported for eta 0.5 and 0.2; at eta = 1 they coincide",
+    "no_cross_link": "all cells use the same TDD pattern: DL interferes with DL, UL with UL"
+  },
+  "settings": {
+    "e1c2_reproduced": "all eight E1c.2 settings (primary = 'avg' reference, eta0p5, eta0p2, ul_off, ul_full, iso72, noise_multi, single_noise) through the unchanged E1c.2 code",
+    "per_beam": {
+      "sd": "primary: calibrated beam model, eta 1, UL target power, all 7.2 GHz carriers on",
+      "geo": "pure geometric pattern (a = 1)",
+      "avg_pb": "the per-beam code with a = 0 (gate H1b; equals E1c.2 primary)",
+      "sd_eta0p5_bern": "eta 0.5, explicit activity", "sd_eta0p5_mean": "eta 0.5, mean factor",
+      "sd_eta0p2_bern": "eta 0.2, explicit activity", "sd_eta0p2_mean": "eta 0.2, mean factor",
+      "sd_ul_off": "no UL interference", "sd_ul_full": "UL interferers at 23 dBm", "geo_ul_full": "geometric pattern, UL at 23 dBm",
+      "sd_iso72": "only the serving TRxP's 7.2 GHz carrier on (neighbour 7.2 GHz activation effect = sd vs sd_iso72)",
+      "sd_stress": "STRESS TEST, not a network estimate: the strongest interferer (largest received power with a = 0) is beam-aligned with the victim (DL: its beam points at the victim; UL: it lies in the victim's receive main lobe), all others as sd"
+    },
+    "isd": "ISD 200 primary; ISD 500 is a qualified sensitivity (10 of 19 sites virtual, 21 of 57 TRxPs without UL candidates)",
+    "cases": "A, B, C",
+    "realizations": 100,
+    "seed": 20261110,
+    "new_streams": "E1c.2 streams unchanged; stream 10: activity uniforms (DL 57, UL 57); stream 11: synthetic DL targets"
+  },
+  "gates": {
+    "H0_inputs": "E1c.2 and its inputs validated (manifests all_checks_passed, hashes, E1c.2 raw counts hash = its manifest)",
+    "H1a_e1c2_reproduced": "the E1c.2 settings recomputed here equal E1c.2 run 1: raw counts (primary, noise_multi, single_noise) identical, every setting's M2412 and highloss50 mix fractions within 1e-12",
+    "H1b_per_beam_limit": "avg_pb SINR equals E1c.2 primary SINR within 1e-9 dB (every victim, realization, carrier, DL and UL profile)",
+    "H2_array_pattern": "closed form equals the explicit phasor sum within 1e-9 x max(g, 1) for 20,000 random direction pairs per array (8x16 and 16x32); g = N at the steering direction; mean over a uniform 64 x 64 phase grid = 1 within 1e-12",
+    "H3_calibration": "a N + 1 - a equals N 10^(-D/10) within 1e-9 dB, and 0 <= a <= 1, for every (array, carrier, stratum) of the cases",
+    "H4_scalar_recompute": "per ISD, 50 (victim, realization) pairs of sd and sd_stress, case A: DL and UL (F1, F2, F3) SINR at both carriers within 1e-9 dB of an independent scalar implementation (explicit phasor sums, re-typed element pattern, scalar path loss, its own association, selection and target positions)",
+    "H5_mapping_partition": "as E1c.2 G4 for every setting",
+    "stop": "any gate fails: stop and diagnose"
+  },
+  "predictions_scored": {
+    "P1": "ISD 200, case A, M2412 mix, 7.2 GHz DL: sd has a LOWER 5th-percentile SINR and a HIGHER median SINR than avg (same mean interference, heavier tail)",
+    "P2": "same population: the 1st-percentile 7.2 GHz DL SINR is ordered geo < sd < avg"
+  },
+  "reported": [
+    "per ISD, setting, case, state and profile: class and feasibility fractions; M2412 and highloss50 mixes with Monte-Carlo SE",
+    "paired differences with SE (common random numbers): sd - avg, geo - avg, sd_ul_full - ul_full, sd - sd_iso72 (neighbour 7.2 GHz activation), bern - mean at eta 0.5 and 0.2",
+    "SINR quantiles 1, 5, 50, 95% per carrier for DL, UL F2, UL F3, per state and M2412 mix",
+    "array cases A vs B vs C under sd, sd_ul_full and geo_ul_full (does the larger 7.2 GHz array keep its advantage with explicit receive beams?)",
+    "TRxPs with synthetic DL targets, synthetic-sampling fallbacks"
+  ],
+  "decision_rules": {
+    "all_gates_pass": "sd becomes the primary interference-aware area result and the input of Phase 3, with [avg, geo] as the beam-model range; a feasibility statement is called robust to the beam model only where |sd - avg| <= 0.02 and |geo - avg| <= 0.02 for the M2412 F2 and F3 UL/DL fractions at ISD 200 in every case; otherwise it is reported with its range",
+    "gate_fails": "stop and diagnose"
+  },
+  "limits": "two-component (specular + diffuse) angular abstraction calibrated to D_cb measured at hUT 1.5 m at 27 positions, not a cluster-level channel; ideal geometric steering of interfering beams (no codebook quantization); one polarisation; single-antenna UE transmit; random scheduled UE (no coordinated scheduling, nulling or CoMP); no mechanical downtilt; everything listed in E1c.2's limits"
+}

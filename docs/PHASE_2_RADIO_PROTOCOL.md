@@ -1023,6 +1023,117 @@ paper's interference-aware area results and the load-dependent input of
 Phase 3, under the limits above. The per-beam interference model is the
 recommended next step (E1c.3, to be pre-registered separately).
 
+#### Audit of E1c.2 (ChatGPT, 2026-11-09) and response
+
+| Point | Response |
+|---|---|
+| Run E1c.3 (directional interference) before Phase 3 | Agreed; it was the recommended next step |
+| DL: each neighbour's beam toward its own scheduled UE; UL: the serving receive beam applied to unwanted UEs | Adopted |
+| Resource overlap; explicit scheduling is not the same as a mean activity factor | Adopted: synchronized TDD, one scheduled UE per TRxP on the victim's PRBs, and Bernoulli activity reported beside the mean factor |
+| Reuse E1c.2's positions and realizations | Adopted: E1c.2's random streams are reproduced exactly (gate H1a), so every comparison is paired |
+| Actual scheduled beams as primary; worst-case alignment only as a separate stress test | Adopted (`sd_stress`) |
+| The larger-array advantage under full-power UL is conditional | Agreed; the E1c.2 text already declared it conditional. Tested with explicit receive beams (`sd_ul_full`, `geo_ul_full`) |
+| ISD 500 lacks outer interferers; treat it as a sensitivity | Agreed; it was secondary and is now labelled a qualified sensitivity. However, its gain over E1c.1 (+7.4 points) is already present in `noise_multi`, which has no interference at all. Missing interferers can bias only the 1.2-point interference loss, not that gain |
+| Only two upstream drafts exist in `docs/upstream/` | **Correct, and I had misreported this.** Two drafts are written (DirectPath receive mismatch; SISO AMC). Reports 2 and 3 (OFDMA with a shared empty BeamId; hazard 14) are identified in `docs/E1_5_VALIDATION_PROTOCOL.md` but not drafted. Hazard 18 must first be classified as a defect or an unsupported configuration |
+| Proposed E1c.3 protocol file | Not provided to me. The pre-registration below is written independently and covers its four requirements |
+| One refinement of mine: angular spread | A pure geometric array pattern ignores the angular spread of NLOS links. E1.5.2-1 measured that a single beam toward an NLOS UE loses about 5 dB (8×16): about 70% of the power arrives outside the beam. A pure pattern therefore overstates both main-lobe collisions and nulls. The primary model is calibrated to that measurement; the pure pattern is kept as the most directive bracket |
+
+### E1c.3 directional (per-beam) interference (PRE-REGISTERED 2026-11-09)
+
+Files:
+- Config: `configs/e1/e1c3_directional.json` (normative).
+- Engine: `scripts/e1c3_directional.py`. It imports `scripts/e1c2_interference.py`
+  unchanged.
+- Tests: `tests/test_e1c3_directional.py`.
+
+**Unchanged from E1c.2:** layout, victims, candidates, association,
+propagation, random terms, serving gains, thresholds and UL power rules.
+E1c.2's draws are reproduced exactly, so every comparison is paired.
+
+**Beam model.**
+- **Array:** each TRxP is a rows × cols half-wavelength UPA (8×16, or
+  16×32 at 7.2 GHz for B and C), ideally steered toward its target.
+  - DL: every TRxP steers toward its own scheduled UE (the E1c.2 candidate
+    selected for it).
+  - UL: every serving TRxP steers toward its victim.
+- **Pattern:** g = |AF|²/N. It equals N at the target (the E1.4 serving
+  gain) and averages 1 over steering directions (the E1c.2 value).
+- **Link gain:** a beam's gain toward a link is element × [a·g + (1 − a)].
+  - A fraction a of the link's power arrives from the geometric direction
+    and sees the pattern. The rest is diffuse and sees the average.
+  - a is calibrated per link so that a beam's gain toward its own target
+    equals the V2 serving gain: a·N + 1 − a = N·10^(−D/10).
+  - Resulting a for the 8×16 array: LOS ≈ 0.87, NLOS ≈ 0.30, O2I ≈ 0.33.
+    For 16×32 NLOS: 0.23. The narrower beam captures less of the same
+    angular spread, a consistency the calibration did not force.
+- **Brackets:**
+  - `avg` (a = 0): E1c.2.
+  - `geo` (a = 1): the pure pattern, the heaviest tail.
+  - `sd` (calibrated a): the primary.
+- **TRxPs serving no candidate** (ISD 500 only) point at a uniform position
+  in their own cell and sector; the count is reported.
+
+**Settings.**
+- All eight E1c.2 settings, recomputed.
+- Per-beam settings:
+  - `sd` (primary), `geo`, and `avg_pb` (gate H1b);
+  - η 0.5 and 0.2, each with Bernoulli and with mean activity;
+  - `sd_ul_off`, `sd_ul_full`, `geo_ul_full`;
+  - `sd_iso72` (the effect of activating 7.2 GHz on neighbouring TRxPs);
+  - `sd_stress`: the strongest interferer is beam-aligned with the victim.
+    This is a stress test, not a network estimate.
+- ISD 200 is primary; ISD 500 is a qualified sensitivity. Cases A, B, C;
+  100 realizations; the E1c.2 seed, plus new streams for activity and
+  synthetic targets.
+
+**Gates:**
+
+| Gate | Requirement |
+|---|---|
+| H0 | E1c.2 and its inputs validated and hashed (including E1c.2's raw counts) |
+| H1a | E1c.2 reproduced: raw counts identical; every mix fraction within 1e-12 |
+| H1b | `avg_pb` equals E1c.2 primary within 1e-9 dB (every victim, realization, carrier and profile) |
+| H2 | Closed-form pattern equals the explicit phasor sum within 1e-9·max(g, 1) (20,000 pairs per array); peak N; grid mean 1 |
+| H3 | The calibration identity holds within 1e-9 dB and 0 ≤ a ≤ 1 for every array, carrier and stratum |
+| H4 | 50 pairs per ISD of `sd` and `sd_stress` (case A) within 1e-9 dB of an independent scalar implementation (explicit phasor sums) |
+| H5 | Mappings non-decreasing; classes partition |
+
+Before registration, the unit tests ran on synthetic layouts:
+- the per-beam code with a = 0 equals E1c.2;
+- `sd` and `sd_stress` equal the scalar implementation, including with
+  sparse candidates so that synthetic targets are used.
+
+A timing run on synthetic ISD-500-size data took about 23 s and 1.8 GB per
+realization. No directional SINR of a real sample has been computed.
+
+**Predictions** (scored; ISD 200, case A, M2412 mix, 7.2 GHz DL):
+- **P1:** `sd` has a lower 5th-percentile SINR and a higher median SINR
+  than `avg`: the same mean interference with a heavier tail.
+- **P2:** The 1st-percentile SINR is ordered `geo` < `sd` < `avg`.
+
+**Reported.**
+- Fractions with Monte-Carlo SE.
+- Paired differences with SE: `sd` − `avg`, `geo` − `avg`, `sd_ul_full` −
+  `ul_full`, `sd` − `sd_iso72`, and Bernoulli − mean at each η.
+- SINR quantiles (1 / 5 / 50 / 95 %).
+- Case A vs B vs C under explicit beams.
+
+**Decision (fixed now).** If every gate passes, `sd` becomes the primary
+interference-aware result and the input of Phase 3, with [`avg`, `geo`]
+as the beam-model range. A feasibility statement is called robust to the
+beam model only where |`sd` − `avg`| ≤ 0.02 and |`geo` − `avg`| ≤ 0.02 for
+the M2412 F2 and F3 UL/DL fractions at ISD 200 in every case; otherwise it
+is reported with its range.
+
+**Limits.**
+- The two-component angular abstraction is calibrated to D_cb, which was
+  measured at hUT 1.5 m at 27 positions; it is not a cluster-level channel.
+- Interfering beams are steered ideally (no codebook quantization); one
+  polarisation; single-antenna UE transmit.
+- Scheduling is random, with no coordination or nulling; no mechanical
+  downtilt.
+- E1c.2's limits also apply.
+
 ### Original options considered
 
 Recommended (adopted): geometry-aware 3GPP model as the main engine. TR 38.901 UMa path

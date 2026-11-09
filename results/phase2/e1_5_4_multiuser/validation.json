@@ -1,0 +1,83 @@
+{
+  "checks": {
+    "R6a": {
+      "exit_code": 0,
+      "runs": 21,
+      "files_compared": 98,
+      "differing_files": [],
+      "passed": true
+    },
+    "R6b": {
+      "runs": [
+        "t2_L93",
+        "t2_L113",
+        "t1_L113"
+      ],
+      "exit_codes": {
+        "t2_L93": 0,
+        "t2_L113": 0,
+        "t1_L113": 0
+      },
+      "differing_files": [],
+      "passed": true
+    },
+    "R6c": {
+      "runs": [
+        "b_t2_L93",
+        "b_t1_L113"
+      ],
+      "exit_codes": {
+        "b_t2_L93": 0,
+        "b_t1_L113": 0
+      },
+      "differing_files": [],
+      "passed": true
+    },
+    "R6d": {
+      "runs": [
+        "v1_a_f7p2_o2o_cb_b30",
+        "v1_a_f7p2_o2o_cb_b150",
+        "v1_a_f7p2_o2o_cb_b270"
+      ],
+      "exit_codes": {
+        "v1_a_f7p2_o2o_cb_b30": 0,
+        "v1_a_f7p2_o2o_cb_b150": 0,
+        "v1_a_f7p2_o2o_cb_b270": 0
+      },
+      "differing_files": [],
+      "passed": true
+    },
+    "E0": {
+      "runs_checked": 235,
+      "failed_runs": [],
+      "passed": true
+    },
+    "RES": {
+      "runs_checked": 235,
+      "failed_runs": [],
+      "passed": true
+    },
+    "V": {
+      "runs_checked": 235,
+      "failed_runs": [],
+      "passed": true,
+      "max_abs_err_db": 2.842170943040401e-14
+    },
+    "POP": {
+      "runs_checked": 235,
+      "failed_runs": [],
+      "passed": true
+    },
+    "BEAM": {
+      "runs_checked": 10,
+      "failed_runs": [],
+      "passed": true
+    },
+    "FIX": {
+      "runs_checked": 78,
+      "failed_runs": [],
+      "passed": true
+    }
+  },
+  "all_checks_passed": true
+}

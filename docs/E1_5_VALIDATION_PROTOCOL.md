@@ -1552,5 +1552,147 @@ instead uses (51/5) × the UE's own resources. The per-user targets are
 - Ideal control channels.
 - One drop per configuration from the 27-position development set.
 
+#### E1.5.4 results (run 2): all gates PASSED; P2, P3, P5, P6 held; P1 and P4 failed (2026-11-09)
+
+**Run 1 was interrupted, not failed.**
+- It ran from `dacf586` and passed R6a–R6d.
+- It was then killed when the Claude Code session ended, with 73 of 217
+  first-batch runs finished (none failed).
+- Its runs are reported only after a whole batch completes, so no measured
+  result was produced or seen. Its log is kept as
+  `run1_interrupted_stdout.txt`.
+
+**Run 2** is the same commit and configuration, restarted from scratch in a
+detached session.
+- 4 regression gates (R6a–R6d) and 235 measured runs (217 + 18), in
+  35 min.
+- Program SHA-256 `606911a5866f…`.
+- Files: `results/phase2/e1_5_4_multiuser/` (validation, summary,
+  per_ue.csv, manifest; raw local).
+
+| Gate | Result |
+|---|---|
+| R6a–R6d | all byte-identical: E1.5.2-0 98/98 files; 3 E1.5.3 runs; 2 E1.5.3a fixed-MCS runs; 3 E1.5.2-1 codebook runs |
+| E0, POP | all 235 runs |
+| RES | all 235 runs: every window TB matched one DCI; no RB clash; zero cross-UE symbol sharing under TdmaPF; part S data only on RBs 0–4 |
+| V | all 235 runs: maximum SINR error 2.8e-14 dB, including UL with real arrays and codebook beams (arm A) |
+| BEAM, FIX | 10 nrfading runs; 78 fixed-MCS runs |
+
+Thresholds are full-band SNR in dB at which the mean per-user SE reaches
+0.15 (UL) or 0.225 (DL). All values are generated from `summary.json`.
+
+| Part | UL threshold, mean UE (min UE) | DL threshold, mean UE (min UE) |
+|---|---|---|
+| H_T: 10-UE TdmaPF, stock AMC | 8.83 (8.85) | 13.28 (13.36) |
+| H_TC: 10-UE TdmaPF, C-AMC | 8.83 (8.84) | 13.47 (13.53) |
+| H_O: 10-UE OfdmaPF (dynamic), stock AMC | 19.41 (19.51) | 13.25 (13.32) |
+| S: static 5-RB partition, stock AMC | -0.02 (-0.02) | 14.32 (14.32) |
+| S_C: static 5-RB partition, C-AMC | -1.02 (-1.02) | 12.70 (12.70) |
+| analytic F2 (C-AMC) | 8.66 | 12.92 |
+| analytic F3 (C-AMC) | -1.26 | 13.34 |
+
+| Prediction | Measured | Verdict |
+|---|---|---|
+| P1 TDMA shares in [0.09, 0.11] | range 0.067-0.132 | FAILED |
+| P2 H_TC vs F2 within 1 dB | UL +0.17 dB, DL +0.55 dB | held |
+| P3 S_C vs F3 within 1 dB | UL +0.24 dB, DL -0.64 dB | held |
+| P4 H_O UL vs S UL within 1 dB | 19.41 vs -0.02 dB (+19.44) | FAILED (expected) |
+| P5 median A/Ag < 1 | 0.9932-0.9995 over 6 configuration-directions | held |
+| P6 H18 BLER gap >= 0.10 | 0.402 (3839/9557) after an RB increase vs 0.054 (1059/19563) | held |
+
+Mixed drop: per-UE prediction (F2 for A, Ag, Dt; F3 for C, Do; analytic
+C-AMC) against measured satisfaction (90 UE-cases per arm with beams, 60
+beamless):
+
+| Arm | direction | predicted & delivered | predicted, not delivered | not predicted, delivered | neither |
+|---|---|---|---|---|---|
+| A | UL | 67 | 7 | 0 | 16 |
+| A | DL | 90 | 0 | 0 | 0 |
+| Ag | UL | 71 | 3 | 0 | 16 |
+| Ag | DL | 90 | 0 | 0 | 0 |
+| C | UL | 51 | 38 | 0 | 1 |
+| C | DL | 90 | 0 | 0 | 0 |
+| Dt | UL | 30 | 0 | 0 | 30 |
+| Dt | DL | 36 | 0 | 3 | 21 |
+| Do | UL | 30 | 3 | 0 | 27 |
+| Do | DL | 33 | 3 | 0 | 24 |
+| B | UL | 3 | 2 | 0 | 5 |
+| B | DL | 5 | 0 | 0 | 5 |
+
+What is established (5G-LENA v5.1, single cell, full buffer):
+
+1. **F2 holds at packet level.** In a 10-UE TdmaPF cell, the per-user SE
+   reaches the F2 targets within 0.17 dB (UL) and 0.55 dB (DL) of the
+   analytic C-AMC thresholds. This holds although 5G-LENA splits every slot
+   into 1–2-symbol TBs, not the 12–13-symbol TBs of E1.5.3.
+   - Stock and C-AMC agree in UL (8.83 dB both).
+   - In mixed-SNR cells, the gain-folded TDMA arm Ag matches the
+     homogeneous-cell curve: median per-UE ratio 1.000 (DL) and 0.997 (UL).
+     PF gives equal time shares whatever the other UEs' SNRs.
+2. **F3 holds at packet level as a static partition.** One UE holding RBs
+   0–4 continuously, with its 23 dBm concentrated there, reaches the F3
+   targets within 0.24 dB (UL) and 0.64 dB (DL) of the analytic thresholds
+   under the same MCS rule.
+   - The UL gain over F2 is real at packet level: about 9.8 dB lower UL
+     threshold (−1.02 vs 8.83 dB).
+3. **5G-LENA's dynamic UL OFDMA does not deliver F3 (hazard 18).**
+   - OfdmaPF needs 19.4 dB for the UL target: 10.6 dB **worse** than TDMA
+     and 19.4 dB worse than the static partition. DL is unaffected (13.25 dB).
+   - Mechanism (P6, scored): first-transmission UL BLER is 0.40 after a
+     UE's RB count grows and 0.054 otherwise. This fits the UL MCS being
+     taken from the per-RB SINR of the previous, smaller allocation.
+   - In the mixed drop, OFDMA (arm C) delivers the UL target to 51 of the
+     89 UE-cases that F3 predicts. TDMA (Ag) delivers 71 of the 74 that F2
+     predicts.
+   - So the F3 benefit depends on the scheduler. A real NR scheduler would
+     need power-headroom-aware UL link adaptation (or semi-static
+     allocation), which this 5G-LENA version lacks.
+4. **The analog stack with real arrays matches the gain-folded model in
+   median.**
+   - A/Ag median per-UE SE ratio is 0.993–0.9995, and UL and DL mean beam
+     gains are identical (|difference| 0 dB in all 9 drops). So by the
+     pre-registered rule, E1.5.5 needs no selectivity sensitivity.
+   - *Post hoc, not pre-registered:* for UEs not at saturation, the A/Ag UL
+     ratio has a median of 0.76–0.91 and goes down to 0. In the confusion
+     table A loses 4 more UL UEs than Ag (7 vs 3 predicted-but-not-delivered).
+   - Frequency selectivity therefore matters for **marginal UL links**.
+     E1.5.5's pre-registration should carry it as a sensitivity for links
+     near the UL threshold.
+5. **P1 failed only where UL delivers nothing.** All 28 violating
+   run-directions are UL at full-band SNR ≤ −1.6 dB, where every UL
+   transmission fails (first-transmission BLER 0.965–1.0) and per-user SE is
+   0. There, TdmaPF shares spread to 0.067–0.132. Wherever UL data is
+   delivered, shares stay within [0.09, 0.11]. The prediction stays FAILED
+   as registered; it changes no threshold.
+6. **Arm B (shared beam, OFDMA, diagnostic).**
+   - DL and UL frequency multiplexing occurs on disjoint RBs: 10,368
+     symbol-sharing DCI pairs, with RES and V passing.
+   - Every UE receives grants. The 5 UEs far from the shared beam (UL SNR
+     −12 to −41 dB) deliver nothing in UL, and 3 of them nothing in DL.
+   - PF still gives them equal shares, so the in-beam UEs reach only
+     0.26–0.37 (DL) per-user SE. This is the cost of one analog beam serving
+     a spread-out cell.
+
+**Decisions applied (pre-registered).**
+- **E1.5.5 F2:** analytic C-AMC thresholds (UL 8.66, DL 12.92 dB). H_TC
+  (8.83 / 13.47 dB) is the sensitivity.
+- **E1.5.5 F3:** analytic C-AMC thresholds (UL −1.26 full-band, DL
+  13.34 dB). S_C (−1.02 / 12.70 dB) is the sensitivity.
+  - F3 is labelled "static frequency partition with UE power concentration;
+    digital or hybrid gNB; gain-equivalent abstraction".
+  - It is a scheduler-dependent bound: 5G-LENA's dynamic OfdmaPF does not
+    reach it (hazard 18).
+- **Selectivity:** no sensitivity is required by the pre-registered median
+  rule. Item 4 recommends one for marginal UL links in E1.5.5's own
+  pre-registration.
+
+**Hazard 18 (recorded).** 5G-LENA v5.1 `NrMacSchedulerOfdmaPF` uplink,
+full buffer, 10 UEs in one beam group:
+- RB counts per UE swing between 1 and 51;
+- first-transmission BLER is 0.40 after an RB-count increase;
+- the per-user UL SE target needs 19.4 dB, against 8.8 dB with TdmaPF.
+
+It is a candidate fifth upstream report (draft not yet written).
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

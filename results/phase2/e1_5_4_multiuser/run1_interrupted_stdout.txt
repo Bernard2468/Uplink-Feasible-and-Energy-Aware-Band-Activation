@@ -1,0 +1,5 @@
+R6a PASS
+R6b PASS
+R6c PASS
+R6d PASS
+--- run 1 (from dacf586) was killed when the Claude Code session ended; the last run finished at 11:20:10 UTC (WSL clock); 73 of 234 batch-1 runs had finished, none failed; no run was analysed. Note written 11:26 UTC. Run 2 restarts from scratch from dacf586, configuration unchanged.

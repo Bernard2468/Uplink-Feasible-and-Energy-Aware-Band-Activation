@@ -1,0 +1,11 @@
+J0 True
+J1 True
+J2b True R1 False []
+R1u True
+R2 (v1, recorded) False
+J2c True R2pub True
+J2a_fr3_two_implementations True
+J3_rf_pa_consistency True
+J4_state_consistency True
+J5_units True
+GATES PASSED 0.5 s

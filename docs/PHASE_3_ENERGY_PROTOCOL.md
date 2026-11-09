@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revision 1 (2026-11-09).** Revision 1
+Status: **P3.0 design proposal, revision 1 (2026-11-09); P3.1 complete (run 2, amendment 1).** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -591,6 +591,91 @@ Recorded in the config (`amendments`).
   diagnostic. Only J2c is a new test.
 - **New sources under J0:** the Lirias PDF and the code files.
 
+#### P3.1 run 2 (commit bc2d8af): all Amendment-1 gates PASSED (2026-11-09)
+
+| Gate | Result |
+|---|---|
+| J0 | 11 source files match |
+| J1 | TR tables equal the .docx |
+| J2a | 192 cases, max rel. diff 3.2e-16 |
+| J2b | 288 cases, max rel. diff 3.6e-16 |
+| J2c | 42 cases, max rel. diff 2.0e-16 |
+| R2pub | 643.13 / 1389.35 / 252.93 / 848.79 W (≤ 0.03%); PA 209.92 W and 3.28 W |
+| R1u | 64T64R: γ 3.50, P0 {0, 53.92}, P1 {341.57, 161.95}, P_sleep 550.23 (exact to the printed decimals) |
+| J3 | SiGe infeasible at 53 dBm with 1024 or 256 PAs; feasible at 50 dBm with 1024 PAs (0.0977 W each, not with 256); feasible at 43 dBm |
+| J4, J5 | Pass |
+
+The recorded R1 and R2 (v1) failures are bit-identical to run 1.
+
+**3.5 GHz layer** (64T64R, case C; η_max 0.287 by Golard eq. 5):
+
+| Load L | 0 | 0.15 | 0.3 | 0.5 | 1 |
+|---|---|---|---|---|---|
+| With µDTX (primary) | 712.2 W | 799.2 | 886.3 | 1002.4 | 1292.6 |
+| Without µDTX | 891.8 W | 970.8 | 1049.7 | 1155.0 | 1418.3 |
+
+At L = 0 the split is PA 36.2, AFE 456.0 and baseband 219.9 W. The AFE and
+baseband are load-independent.
+
+**7.2 GHz layer** (published FR3 model, M_RF 256, equal DL/UL load):
+
+| Point | Empty | 0.15 | 0.3 | 1 | P_µ |
+|---|---|---|---|---|---|
+| 53 dBm, assumed PA η 0.15 (**primary**) | 214.8 W | 383.8 | 552.9 | 1341.9 | 195.0 |
+| 53 dBm, assumed PA η 0.287 | 172.5 | 263.8 | 355.0 | 780.9 | 160.7 |
+| 50 dBm, SiGe | 171.6 | 259.9 | 348.3 | 760.5 | 160.0 |
+| 43 dBm, SiGe | 167.2 | 201.0 | 234.7 | 392.2 | 160.0 |
+
+- **Primary point at full load:** PA 1175.0 W, analog 94.8 W, digital
+  72.2 W.
+- **M_RF** (primary power point, empty / full load):
+  - 64: 131.6 / 1230.3 W;
+  - 128: 159.3 / 1267.5 W;
+  - 256: 214.8 / 1341.9 W;
+  - 1024: 536.1 / 1775.3 W.
+- **PA efficiency** dominates at high load: η 0.15 → 0.287 lowers full-load
+  power from 1342 to 781 W.
+
+**Sleep ladder at the primary point** (anchored at P_µ = 195.0 W, Set 1):
+
+| | Light sleep | Deep sleep |
+|---|---|---|
+| Cat 1 | 88.6 W; T 6 ms; E_add 0.32 J | 3.54 W; T 50 ms; E_add 3.54 J |
+| Cat 2 | 74.4 W; T 0.64 s; E_add 38.6 J | 35.5 W; T 10 s; E_add 603 J |
+
+- **Break-even against staying on and empty** equals the transition time T
+  in every Set-1 case: a sleep pays as soon as it is allowed. In Cat 2 with
+  Set 3, light sleep needs 0.90 s, more than its T of 0.64 s.
+- **The anchoring matters.**
+  - The FR3 model's P_µ / P_DL,inst is 0.108, against TR Set 1's 0.196
+    (Cat 1) and 0.172 (Cat 2).
+  - The P3.0-style DL anchor would put micro sleep at 354.9 W (Cat 1),
+    1.8× the component value.
+  - So the D4 revision changes sleep powers by up to 1.8×. The DL anchor
+    stays a reported sensitivity.
+
+**What P3.1 establishes.**
+- Both hardware models are implemented, and each reproduces its published
+  source.
+  - The 3.5 GHz layer reproduces the measurement-anchored parameters exactly.
+  - The 7.2 GHz layer reproduces the ICASSP 2026 numbers within 0.03%, and
+    agrees with the authors' code formulas to machine precision.
+- The TR ladder is attached consistently.
+- 53 dBm needs a PA beyond the sourced SiGe design. This is now explicit in
+  every result.
+
+**Key caveat found by P3.1 (open item 5).**
+- The two layers are modelled by different kinds of model.
+- The 3.5 GHz model is anchored to measurements of real equipment: 712 W
+  with no load, of which AFE 456 W and baseband 220 W.
+- The 7.2 GHz model is built bottom-up from components: 215 W with no load.
+  Such models typically omit costs of real equipment (control, misc AFE,
+  power-supply overhead beyond η, fans).
+- **Comparing the two directly may therefore favour activating 7.2 GHz.**
+- P3.2 must pre-register a sensitivity before any energy comparison: the
+  7.2 GHz load-independent power raised to the 3.5 GHz measured
+  load-independent level per unit of hardware.
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the
@@ -603,6 +688,11 @@ Recorded in the config (`amendments`).
 3. **P3.3, secondary-cell activation delay** from TS 38.133.
 4. **Radio–hardware architecture caveat** (D2, D3): stated in the paper,
    with E1.4 S4 as its radio-side size.
+5. **Model-class asymmetry** (found in P3.1 run 2). The 3.5 GHz model is
+   measurement-anchored; the 7.2 GHz model is bottom-up (712 W against
+   215 W with no load). Before any energy comparison, P3.2 must
+   pre-register a sensitivity that scales the 7.2 GHz load-independent
+   power to the measured level, with its rule fixed in advance.
 
 ## 5. Audit of P3.0 (ChatGPT, 2026-11-09) and response
 

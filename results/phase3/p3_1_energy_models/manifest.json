@@ -1,0 +1,25 @@
+{
+  "generated_utc": "2026-11-09T21:24:43.697303+00:00",
+  "tool": "scripts/p3_1_energy_models.py",
+  "git_head_at_run": "bc2d8af4ea60cf2afd71d78691baac6a2aaf0ec3",
+  "python": "3.12.16",
+  "config_sha256": "85f786360194850152221bcfbdd9452e6c5fe2c604b0b9f784a5455f92e409a5",
+  "source_sha256": {
+    "tr38864_zip": "99770bf7a80e9ae26184e6c76f6c421464fcb8dd9bb56e5cf7d0f2bba5c08e1f",
+    "tr38864_docx": "2ad6b86b9c0ee116044649150a2a7d66f85893e9447bb1404355817910ff0e4a",
+    "fr3_pdf": "9ca1c6feb7a788777e623f074f0aaa592081018364de26aaf5f0899262fea760",
+    "sub6_pdf": "1dabc722e528cba1c13dce90340bf1e6d7db8844b5067c87f2431ea267c34fea",
+    "sub6_html": "16031c91bae1f472f9e43071b224a9884031d25d604e02fea73b1776791c590a",
+    "golard_pdf": "a45a409468aac8d8d7bc64f3a2f80b3df7dd4e617a459cf58bd5f7b7fe15aa9a",
+    "nokia_pdf": "c240137ffac12c85261bf80d66139bbe1e85267fbb303b5436305ece49d88376",
+    "fr3_lirias_pdf": "212bcf8b75f74cb4ed8c50b885cc60ed75e1f66e71979728dbe646814edf9dc2",
+    "fr3_code_fig2a": "0f25e8eb3ebf555bf41d7cf81e4f45088da3aca5bf7ce8953b4bb394fcf0c658",
+    "fr3_code_fig2b": "508b91a9fbd7ad1053bc72e333cd148d88a99781c427f082714a7bc812b1402b",
+    "fr3_code_readme": "fd14a73aa3de20e53308f2cfbe40df1abb5a41fad3442ca8f9a0548873c63021"
+  },
+  "outputs_sha256": {
+    "summary.json": "15ae6fa42d925a7aff659e04909fd45978e7e30e415153566b152a3190629fc7",
+    "validation.json": "3bbb31e05b7c5d4dc64e217d9cb37eb4a55165dec87859342a80757a6eefc9f1"
+  },
+  "all_checks_passed": true
+}

@@ -1264,6 +1264,31 @@ What is established (gates passed):
   post-hoc diagnostic).
 - ISD 500 relies on synthetic DL targets for 21 of 57 TRxPs.
 
+#### Erratum to E1c.3 (2026-11-09, after the ChatGPT audit of P3.0)
+
+The text above and the pre-registered config call `avg` and `geo`
+"brackets" and once "the `geo` bound". That is wrong as a general claim.
+No number changes; the frozen config is not edited and this note
+supersedes its wording.
+
+- **Per link,** the `sd` gain a·g + (1 − a) lies between the `geo` gain g
+  and the `avg` gain 1.
+- **Per victim, it need not.** Interference is a sum over links, each with
+  its own a. Two links with g = (10, 0.1) and a = (0, 1) give
+  I_sd = w₁ + 0.1·w₂, below both I_avg = w₁ + w₂ and I_geo = 10·w₁ + 0.1·w₂.
+- **`geo` is not the worst physical alignment.** The `stress` setting is the
+  explicit worst-alignment probe, and it is not a physical bound either.
+- **Correct reading.**
+  - `avg`, `sd` and `geo` are three alternative interference assumptions.
+  - The ordering avg ≥ sd ≥ geo of the reported feasibility fractions is an
+    empirical result of this run, not a guarantee.
+  - "UL is robust" means the three assumptions agree within the
+    pre-registered 0.02. It does not mean the truth lies between them.
+
+The rest of that audit (manifest hashes match the archived outputs; P1's
+failure is kept; P2 held; ISD 500 is a qualified sensitivity) needs no
+change.
+
 ### Original options considered
 
 Recommended (adopted): geometry-aware 3GPP model as the main engine. TR 38.901 UMa path

@@ -124,10 +124,18 @@ traffic and ignoring additional transient QoS costs. This is a *simplified
 necessary tradeoff*, not a universal theorem for a real cellular system.
 
 Published prior-art anchors to evaluate:
-- Peschiera et al., FR3 base-station parametric power model, arXiv
-  2510.10647v1 (Oct 2025); https://arxiv.org/abs/2510.10647. *Corrected
-  2026-11-09: an earlier version of this file said "ICASSP 2026", which is
-  not verified. The arXiv text states no venue.*
+- Peschiera et al., "A parametric power model of upper mid-band (FR3) base
+  stations for 6G", IEEE ICASSP 2026, pp. 21476–21480, DOI
+  10.1109/ICASSP55912.2026.11464669; the implemented text is arXiv
+  2510.10647v1. *Corrected twice on 2026-11-09. A first correction called
+  "ICASSP 2026" unverified, because the arXiv PDF states no venue. That
+  check was incomplete: the Crossref record of the DOI and the arXiv
+  "Related DOI" confirm the venue.*
+- Peschiera et al., sub-6 GHz energy-saving optimization with a
+  measurement-anchored power model, IEEE Trans. Commun., vol. 74 (2026),
+  pp. 8961–8977, DOI 10.1109/TCOMM.2026.3693185 (implemented: arXiv
+  2505.15445v1). Its parameters derive from Golard et al., PIMRC 2024, DOI
+  10.1109/PIMRC59610.2024.10817448.
 - López-Pérez, Piovesan, Geraci, multi-layer 6G capacity and power with the
   upper mid-band, arXiv 2411.09660 (ICC 2025); and López-Pérez, Piovesan,
   Bernabè, arXiv 2601.13993 (real deployment data). These are the closest

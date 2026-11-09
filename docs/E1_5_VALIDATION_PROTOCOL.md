@@ -1694,5 +1694,76 @@ full buffer, 10 UEs in one beam group:
 
 It is a candidate fifth upstream report (draft not yet written).
 
+### E1.5.5: reclassification of the E1.4 records (PRE-REGISTERED 2026-11-09)
+
+- Config: `configs/e1/e1_5_5_reclassification.json`.
+- Script: `scripts/e1_5_5_reclassification.py`.
+- Tests: `tests/test_e1_5_5_reclassification.py`.
+- `cmwave/radio/link_budget.py` gains an optional `se_fn`. With the default,
+  E1.3/E1.4/E1.5.0 are unchanged: a unit test checks array equality, and
+  gate X1 checks every E1.4 fraction.
+
+**What changes relative to E1.4.** Each input below is the pre-registered
+decision of the E1.5 stage named in brackets.
+
+| Input | E1.4 | E1.5.5 primary (V2) | Sensitivities |
+|---|---|---|---|
+| gNB gain | ideal steering | E1.4 gain − D_cb per array, carrier and stratum (E1.5.2-1). O2O LOS/NLOS for outdoor and in-car, O2I for indoor. Regime C: 4.5 dB on outdoor-NLOS links, since C is unmeasured (E1.5.2-1 rule) | D_dp, D_eig, D_cb CI bounds; regime C with matched measured arrays |
+| SNR → SE | TR 36.942 | C-AMC T2 curve, piecewise linear, 0 below its floor (E1.5.3a) | C-AMC T1, raw 5G-LENA T2, TR 36.942, C-AMC with TR's low end (hazard 15) |
+| F1 floor | −10 dB | the mapping's floor: DL −1.64, UL −0.64 dB | TR's −10 dB (variant m_trlow) |
+| F2 | as defined | unchanged definition (E1.5.4 P2 held) | E1.5.4 packet thresholds (H_TC) |
+| F3 | E1.5.0 (DL = F2) | UL as E1.5.0. DL uses the PRB-granular share n_max/N, as E1.5.4's analytic F3 (E1.5.4 P3 held) | E1.5.4 packet thresholds (S_C) |
+| Other | — | — | selectivity factor r_UL 0.757, r_DL 0.946 (E1.5.4 post hoc), regimes A and B; O2I V19.5.0 |
+
+**Settled before registration (curve only, no record evaluated).**
+- For every mapping and N_PRB 51, 273 and 546, the E1.3 "best over n PRBs"
+  UL allocation never passes the F2 or F3 threshold when the full
+  allocation fails.
+- So E1.4's definition and the E1.5.4-validated full-band and n = 5
+  definitions classify identically. Gate X7 checks this for every record.
+
+**Gates** (any failure stops the stage):
+
+| Gate | Requirement |
+|---|---|
+| X0 | Every input stage validated; E1.4 config and summary hashes match |
+| X1 | V0 (TR, ideal gain) reproduces every E1.4 fraction exactly. Dry run: 0 differences |
+| X2 | V0 reproduces every E1.5.0 F3 fraction exactly. Dry run: 0 differences |
+| X3 | Every mapping is exact at its grid points and 0 below its floor; C-AMC T2 is non-decreasing |
+| X4 | Every applied gain equals E1.4 − D, recomputed independently |
+| X5 | Classes K1–K4, K6 partition every record; K6 = 0 in shared states |
+| X6 | The E1.5.0 F2 ⇒ F3 bound holds for every variant with one monotone SE function |
+| X7 | Allocation identity (above) |
+| X8 | Mix weights valid |
+
+**Predictions** (scored):
+
+| Prediction | Statement (M2412 mix) |
+|---|---|
+| P1 | F2 UL feasibility falls from V0 to V2 for A and B at both carriers. The 4.7–6.9 dB NLOS/O2I deficit outweighs the 2.3 dB easier UL threshold in an 80%-indoor mix |
+| P2 | F2 7.2 GHz DL feasibility falls for A and B |
+| P3 | Under V2, K3 is smaller with F3 than with F2 for A, B and C |
+
+**Reported.**
+- Every variant × case × state × profile.
+- Transition matrices V0 → V2.
+- Attribution in both orders:
+  - V0 → V1 (gain) → V2 (mapping);
+  - V0 → V1b (mapping) → V2 (gain).
+- The hazard-15 label: records that close only with TR's low end.
+- A sensitivity table, `sensitivity.csv`.
+
+**Decision (fixed now).** If every gate passes, V2 is the E1.5
+classification for E1c and the paper. E1.4's numbers are superseded and
+kept as V0.
+
+**Limits.**
+- Single site, SNR not SINR, link-budget level.
+- UE MRC as an ideal mean-SNR gain; E1.5's packet runs used 1 Rx.
+- Regime C's gain and its 100/200 MHz behaviour are not measured.
+- C-AMC was measured at 20 MHz with 51-RB TBs.
+- The F1 floors were measured on 51-RB TBs but are applied to 1-PRB SNR.
+- The 27 positions × 200 realizations are not area-weighted.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

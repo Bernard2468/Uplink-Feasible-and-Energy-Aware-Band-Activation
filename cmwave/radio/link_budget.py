@@ -10,6 +10,8 @@ Uplink: the UE transmits its maximum power on n PRBs; noise over n PRBs with
 the gNB noise figure; reported rate = max over n of n * PRB_bw * SE(SNR(n)).
 E1.4: downlink() and uplink() accept an optional per-link antenna gain
 (gain_db, direction-specific); without it the E1.3 computation is unchanged.
+E1.5.5: both also accept an optional SNR-to-SE mapping se_fn(snr_db, direction);
+without it the TR 36.942 mapping (mapped_se) is used, as before.
 """
 from __future__ import annotations
 
@@ -86,8 +88,9 @@ def _link_gain(gain_db, loss, cfg: CarrierConfig):
     return g
 
 
-def downlink(loss_db, cfg: CarrierConfig, gain_db=None) -> dict:
-    """gain_db: optional per-link gNB transmit + UE receive gain [dB]."""
+def downlink(loss_db, cfg: CarrierConfig, gain_db=None, se_fn=None) -> dict:
+    """gain_db: optional per-link gNB transmit + UE receive gain [dB].
+    se_fn: optional mapping (snr_db, 'DL') -> SE; None = TR 36.942 (mapped_se)."""
     loss = np.asarray(loss_db, dtype=float)
     g = _link_gain(gain_db, loss, cfg)
     b = cfg.occupied_bw_hz
@@ -96,7 +99,7 @@ def downlink(loss_db, cfg: CarrierConfig, gain_db=None) -> dict:
         rx = rx + g
     n = noise_dbm(b, cfg.nf_ue_db)
     snr = rx - n
-    se = mapped_se(snr, 'DL')
+    se = mapped_se(snr, 'DL') if se_fn is None else np.asarray(se_fn(snr, 'DL'), dtype=float)
     gain = np.full_like(loss, cfg.gain_gnb_dbi + cfg.gain_ue_dbi) if g is None else g.copy()
     return {'tx_power_dbm': np.full_like(loss, cfg.gnb_power_dbm), 'bandwidth_hz': np.full_like(loss, b),
             'rx_power_dbm': rx, 'noise_dbm': np.full_like(loss, n), 'snr_db': snr, 'se_bps_hz': se,
@@ -104,13 +107,16 @@ def downlink(loss_db, cfg: CarrierConfig, gain_db=None) -> dict:
             'antenna_gain_db': gain}
 
 
-def uplink(loss_db, cfg: CarrierConfig, gain_db=None, n_max_prb=None) -> dict:
+def uplink(loss_db, cfg: CarrierConfig, gain_db=None, n_max_prb=None, se_fn=None) -> dict:
     """gain_db: optional per-link UE transmit + gNB receive gain [dB].
 
     n_max_prb: optional cap on the allocation (E1.5.0 OFDMA-share surrogate: one
     user's continuous share of the carrier). None = all N_PRB (E1.3/E1.4). The
     normalised SE is always rate / occupied bandwidth of the whole carrier.
+    se_fn: optional mapping (snr_db, 'UL') -> SE; None = TR 36.942 (mapped_se).
     """
+    if se_fn is None:
+        se_fn = mapped_se
     loss = np.asarray(loss_db, dtype=float)
     g = _link_gain(gain_db, loss, cfg)
     if n_max_prb is not None and not 1 <= int(n_max_prb) <= cfg.n_prb:
@@ -122,7 +128,7 @@ def uplink(loss_db, cfg: CarrierConfig, gain_db=None, n_max_prb=None) -> dict:
         rx = rx + g
     noise = noise_dbm(b_alloc, cfg.nf_gnb_db)                          # (A,)
     snr = rx[:, None] - noise[None, :]                                 # (N, A)
-    rate = mapped_se(snr, 'UL') * b_alloc[None, :]
+    rate = np.asarray(se_fn(snr, 'UL'), dtype=float) * b_alloc[None, :]
     # First maximum -> smallest n. If no allocation has a rate, argmax is index 0
     # (1 PRB, the most favourable SNR); best_n_prb is then reported as 0, while the
     # evaluated bandwidth/noise/SNR all refer to that same 1-PRB allocation.
@@ -135,7 +141,7 @@ def uplink(loss_db, cfg: CarrierConfig, gain_db=None, n_max_prb=None) -> dict:
     else:                            # capped: full-band quantities computed explicitly
         noise_full = noise_dbm(cfg.occupied_bw_hz, cfg.nf_gnb_db)
         snr_full = rx - noise_full
-        rate_full = mapped_se(snr_full, 'UL') * cfg.occupied_bw_hz
+        rate_full = np.asarray(se_fn(snr_full, 'UL'), dtype=float) * cfg.occupied_bw_hz
     return {'tx_power_dbm': np.full_like(loss, cfg.ue_power_dbm), 'rx_power_dbm': rx,
             'snr_1prb_db': snr[:, 0], 'noise_1prb_dbm': np.full_like(loss, noise[0]),
             'snr_full_db': snr_full, 'noise_full_dbm': np.full_like(loss, noise_full),

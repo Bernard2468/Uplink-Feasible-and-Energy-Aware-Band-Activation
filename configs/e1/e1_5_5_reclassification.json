@@ -1,0 +1,98 @@
+{
+  "experiment": "E1.5.5: reclassification of the E1.4 uplink/downlink feasibility records with the E1.5-validated realised gNB gain, NR link mapping and multiple-access thresholds; attribution of every change",
+  "status": "PRE-REGISTERED 2026-11-09, committed before the first run; definitions, variants, gates, predictions and decision rules are not changed after results are seen",
+  "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.5'",
+  "inputs": {
+    "e1_4": "configs/e1/e1_4_antennas_o2i.json and results/phase2/e1_4_antennas_o2i (records rebuilt from E1.1/E1.2 by scripts/e1_antennas_o2i.py build_states; E1.4 config and summary SHA-256 checked against the E1.4 manifest)",
+    "e1_5_0": "results/phase2/e1_5_0_surrogates (F3 reference for gate X2)",
+    "e1_5_2_1": "results/phase2/e1_5_2_1_beams/summary.json gain_model (D_cb, D_cb_ci95, D_dp, D_eig per array, carrier and stratum)",
+    "e1_5_3": "results/phase2/e1_5_3_link_mapping/summary.json (raw T2 curve; sensitivity)",
+    "e1_5_3a": "results/phase2/e1_5_3a_amc_diagnostic/summary.json stage_b (C-AMC T2 primary curve, C-AMC T1 sensitivity; snr_min_db per curve)",
+    "e1_5_4": "results/phase2/e1_5_4_multiuser/summary.json (packet thresholds H_TC and S_C; arm A/Ag per-UE SE for the selectivity factor)",
+    "requirement": "every input manifest has all_checks_passed = true; the SHA-256 of every input summary is recorded in the E1.5.5 manifest"
+  },
+  "seen_before_registration": [
+    "all E1.5 stage results (E1.5.0-E1.5.4) as documented in the protocol; no E1.5.5 classification has been computed",
+    "instrument dry run of variant V0 only (its outputs are the published E1.4 and E1.5.0 numbers): X1 0 differing fractions, X2 0 differing per-state F3 fractions, partition exclusive/exhaustive with K6 = 0 in shared states, X4 and X7 true, X6 0 lost records, in all 9 cases; about 11 s per variant. No other variant was evaluated",
+    "curve-only check (no record evaluated): for the C-AMC T2, C-AMC T1, raw T2 and TR 36.942 UL mappings and N_PRB 51, 273, 546, on a 0.001 dB SNR grid from -40 to 60 dB, the best-over-n UL allocation never passes the F2 (1.5) or F3 (0.15, n <= floor(N/10)) threshold when the full (n = N, resp. n = floor(N/10)) allocation fails"
+  ],
+  "records": {
+    "population": "E1.4: 27 links x 200 realizations x 6 deployment states (outdoor, in_car, indoor_low, indoor_high, indoor_low_indep, indoor_high_indep) x 2 carriers (3.5, 7.2 GHz) x 9 cases, built exactly as E1.4 (same seed, draws and O2I model)",
+    "o2i_version": "TR 38.901 V16.1.0 (the frozen E1.2-E1.4 baseline, E1.5.0 decision); V19.5.0 is a sensitivity",
+    "mixes": "M2412 (primary) and highloss50, as E1.4"
+  },
+  "gain_model": {
+    "rule": "E1.5.2-1 decision: gNB gain = E1.4 ideal-steering gain - D(array, carrier, stratum), in dB, applied to the gNB gain in both directions; the UE gain (E1.4: n_rx-element MRC, +10 log10(n_rx) dB) is unchanged",
+    "stratum": "outdoor and in_car records: o2o_los or o2o_nlos by the E1.1 geometric state; indoor records: o2i (hazard 13: O2I is always NLOS+O2I in the ns-3 channel)",
+    "array": "8x16 panel -> array 'a', 16x32 -> 'b', at the case carrier (3.5 or 7.2 GHz); a beamformed A/B-family panel of another size or carrier aborts",
+    "cases": {
+      "R0_isotropic_e13": "no beam: D = 0",
+      "A_equal_elements, S1_A_ue1rx, S5_A_sectors_rot60": "a at 3.5 and 7.2 GHz",
+      "B_equal_aperture": "a at 3.5 GHz, b at 7.2 GHz",
+      "C_deployment, S2_C_7p2_43dbm, S3_C_nlos_bf_loss, S4_C_subarray": "regime C is not measured (100/200 MHz). E1.5.2-1 rule: E1.4's assumed 4.5 dB on links whose outdoor state is NLOS, at both carriers, replaces each C case's own nlos_bf_loss_db (C_deployment and S3 then coincide); D = 0. Sensitivity g_c_matched: D of the matching measured array (a at 3.5 GHz, b at 7.2 GHz, 20 MHz values) per stratum instead"
+    }
+  },
+  "mappings": {
+    "form": "SE(snr) = piecewise-linear interpolation of the measured curve (SNR dB, SE per used resource) for snr >= snr_min, 0 below snr_min, the last grid value above the grid; snr_min = the curve's fit snr_min_db (lowest grid SNR with SE > 0)",
+    "camc_t2": "PRIMARY: E1.5.3a stage_b curves t2_DL / t2_UL, snr_min from stage_b fits",
+    "camc_t1": "sensitivity: E1.5.3a stage_b t1",
+    "raw_t2": "sensitivity: E1.5.3 curves t2 (5G-LENA v5.1 SISO AMC, 1-symbol reference)",
+    "tr36942": "sensitivity / E1.4 baseline: cmwave.radio.link_budget.mapped_se",
+    "camc_t2_trlow": "hazard-15 sensitivity: camc_t2 for snr >= its snr_min, TR 36.942 below (TR's -10 dB floor)",
+    "f1_floor": "F1 link closure: DL SNR >= snr_min_DL and UL 1-PRB SNR >= snr_min_UL of the mapping in use (TR: -10 dB both, as E1.3/E1.4)"
+  },
+  "profiles": {
+    "F1": "link closure (above)",
+    "F2": "E1.3/E1.4: DL SE >= 2.25; UL max over n <= N_PRB of n PRB_bw SE(SNR(n)) / occupied bandwidth >= 1.5 (time share among 10 users, analog gNB; E1.5.4 P2 held)",
+    "F3": "UL max over n <= floor(N_PRB / 10) of n PRB_bw SE(SNR(n)) / occupied bandwidth >= 0.15 (E1.5.0); DL SE x floor(N_PRB/10) / N_PRB >= 0.225 (PRB-granular share, as E1.5.4's analytic F3 DL threshold 13.34 dB). Static frequency partition with UE power concentration; digital or hybrid gNB; gain-equivalent abstraction (E1.5.4 P3 held; 5G-LENA dynamic OfdmaPF does not realise it, hazard 18)",
+    "F3_e150": "E1.5.0 definition (DL F3 = F2 DL flag); used only by variant V0 for gate X2",
+    "classes": "K1, K2, K3, K4, K6 per profile (scripts/e1_antennas_o2i.py classes14)"
+  },
+  "variants": {
+    "V0_e14": "TR 36.942, E1.4 gains (C cases keep their own nlos_bf_loss_db), F3 with the E1.5.0 DL definition: must reproduce E1.4 and E1.5.0 exactly (X1, X2)",
+    "V1_gain": "TR 36.942, E1.5 gain model",
+    "V1b_mapping": "camc_t2, E1.4 gains (C cases keep their own nlos_bf_loss_db)",
+    "V2_primary": "camc_t2, E1.5 gain model: THE E1.5 RESULT",
+    "m_camc_t1": "as V2 with camc_t1",
+    "m_raw_t2": "as V2 with raw_t2",
+    "m_trlow": "as V2 with camc_t2_trlow",
+    "g_dp": "as V2 with D_dp (A/B; DirectPath, lower gain)",
+    "g_eig": "as V2 with D_eig (A/B; certified eigen bound, upper)",
+    "g_cb_ci_lo": "as V2 with the lower CI bound of D_cb (A/B; more gain)",
+    "g_cb_ci_hi": "as V2 with the upper CI bound of D_cb (A/B; less gain)",
+    "g_c_matched": "as V2 with regime C cases using the matching measured array deficits instead of the 4.5 dB NLOS rule",
+    "pkt": "as V2 with the E1.5.4 packet thresholds: F2 evaluated with SE(snr - dF2_dir), F3 with SE(snr - dF3_dir), d = packet - analytic threshold (dF2 from H_TC, dF3 from S_C; E1.5.4 summary); F1 unchanged",
+    "sel": "as V2 with per-user SE x r_dir in F2 and F3 for regime A and B cases (A, B, S1, S5): r_dir = the minimum over E1.5.4 configurations with >= 5 such UEs of the median arm-A/arm-Ag per-user SE ratio among UEs with 0 < SE(Ag) < 0.55 (E1.5.4 post-hoc definition; expected r_UL 0.757, r_DL 0.946)",
+    "v19": "as V2 with TR 38.901 V19.5.0 O2I materials"
+  },
+  "gates": {
+    "X0_inputs": "every input manifest has all_checks_passed = true; E1.4 config and summary hashes equal the E1.4 manifest",
+    "X1_e14_reproduction": "V0: every F1 and F2 fraction of every case (per state, per distance bin, mixes) equals the committed E1.4 summary exactly (float equality; E1.5.0 S1 comparison)",
+    "X2_e150_reproduction": "V0: every F3 feasible and class fraction (per state and mixes) equals the committed E1.5.0 V16.1.0 summary exactly",
+    "X3_mapping": "every mapping returns its curve value exactly at every grid point >= snr_min and 0 below; camc_t2 is non-decreasing on a 0.001 dB grid (-40..70 dB) in both directions (needed by the E1.5.0 F2 => F3 proof)",
+    "X4_gain": "for every record of every case and variant, the applied gNB gain equals the E1.4 gNB gain minus the looked-up D (A/B) or minus 4.5 dB x outdoor-NLOS (C rule), recomputed independently from the table, within 1e-12 dB",
+    "X5_partition": "K1, K2, K3, K4, K6 mutually exclusive and exhaustive for every record, variant, case, state and profile; K6 = 0 in the four shared-variate states",
+    "X6_dominance": "gated for the variants whose F2 and F3 use one non-decreasing SE function (V0, V1, V1b, V2, g_dp, g_eig, g_cb_ci_lo, g_cb_ci_hi, g_c_matched, sel, v19): no record is F2-UL feasible and F3-UL infeasible unless its F2 maximiser n* > 10 floor(N/10) (E1.5.0 proved bound). Reported only for m_camc_t1 and m_raw_t2 (non-monotone curves), m_trlow (non-monotone at its seam) and pkt (different SNR offsets for F2 and F3)",
+    "X7_allocation_identity": "for every record and variant: the F2 UL flag equals the n = N test and the F3 UL flag equals the n = floor(N/10) test",
+    "X8_mixes": "mix weights non-negative, sum 1, shared states only",
+    "stop": "any gate fails: stop and diagnose; no prediction or decision is evaluated on a failed gate; evidence kept"
+  },
+  "predictions_scored": {
+    "P1": "M2412 mix, F2: the UL feasible fraction under V2 is lower than under V0 for A_equal_elements and B_equal_aperture at both carriers (the 4.7-6.9 dB NLOS/O2I gain deficit outweighs the 2.3 dB easier UL threshold in an 80% indoor mix)",
+    "P2": "M2412 mix, F2: the 7.2 GHz DL feasible fraction under V2 is lower than under V0 for A_equal_elements and B_equal_aperture (DL threshold 1.97 dB harder plus the deficit)",
+    "P3": "M2412 mix under V2: K3 (F3) < K3 (F2) for A_equal_elements, B_equal_aperture and C_deployment (UE power concentration still shrinks 'DL works but no UL')"
+  },
+  "reported": [
+    "per variant, case, state and profile: feasible fractions (DL/UL per carrier) and class fractions; mixes",
+    "V0, V1, V1b, V2: by distance bin and by outdoor LOS state",
+    "class transition matrices V0 -> V2 per case and profile (M2412-weighted)",
+    "attribution: class fractions along V0 -> V1 (gain) -> V2 (mapping) and V0 -> V1b (mapping) -> V2 (gain)",
+    "hazard 15 label: fraction of records whose F1 differs between V2 and m_trlow (links that close only in the error-model-limited range), per case, state, carrier and direction",
+    "sensitivity table: M2412 F2 and F3 class fractions of A, B and C under every variant"
+  ],
+  "decision_rules": {
+    "all_gates_pass": "V2_primary is the E1.5 classification used by E1c and the paper; E1.4's TR-36.942 / ideal-steering numbers are superseded and kept as V0; sensitivity ranges (mapping, gain, packet thresholds, selectivity, O2I version) are reported with it",
+    "gate_fails": "stop and diagnose; E1c does not start"
+  },
+  "limits": "single site, no interference (SNR, not SINR); E1.4 link-budget level with the E1.5 corrections, not a packet simulation; UE n_rx-element MRC as an ideal mean-SNR gain (E1.5 packet runs used 1 Rx; S1_A_ue1rx gives the 1-Rx view); regime C gain and 100/200 MHz link behaviour not measured; C-AMC curve measured at 20 MHz with 51-RB TBs; F1 floors measured with 51-RB TBs and applied to 1-PRB SNR; 27 positions x 200 realizations, not area-weighted"
+}

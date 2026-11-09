@@ -1,0 +1,104 @@
+{
+  "experiment": "E1.5.4: ten-UE packet-level test of the F2 (time share, analog gNB) and F3 (frequency share with UE power concentration, digital-FDMA gNB) per-user service models in 5G-LENA",
+  "status": "PRE-REGISTERED 2026-11-09, committed before the first measured run; gates, predictions, tolerances and decision rules are not changed after results are seen",
+  "protocol": "docs/E1_5_VALIDATION_PROTOCOL.md section 5, 'E1.5.4'",
+  "question": "In a 10-UE cell, does the per-user SE delivered by the NR packet stack follow F2 under time sharing and F3 under static frequency partition, and which effects (resource share, link adaptation and TB shape, scheduler dynamics, frequency selectivity) explain any difference? The answer fixes the F2/F3 thresholds used by E1.5.5",
+  "inputs": {
+    "e1_5_3a": "results/phase2/e1_5_3a_amc_diagnostic (C-AMC T2 curves: analytic F2/F3 thresholds; replay tool)",
+    "e1_2_losses": "results/phase2/e1_3gpp_propagation (median losses, hash-checked by scripts/e1_5_1_deterministic.py median_losses)",
+    "positions": "configs/e1/positions_munich_tx0.json via scripts/e1_5_2_0_conventions.py build_links (E1.4 serving sector)"
+  },
+  "seen_before_registration": [
+    "smoke 1 (link mode, 10 UEs, NrEesmIrT2, stock AMC, 1.0 s): homogeneous L = 111 dB and losses 80..125 dB step 5, TdmaPF and OfdmaPF. TdmaPF splits every slot among all UEs: DL and UL TBs of 1-2 symbols x 51 RB, resource shares 0.10 each (UL shares 0.092-0.146 in the mixed case, the worst UE highest), UL first-transmission BLER about 0.3%. OfdmaPF: DL 13-symbol TBs, frequency-multiplexed (12,903 and 33,124 symbol-overlapping DCI pairs, all on disjoint RBs); UL mostly one UE per slot (329 of 560 slots), RB counts 1-51, first-transmission BLER about 22%, per-user UL throughput 0.15-0.36 Mbit/s against 0.91 Mbit/s under TdmaPF at L = 111",
+    "smoke 2 (nrfading, 7.2 GHz, 8x16, codebook beams, the M drop, RngRun 1, TdmaPF; and the same with a shared beam and OfdmaPF): every DL and UL TB matched exactly one DATA DCI; SINR = per-RB beam-gain prediction to 1.4e-14 dB (DL and UL); beam manager holds every installed vector; shared-beam OfdmaPF first-transmission BLER DL 0.44, UL 0.72",
+    "smoke 3 (part S): a 5-RB carrier (2 MHz) never attaches; with the 51-RB carrier and notched masks applied from the application start, all window TBs use RBs 0-4 (DL 13 symbols, UL 12-13), SINR identity 1e-14 dB with UE power on 5 RBs, first-transmission BLER <= 0.004 at L = 115 and 125",
+    "dry run of the analysis code (analyse_run) on the smoke outputs: all gates pass; at L = 111, H_T-like per-user SE DL 0.608-0.618, UL 0.1405-0.1415, shares 0.100; H_O-like per-user SE DL 0.569-0.585, UL 0.024-0.059; H18 split at L = 111: first-transmission UL BLER 0.75 (168/224) when rb > previous rb, 0.17 (50/300) otherwise; part S at L = 115: per-user SE DL 0.463, UL 0.226; arm A smoke: per-user SE DL 0.32-0.63, UL 0.03-0.62",
+    "source: TdmaPF assigns one symbol at a time to the best PF metric and updates the metric inside the slot (nr-mac-scheduler-tdma.cc AssignRBGTDMA); OfdmaPF UL gives UEs of one beam disjoint RBGs in the beam's symbols (AssignULRBG); NumRbPerRbg default 1; UE power allocation default UNIFORM_POWER_ALLOCATION_USED; UL MCS from CreateCqiFeedbackSiso on the RBs of the last received UL TB (UlSBCQIReported)"
+  ],
+  "stack": {
+    "ns3_commit": "d083a17a",
+    "nr_commit": "cedceadd",
+    "program": "ns3/scratch/cmwave/e15-link-validation.cc; new options (all off by default): --resTrace (e154_dci.csv: every DL/UL DCI with its target slot; e154_tb.csv: every TB with slot and symbols; nrfading also e154_rb_gain.csv: per-RB DL and UL gain with the beam the beam manager holds), --dataRbs (mode link: data on RBs 0..n-1 from the application start, notched-RBG masks, applied masks in e154_mask.csv), --fadingUlRate, --errorModel and --sharedBeam (mode nrfading)"
+  },
+  "common": {
+    "carrier": "20 MHz, numerology 1, 51 RBs (RbOverhead 0.073), DDDSU, NumRbPerRbg 1",
+    "power": "gNB 44 dBm (UniformPowerAllocBw: per-RB power fixed whatever the allocation), UE 23 dBm on its used RBs (UniformPowerAllocUsed, no UL power control); NF gNB 5 dB, UE 7 dB",
+    "error_model": "ns3::NrEesmIrT2, stock AMC unless an arm fixes the MCS",
+    "traffic": "per UE, saturating UDP CBR: DL 40 Mbit/s, UL 20 Mbit/s, 1000-byte packets; RLC UM buffer unlimited",
+    "times": {"app_start_s": 0.1, "sim_time_s": 1.0, "window_s": [0.3, 1.0]},
+    "rng": "RngRun 1 unless the arm lists seeds",
+    "workers": "4 runs in parallel (separate processes; no effect on results)",
+    "raw": "kept per run in raw/<tag>/ (git-ignored); e154_tb.csv and e154_dci.csv gzip-compressed (mtime 0); SHA-256 of the uncompressed files in the manifest"
+  },
+  "parts": {
+    "H_T": "homogeneous 10-UE cell, mode link, isotropic, every UE at loss L, L = 96..134 dB step 1 (UL full-band SNR 23.4..-14.6 dB, DL 42.4..4.4 dB), NrMacSchedulerTdmaPF, stock AMC",
+    "H_TC": "as H_T with --fixedMcsDl/Ul = C-AMC MCS (E1.5.3a rule: 12-symbol 51-RB TB, TBLER <= 0.1, NrAmc::GetMcs) at the DL SINR and the full-band UL SINR",
+    "H_O": "as H_T with NrMacSchedulerOfdmaPF (5G-LENA dynamic FDMA)",
+    "S": "static-partition FDMA (F3 allocation): one UE, mode link, data on RBs 0-4 (--dataRbs=5), same L grid, TdmaPF, stock AMC",
+    "S_C": "as S with fixed MCS = 12-symbol rule on a 5-RB TB (Python rule on the replayed 5 RB x 12 symbol TBLER table, first MCS with TBLER > 0.1 minus one) at the DL SINR and the UL SINR with 23 dBm on 5 RBs",
+    "M": {
+      "drop": "the 10 highest-loss positions served by the 30 deg sector (E1.4 sector rule) at the configuration's carrier and array, E1.2 median loss, geometric LOS/NLOS, no O2I; aborts if the count is not 10",
+      "configs": [
+        {"tag": "a_f3p5", "frequency_hz": 3500000000.0, "rows": 8, "cols": 16},
+        {"tag": "a_f7p2", "frequency_hz": 7200000000.0, "rows": 8, "cols": 16},
+        {"tag": "b_f7p2", "frequency_hz": 7200000000.0, "rows": 16, "cols": 32}
+      ],
+      "seeds": [1, 2, 3],
+      "arm_A": "analog: mode nrfading, TR 38.901 UMa fast fading, gNB UPA (TR 38.901 element, bearing 30 deg), DFT codebook beam per UE (4x oversampled, exact-CSI selection, E1.5.2-1), distinct BeamIds, NrMacSchedulerTdmaPF",
+      "arm_Ag": "analog, gain-folded: mode link, isotropic, per-UE loss L_u - 10 log10(mean over RBs of the arm-A DL per-RB gain of that UE, same config and seed), TdmaPF",
+      "arm_C": "digital-FDMA gain-equivalent abstraction: as Ag with NrMacSchedulerOfdmaPF. Labelled: no digital transceiver, RF-chain power, CSI acquisition, calibration, beam frequency selectivity or inter-cell interference is modelled",
+      "arm_Dt": "beamless counterfactual: mode link, per-UE loss L_u (isotropic gNB, no element or array gain), TdmaPF; per carrier (a_f3p5, a_f7p2 losses) and seed",
+      "arm_Do": "as Dt with OfdmaPF",
+      "arm_B": "same-beam diagnostic: as A for a_f7p2, seed 1, with --sharedBeam (UE 0's beam and BeamId for all UEs) and NrMacSchedulerOfdmaPF"
+    }
+  },
+  "metric": {
+    "tb_population": "unique TBs (direction, RNTI, time; erratum 1 of E1.5.1) in the window; UL TBs attributed to UEs through the RRC establishment log",
+    "se_user": "SE_u = decoded bits of UE u (corrupt = 0, any rv) / sum over ALL TBs of that direction in the cell (all UEs, incl. corrupt and retransmissions) of rb x 12 x 30 kHz x num_sym x T_sym: per-user SE normalized to the direction's used data resources (the E1.3/E1.5.3 normalization; the per-user targets 0.15 UL and 0.225 DL apply to it)",
+    "se_user_part_S": "SE_u = decoded bits / ((51/5) x the UE's own used resources): the UE holds 5 of 51 RBs in every data symbol of its direction, the F3 allocation",
+    "curve": "parts H and S: per-user SE versus SNR (UL full-band SNR 119.36 - L, DL 138.36 - L, from the link-budget code); in H the mean over the 10 UEs, the minimum reported",
+    "threshold": "lowest SNR at which the piecewise-linear curve reaches the target (scripts/e1_5_3_link_mapping.py required_snr_empirical): UL 0.15, DL 0.225",
+    "reported_per_ue": "Mbit/s, SE_u, resource share, first-transmission BLER, retransmission share, TB shapes (symbols, RBs), MCS, satisfied (SE_u >= target)"
+  },
+  "analytic_reference": {
+    "F2": "per-user SE = SE_link(SNR_fullband) / 10 >= target, i.e. SE_link >= 1.5 (UL) / 2.25 (DL); C-AMC T2 curves of E1.5.3a: UL 8.66 dB, DL 12.92 dB (recomputed from the E1.5.3a summary)",
+    "F3": "per-user SE = (5/51) SE_link(SNR on 5 RBs) >= target (E1.5.0 definition), i.e. SE_link >= 1.53 (UL) / 2.295 (DL); UL SNR on 5 RBs = full-band + 10 log10(51/5); threshold expressed in full-band SNR; C-AMC T2 curves of E1.5.3a",
+    "note": "the C-AMC curves were measured with 51-RB, 12-13-symbol TBs; part S_C measures 5-RB TBs and part H_TC 1-2-symbol TBs under the same MCS rule"
+  },
+  "gates": {
+    "R6a": "scripts/e1_5_2_0_conventions.py rerun with this build: passes, 98 data files byte-identical to E1.5.2-0 run 3 (mode link and nrfading DirectPath unchanged)",
+    "R6b": "E1.5.3 runs t2_L93, t2_L113, t1_L113 rerun: data files byte-identical (errorModel path)",
+    "R6c": "E1.5.3a Stage B runs b_t2_L93, b_t1_L113 rerun: data files byte-identical (fixed-MCS path)",
+    "R6d": "E1.5.2-1 runs v1_a_f7p2_o2o_cb_b30, _b150, _b270 rerun from their kept links files: data files byte-identical (nrfading codebook-beam path)",
+    "E0": "every run with an error model: gNB DL/UL AMC and every decoder instance are NrEesmIrT2",
+    "RES": "every run: every window TB matches exactly one DATA DCI (direction, RNTI, target slot, first symbol) with equal symbol count, MCS and RB count = popcount of the RBG mask; no two DATA DCIs of one direction and slot overlap in symbols AND RBs; part S: every window DCI uses only RBs 0-4 and e154_mask.csv shows 5 usable RBGs of 51 in both directions applied at 0.1 s; TdmaPF runs (H_T, H_TC, S, S_C, A, Ag, Dt): no two DATA DCIs of different UEs in one direction and slot overlap in symbols (one UE per symbol)",
+    "V": "every matched window TB: |10 log10(SINR) - prediction| <= 0.01 dB. Mode link: DL 44 dBm/51 per RB, UL 23 dBm over the TB's RBs, link-budget code, loss of that UE. nrfading: the same powers times the TB's RBs' per-RB gain from e154_rb_gain.csv for the direction (mean over RBs of per-RB SINR)",
+    "POP": "every run: every UE has an RRC establishment before the window; the per-UE output lists every UE (zeros kept)",
+    "BEAM": "arms A and B: e1521_nr_beam.csv bm_vector_match = 1 and gnb_is_s = 1 for every UE",
+    "FIX": "H_TC and S_C: every TB carries the fixed MCS of its direction; read-back FixedMcs = 1",
+    "stop": "any gate fails: stop, diagnose, keep the evidence; no prediction or decision is evaluated on a failed gate"
+  },
+  "predictions_scored": {
+    "P1_tdma_equal_share": "H_T and H_TC: every UE's resource share of each direction is within [0.09, 0.11] in every run",
+    "P2_F2": "|threshold(H_TC) - analytic F2| <= 1.0 dB, UL and DL (same MCS rule; TB shapes differ: 1-2 symbols vs 12-13)",
+    "P3_F3": "|threshold(S_C) - analytic F3| <= 1.0 dB, UL and DL (same MCS rule; 5-RB vs 51-RB TBs)",
+    "P4_dynamic_ofdma": "|UL threshold(H_O) - UL threshold(S)| <= 1.0 dB (both stock AMC). Expected NOT to hold (smoke 1)",
+    "P5_selectivity": "per configuration and direction, the median over UEs and seeds of SE_u(A) / SE_u(Ag) is < 1 (UEs with SE_u(Ag) > 0)",
+    "P6_H18": "H_O, first-transmission UL TBs with an earlier UL TB of the same UE in the run: BLER(rb > previous rb) - BLER(rb <= previous rb) >= 0.10, pooled over the H_O runs with UL full-band SNR >= 0 dB (hypothesis H18: the UL MCS comes from the per-RB SINR of the previous allocation, and UE power spread over more RBs lowers the per-RB SINR)"
+  },
+  "reported_only": [
+    "H_T (stock) thresholds against analytic F2 and the stock-AMC E1.5.3 raw curve",
+    "mixed drops: per-UE SE_u against the H_T (TDMA arms) or H_O / S (OFDMA arms) curve at the UE's SNR; resource shares; satisfaction confusion matrices against the analytic F2 (A, Ag, Dt) and F3 (C, Do) predictions; Do and C against S",
+    "arm A: UL versus DL mean gain per UE (|10 log10 ratio|)",
+    "arm B: DL and UL symbol-overlapping DCI pairs with disjoint RBs (count), per-UE SE",
+    "RB utilization within used symbols; used symbols per direction per second; unserved UEs and their cause (no DCI, all TBs corrupt)"
+  ],
+  "decision_rules": {
+    "F2_for_E1_5_5": "P2 holds: E1.5.5 uses the analytic F2 thresholds with the C-AMC curve, the H_TC thresholds as sensitivity; P2 fails: the H_TC thresholds are primary for F2 and the analytic ones the sensitivity",
+    "F3_for_E1_5_5": "P3 holds: analytic F3 with the C-AMC curve, S_C as sensitivity; P3 fails: S_C thresholds primary. F3 is labelled 'static frequency partition with UE power concentration; digital or hybrid gNB; gain-equivalent abstraction'",
+    "dynamic_ofdma": "P4 fails: F3 is not delivered by 5G-LENA's dynamic OfdmaPF uplink (hazard 18, with P6 as the scored mechanism); E1.5.5 states F3 as a scheduler-dependent bound realised by static partition (part S)",
+    "selectivity": "P5 median ratio < 0.9 in any configuration and direction: E1.5.5 carries a frequency-selectivity sensitivity (per-user SE scaled by that ratio)",
+    "gates_fail": "stop and diagnose; E1.5.5 does not start"
+  },
+  "limits": "single cell, no inter-cell interference, full buffer, static channels (no Doppler), one layer, UE 1x1 isotropic, ideal control channels, 27-position development set (one 10-UE drop per configuration; no population claim), 5G-LENA v5.1 schedulers"
+}

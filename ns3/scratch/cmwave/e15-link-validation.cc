@@ -43,6 +43,7 @@
 #include "ns3/three-gpp-channel-model.h"
 #include "ns3/three-gpp-spectrum-propagation-loss-model.h"
 
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <fstream>
@@ -1229,6 +1230,120 @@ OdDlSchedTrace(NrSchedulingCallbackInfo s)
               << +s.m_rv << '\n';
 }
 
+// E1.5.4 resource trace (--resTrace=1, modes link and nrfading): every DL and UL
+// DCI the gNB PHY transmits, with the slot it applies to (send slot + K0/K2), and
+// every received data TB with its slot and symbols.
+static std::ofstream g_rtDci;
+static std::ofstream g_rtTb;
+
+static void
+RtDciTrace(SfnSf sfn,
+           uint16_t /* cellId */,
+           uint16_t /* rnti */,
+           uint8_t /* bwpId */,
+           Ptr<const NrControlMessage> msg)
+{
+    std::shared_ptr<DciInfoElementTdma> dci;
+    uint32_t k = 0;
+    const char* dir = nullptr;
+    if (msg->GetMessageType() == NrControlMessage::DL_DCI)
+    {
+        auto m = DynamicCast<NrDlDciMessage>(ConstCast<NrControlMessage>(msg));
+        NS_ABORT_MSG_IF(!m, "DL_DCI message is not an NrDlDciMessage");
+        dci = m->GetDciInfoElement();
+        k = m->GetKDelay();
+        dir = "DL";
+    }
+    else if (msg->GetMessageType() == NrControlMessage::UL_DCI)
+    {
+        auto m = DynamicCast<NrUlDciMessage>(ConstCast<NrControlMessage>(msg));
+        NS_ABORT_MSG_IF(!m, "UL_DCI message is not an NrUlDciMessage");
+        dci = m->GetDciInfoElement();
+        k = m->GetKDelay();
+        dir = "UL";
+    }
+    else
+    {
+        return;
+    }
+    const SfnSf t = sfn.GetFutureSfnSf(k);
+    std::string mask;
+    for (size_t i = 0; i < dci->m_rbgBitmask.size(); ++i)
+    {
+        mask += dci->m_rbgBitmask[i] ? '1' : '0';
+    }
+    g_rtDci << dir << ',' << Simulator::Now().GetNanoSeconds() << ',' << sfn.GetFrame() << ','
+            << +sfn.GetSubframe() << ',' << +sfn.GetSlot() << ',' << k << ',' << t.GetFrame() << ','
+            << +t.GetSubframe() << ',' << +t.GetSlot() << ',' << dci->m_rnti << ','
+            << +dci->m_symStart << ',' << +dci->m_numSym << ',' << +dci->m_mcs << ','
+            << dci->m_tbSize << ',' << +dci->m_ndi << ',' << +dci->m_rv << ','
+            << static_cast<int>(dci->m_type) << ',' << +dci->m_harqProcess << ',' << mask << '\n';
+}
+
+static void
+WriteRtTb(const char* dir, int64_t ueIndex, const RxPacketTraceParams& p)
+{
+    g_rtTb << dir << ',' << ueIndex << ',' << p.m_rnti << ',' << Simulator::Now().GetNanoSeconds()
+           << ',' << p.m_frameNum << ',' << +p.m_subframeNum << ',' << p.m_slotNum << ','
+           << +p.m_symStart << ',' << +p.m_numSym << ',' << p.m_rbAssignedNum << ',' << +p.m_mcs
+           << ',' << p.m_tbSize << ',' << +p.m_rv << ',' << p.m_corrupt << ','
+           << std::setprecision(17) << p.m_sinr << ',' << p.m_tbler << '\n';
+}
+
+static void
+RtDlTbTrace(uint32_t ueIndex, RxPacketTraceParams p)
+{
+    WriteRtTb("DL", ueIndex, p);
+}
+
+static void
+RtUlTbTrace(RxPacketTraceParams p)
+{
+    WriteRtTb("UL", -1, p);
+}
+
+// E1.5.4 part S (--dataRbs): confine DL and UL data to RBs 0..dataRbs-1 through the
+// scheduler's notched-RBG masks (NumRbPerRbg is 1, so one RBG = one RB) and record the
+// masks the scheduler then holds.
+static void
+ApplyDataRbMask(Ptr<NrMacSchedulerNs3> sched, Ptr<NrGnbPhy> gp, uint32_t dataRbs)
+{
+    const uint32_t nRb = gp->GetRbNum();
+    NS_ABORT_MSG_IF(nRb == 0 || dataRbs > nRb, "dataRbs " << dataRbs << " vs RB count " << nRb);
+    std::vector<bool> mask(nRb, false);
+    std::fill(mask.begin(), mask.begin() + dataRbs, true);
+    sched->SetDlNotchedRbgMask(mask);
+    sched->SetUlNotchedRbgMask(mask);
+    const auto dm = sched->GetDlNotchedRbgMask();
+    const auto um = sched->GetUlNotchedRbgMask();
+    std::ofstream out("e154_mask.csv");
+    out << "time_ns,rb_num,data_rbs,dl_mask_len,dl_usable,ul_mask_len,ul_usable,dl_first_usable,dl_last_usable\n"
+        << Simulator::Now().GetNanoSeconds() << ',' << nRb << ',' << dataRbs << ',' << dm.size() << ','
+        << std::count(dm.begin(), dm.end(), true) << ',' << um.size() << ','
+        << std::count(um.begin(), um.end(), true) << ','
+        << (std::find(dm.begin(), dm.end(), true) - dm.begin()) << ','
+        << (dm.rend() - std::find(dm.rbegin(), dm.rend(), true) - 1) << '\n';
+}
+
+static void
+OpenResTrace(Ptr<NrGnbPhy> gp, const NetDeviceContainer& ueDevs)
+{
+    g_rtDci.open("e154_dci.csv");
+    g_rtDci << "dir,time_ns,frame,subframe,slot,k_delay,t_frame,t_subframe,t_slot,rnti,sym_start,"
+               "num_sym,mcs,tb_size,ndi,rv,type,harq,rbg_bitmask\n";
+    gp->TraceConnectWithoutContext("GnbPhyTxedCtrlMsgsTrace", MakeCallback(&RtDciTrace));
+    g_rtTb.open("e154_tb.csv");
+    g_rtTb << "dir,ue_index,rnti,time_ns,frame,subframe,slot,sym_start,num_sym,rb_assigned,mcs,"
+              "tb_size,rv,corrupt,sinr_lin,tbler\n";
+    for (uint32_t i = 0; i < ueDevs.GetN(); ++i)
+    {
+        NrHelper::GetUePhy(ueDevs.Get(i), 0)
+            ->GetSpectrumPhy()
+            ->TraceConnectWithoutContext("RxPacketTraceUe", MakeBoundCallback(&RtDlTbTrace, i));
+    }
+    gp->GetSpectrumPhy()->TraceConnectWithoutContext("RxPacketTraceGnb", MakeCallback(&RtUlTbTrace));
+}
+
 static void
 OdTbTrace(uint32_t ueIndex, RxPacketTraceParams p)
 {
@@ -1260,10 +1375,16 @@ RunNrFadingMode(const std::string& linksFile,
                 const std::string& tddPattern,
                 const std::string& gnbBeam,
                 uint32_t oversampling,
-                bool ofdmaDiag)
+                bool ofdmaDiag,
+                double ulRateBps,
+                const std::string& errorModel,
+                bool resTrace,
+                bool sharedBeam)
 {
     NS_ABORT_MSG_IF(gnbBeam != "dp" && gnbBeam != "cb" && gnbBeam != "eig" && gnbBeam != "dpid",
                     "gnbBeam must be dp, cb, eig or dpid");
+    NS_ABORT_MSG_IF(sharedBeam && (gnbBeam == "dp" || gnbBeam == "dpid"),
+                    "sharedBeam needs a channel-computed beam (cb or eig)");
     auto links = ReadLinks(linksFile);
     const uint32_t nUe = links.size();
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));
@@ -1341,6 +1462,12 @@ RunNrFadingMode(const std::string& linksFile,
     nrHelper->SetGnbAntennaAttribute("DowntiltAngle", DoubleValue(0.0));
     nrHelper->SetGnbAntennaAttribute("AntennaElement",
                                      PointerValue(CreateObject<ThreeGppAntennaModel>()));
+    if (!errorModel.empty())
+    {
+        // E1.5.4: as mode link (E1.5.3); empty = NR default (unchanged)
+        nrHelper->SetDlErrorModel(errorModel);
+        nrHelper->SetUlErrorModel(errorModel);
+    }
 
     NetDeviceContainer gnbDevs = nrHelper->InstallGnbDevice(gnbNodes, allBwps);
     NetDeviceContainer ueDevs = nrHelper->InstallUeDevice(ueNodes, allBwps);
@@ -1353,6 +1480,7 @@ RunNrFadingMode(const std::string& linksFile,
     nrHelper->AttachToClosestGnb(ueDevs, gnbDevs);
 
     // E1.5.2-1: channel-computed gNB beams (codebook or eigen), one BeamId per UE.
+    // E1.5.4 --sharedBeam: every UE gets UE 0's beam vector and BeamId (1, 0).
     std::vector<PhasedArrayModel::ComplexVector> customW;
     if (gnbBeam != "dp")
     {
@@ -1366,6 +1494,14 @@ RunNrFadingMode(const std::string& linksFile,
             auto uUpa = DynamicCast<UniformPlanarArray>(
                 NrHelper::GetUePhy(ueDevs.Get(i), 0)->GetSpectrumPhy()->GetAntenna());
             NS_ABORT_MSG_IF(!uUpa, "UE antenna is not a UniformPlanarArray");
+            if (sharedBeam && i > 0)
+            {
+                customW.push_back(customW.front());
+                gp0->GetSpectrumPhy()->GetBeamManager()->SaveBeamformingVector(
+                    BeamformingVector(customW.back(), BeamId(1, 0.0)),
+                    ueDevs.Get(i));
+                continue;
+            }
             customW.push_back(
                 ChannelBeam(gnbBeam, slm, gMob, uMob, gUpa0, uUpa, tx0, rows, cols, oversampling));
             gp0->GetSpectrumPhy()->GetBeamManager()->SaveBeamformingVector(
@@ -1386,6 +1522,20 @@ RunNrFadingMode(const std::string& linksFile,
         dl.SetAttribute("Interval", TimeValue(Seconds(packetSize * 8.0 / dlRateBps)));
         clients.Add(dl.Install(remoteHost));
     }
+    if (ulRateBps > 0.0)
+    {
+        // E1.5.4: UL CBR each UE -> remote host (as mode link)
+        const uint16_t ulPort = 2345;
+        servers.Add(UdpServerHelper(ulPort).Install(remoteHost));
+        for (uint32_t i = 0; i < nUe; ++i)
+        {
+            UdpClientHelper ul(remoteHostAddr, ulPort);
+            ul.SetAttribute("MaxPackets", UintegerValue(0xFFFFFFFF));
+            ul.SetAttribute("PacketSize", UintegerValue(packetSize));
+            ul.SetAttribute("Interval", TimeValue(Seconds(packetSize * 8.0 / ulRateBps)));
+            clients.Add(ul.Install(ueNodes.Get(i)));
+        }
+    }
     servers.Start(Seconds(appStart));
     clients.Start(Seconds(appStart));
     servers.Stop(Seconds(simTime));
@@ -1399,6 +1549,23 @@ RunNrFadingMode(const std::string& linksFile,
         NrHelper::GetUePhy(ueDevs.Get(i), 0)
             ->GetSpectrumPhy()
             ->TraceConnectWithoutContext("RxPacketTraceUe", MakeBoundCallback(&DlTbTrace, i));
+    }
+    if (ulRateBps > 0.0)
+    {
+        g_ulTb.open("e15_ul_tb.csv");
+        g_ulTb << "ue_index,rnti,time_ns,sinr_lin,sinr_min_lin,rb_assigned,mcs,tb_size,rank,rv,num_sym,"
+                  "corrupt,tbler\n";
+        NrHelper::GetGnbPhy(gnbDevs.Get(0), 0)
+            ->GetSpectrumPhy()
+            ->TraceConnectWithoutContext("RxPacketTraceGnb", MakeCallback(&UlTbTrace));
+        Simulator::Schedule(Seconds(appStart - 0.05),
+                            &WriteRntiMap,
+                            ueDevs,
+                            std::string("e15_rnti_map.csv"));
+    }
+    if (resTrace)
+    {
+        OpenResTrace(NrHelper::GetGnbPhy(gnbDevs.Get(0), 0), ueDevs);
     }
     g_rrc.open("e15_rrc_events.csv");
     g_rrc << "time_ns,imsi,cell_id,rnti\n";
@@ -1437,6 +1604,28 @@ RunNrFadingMode(const std::string& linksFile,
              << "n_ue," << nUe << '\n'
              << "app_start_s," << appStart << '\n'
              << "sim_time_s," << simTime << '\n';
+        if (ulRateBps > 0.0 || !errorModel.empty() || resTrace || sharedBeam)
+        {
+            // E1.5.4 options (lines absent in default runs, which stay byte-identical)
+            DoubleValue ueP;
+            up->GetAttribute("TxPower", ueP);
+            info << "ul_rate_bps," << ulRateBps << '\n'
+                 << "dl_rate_bps," << dlRateBps << '\n'
+                 << "ue_tx_power_dbm," << ueP.Get() << '\n'
+                 << "shared_beam," << sharedBeam << '\n'
+                 << "res_trace," << resTrace << '\n';
+            if (!errorModel.empty())
+            {
+                auto sched = DynamicCast<NrMacSchedulerNs3>(
+                    DynamicCast<NrGnbNetDevice>(gnbDevs.Get(0))->GetScheduler(0));
+                NS_ABORT_MSG_IF(!sched, "scheduler is not an NrMacSchedulerNs3");
+                info << "error_model_requested," << errorModel << '\n'
+                     << "error_model_gnb_dl_amc," << sched->GetDlAmc()->GetErrorModelType().GetName()
+                     << '\n'
+                     << "error_model_gnb_ul_amc," << sched->GetUlAmc()->GetErrorModelType().GetName()
+                     << '\n';
+            }
+        }
     }
 
     if (ofdmaDiag)
@@ -1467,6 +1656,58 @@ RunNrFadingMode(const std::string& linksFile,
     NS_ABORT_MSG_IF(!gUpa, "gNB antenna is not a UniformPlanarArray");
     auto txParams = FlatTxParams(gp->GetRbNum(), frequency, gp->GetSubcarrierSpacing());
     const double txSum = Sum(*txParams->psd);
+    if (resTrace)
+    {
+        // E1.5.4: per-RB gain of every UE, DL (gNB -> UE) and UL (UE -> gNB), with the beam
+        // the gNB beam manager holds for that UE (own or shared), on the same channel
+        // objects (flat unit tx PSD). Excludes the prescribed large-scale loss.
+        g_rtDci.close();
+        g_rtTb.close();
+        auto bm = gp->GetSpectrumPhy()->GetBeamManager();
+        std::ofstream gOut("e154_rb_gain.csv");
+        gOut << "ue_index,dir,rb,gain_lin\n";
+        for (uint32_t j = 0; j < nUe; ++j)
+        {
+            Ptr<MobilityModel> uMob = ueNodes.Get(j)->GetObject<MobilityModel>();
+            auto uUpa = DynamicCast<UniformPlanarArray>(
+                NrHelper::GetUePhy(ueDevs.Get(j), 0)->GetSpectrumPhy()->GetAntenna());
+            uUpa->SetBeamformingVector(CreateDirectPathBfv(uMob, gMob, uUpa));
+            gUpa->SetBeamformingVector(bm->GetBeamformingVector(ueDevs.Get(j)));
+            Ptr<SpectrumSignalParameters> dl =
+                slm->CalcRxPowerSpectralDensity(txParams, gMob, uMob, gUpa, uUpa);
+            Ptr<SpectrumSignalParameters> ul =
+                slm->CalcRxPowerSpectralDensity(txParams, uMob, gMob, uUpa, gUpa);
+            for (size_t k = 0; k < dl->psd->GetValuesN(); ++k)
+            {
+                gOut << j << ",DL," << k << ',' << std::setprecision(17)
+                     << (*dl->psd)[k] / (*txParams->psd)[k] << '\n';
+            }
+            for (size_t k = 0; k < ul->psd->GetValuesN(); ++k)
+            {
+                gOut << j << ",UL," << k << ',' << std::setprecision(17)
+                     << (*ul->psd)[k] / (*txParams->psd)[k] << '\n';
+            }
+        }
+    }
+    if (ulRateBps > 0.0)
+    {
+        g_ulTb.close();
+    }
+    if (!errorModel.empty())
+    {
+        // as mode link (E1.5.3): decoding error-model instances, read after the run
+        std::ofstream em("e153_error_model.csv");
+        em << "device,ue_index,error_model_instance\n";
+        auto name = [](Ptr<NrErrorModel> m) {
+            return m ? m->GetInstanceTypeId().GetName() : std::string("none");
+        };
+        em << "gnb,-1," << name(gp->GetSpectrumPhy()->GetErrorModel()) << '\n';
+        for (uint32_t i = 0; i < nUe; ++i)
+        {
+            em << "ue," << i << ','
+               << name(NrHelper::GetUePhy(ueDevs.Get(i), 0)->GetSpectrumPhy()->GetErrorModel()) << '\n';
+        }
+    }
     if (ofdmaDiag)
     {
         // Per-RB gain of UE j (rows) when the gNB array holds the beam that its beam
@@ -1708,6 +1949,18 @@ main(int argc, char* argv[])
                  "mode link: CSV key,sinr_lin; replay the scheduler AMCs and the error model on these SINRs "
                  "(e153a_amc_choice.csv, e153a_tbler.csv) and exit without running",
                  amcReplay);
+    bool resTrace = false; // E1.5.4
+    cmd.AddValue("resTrace", "write e154_dci.csv (DL/UL DCIs with target slot) and e154_tb.csv", resTrace);
+    double fadingUlRate = 0.0; // E1.5.4, mode nrfading: 0 = no UL traffic (E1.5.2 behaviour)
+    cmd.AddValue("fadingUlRate", "mode nrfading: UL offered load per UE [bit/s]; 0 = no UL traffic",
+                 fadingUlRate);
+    bool sharedBeam = false; // E1.5.4 arm B
+    cmd.AddValue("sharedBeam", "mode nrfading: every UE gets UE 0's channel-computed beam and BeamId", sharedBeam);
+    uint32_t dataRbs = 0; // E1.5.4 part S
+    cmd.AddValue("dataRbs",
+                 "mode link: DL and UL data only on RBs 0..dataRbs-1 (scheduler notched-RBG masks, 1 RB "
+                 "per RBG); 0 = whole band",
+                 dataRbs);
     // E1.5.2 modes (the default mode "link" ignores these arguments)
     std::string mode = "link";
     std::string linksFile;
@@ -1797,7 +2050,11 @@ main(int argc, char* argv[])
                                tddPattern,
                                gnbBeam,
                                oversampling,
-                               ofdmaDiag);
+                               ofdmaDiag,
+                               fadingUlRate,
+                               errorModel,
+                               resTrace,
+                               sharedBeam);
     }
     NS_ABORT_MSG_IF(mode != "link", "unknown mode " << mode);
     NS_ABORT_MSG_IF(lossFile.empty(), "--lossFile is required");
@@ -1936,6 +2193,20 @@ main(int argc, char* argv[])
     internet.Install(ueNodes);
     Ipv4InterfaceContainer ueIfaces = epcHelper->AssignUeIpv4Address(ueDevs);
     nrHelper->AttachToClosestGnb(ueDevs, gnbDevs);
+    if (dataRbs > 0)
+    {
+        // E1.5.4 part S: data confined to RBs 0..dataRbs-1 in both directions from the
+        // application start (attach and RRC signalling, which need more than 5 RBs, use the
+        // whole band before that). See ApplyDataRbMask.
+        auto sched = DynamicCast<NrMacSchedulerNs3>(
+            DynamicCast<NrGnbNetDevice>(gnbDevs.Get(0))->GetScheduler(0));
+        NS_ABORT_MSG_IF(!sched, "scheduler is not an NrMacSchedulerNs3");
+        Simulator::Schedule(Seconds(appStart),
+                            &ApplyDataRbMask,
+                            sched,
+                            NrHelper::GetGnbPhy(gnbDevs.Get(0), 0),
+                            dataRbs);
+    }
 
     // Traffic: DL CBR remote host -> each UE; UL CBR each UE -> remote host.
     const uint16_t dlPort = 1234;
@@ -1989,6 +2260,10 @@ main(int argc, char* argv[])
                         &WriteRbAfterAttach,
                         ueDevs,
                         std::string("e15_rb_after_attach.csv"));
+    if (resTrace)
+    {
+        OpenResTrace(NrHelper::GetGnbPhy(gnbDevs.Get(0), 0), ueDevs);
+    }
 
     {
         auto gp = NrHelper::GetGnbPhy(gnbDevs.Get(0), 0);
@@ -2046,6 +2321,10 @@ main(int argc, char* argv[])
                  << "sched_fixed_mcs_ul," << ful.Get() << '\n'
                  << "sched_starting_mcs_dl," << sdl.Get() << '\n'
                  << "sched_starting_mcs_ul," << sul.Get() << '\n';
+        }
+        if (dataRbs > 0)
+        {
+            info << "data_rbs_requested," << dataRbs << '\n'; // applied: e154_mask.csv
         }
     }
 
@@ -2109,6 +2388,11 @@ main(int argc, char* argv[])
     g_dlTb.close();
     g_ulTb.close();
     g_rrc.close();
+    if (resTrace)
+    {
+        g_rtDci.close();
+        g_rtTb.close();
+    }
     Simulator::Destroy();
     return 0;
 }

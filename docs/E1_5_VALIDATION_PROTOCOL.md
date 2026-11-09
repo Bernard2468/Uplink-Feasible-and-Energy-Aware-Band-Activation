@@ -1431,5 +1431,126 @@ What is established:
   stack actually applies. The Stage A replay can compute that mapping for
   any allocation shape.
 
+**E1.5.3 erratum 3 (found 2026-11-09 while preparing E1.5.4).** No result
+is affected.
+- The E1.5.3 config's `scheduler` field reads `ns3::NrMacSchedulerTdmaPF
+  (single UE: every RB of every data symbol it is given)`. The whole string
+  was passed on the command line.
+- ns-3 split it at the spaces and ignored the extra words.
+- `e15_run_info.csv` records `ns3::NrMacSchedulerTdmaPF` in all 150 E1.5.3
+  runs and all 152 E1.5.3a runs (checked).
+- E1.5.4 passes the TypeId alone.
+
+**Caveat on C-AMC (from the ChatGPT v2 review, accepted).**
+- TS 38.214's 12-symbol reference resource defines the **DL CQI**. It does
+  not say that every transmission occupies 12 symbols.
+- UL MCS selection is a gNB implementation choice.
+- C-AMC is therefore a reference-resource-based link-adaptation model,
+  applied in both directions. It is not the optimal MCS for every
+  allocation shape (see hazard 17).
+
+### Review of the ChatGPT E1.5.4 pre-registration review v2 (2026-11-09)
+
+| Point | Verdict | Action |
+|---|---|---|
+| Four arms: A analog TDMA, B same-beam OFDMA, C gain-equivalent digital FDMA, D beamless | Agree. B is added as a diagnostic; its DL part was already shown in E1.5.4-0, and the UL part is new | Arms A, Ag (gain-folded A), C, Dt/Do, B |
+| C must be labelled a gain-equivalent abstraction (no RF chains, CSI, calibration, beam frequency selectivity or inter-cell interference) | Agree | Label in config and results; no energy inference from C |
+| F3 target 0.15 × 51/5 = 1.53 vs F2 1.50; the 0.18 dB 5-RB effect is separate | Agree. Already the E1.5.0 definition (`n · PRB_bw · SE / W ≥ 0.15`, n ≤ 5) | Analytic F3 thresholds use 1.53 (UL) and 2.295 (DL) |
+| Stock AMC as primary in packet runs; C-AMC only as a separate, labelled sensitivity; no cross-comparison | Agree in principle, with one practical limit: `FixedMcs` is cell-wide, so C-AMC can only run when all UEs share one SNR | C-AMC runs are the homogeneous cell (H_TC) and the single-UE static partition (S_C). Each packet result is compared only with an analytic value under the same MCS rule (P2, P3). Stock runs (H_T, H_O, S, mixed drops) are compared with each other |
+| Check the resource identity in DCIs; UL frequency sharing only counts with overlapping symbols and disjoint RBs | Agree. The new trace records every DL/UL DCI with its target slot (K0/K2) and RBG mask | Gate RES on every TB and every DCI pair; TDMA runs must show zero symbol sharing between UEs |
+| Physical accounting: DL total power, UL ≤ 23 dBm on the granted RBs, no double-counted gain | Agree | Gate V checks every TB's SINR against the power-on-granted-RBs prediction, to 0.01 dB; gain-folded arms have isotropic gNBs |
+| Full population; zero-throughput UEs kept | Agree | Gate POP; per-UE output lists every UE |
+| Matched geometry, realizations, seeds and load across arms | Agree | Ag and C take arm A's per-UE gain from the same configuration and seed |
+| Cluster/bootstrap by location; 27 positions only as a development set | Agree. E1.5.4 validates a model with one 10-UE drop per configuration; it makes no population claim | No population statistics in E1.5.4 |
+| Failed arms stay NOT ESTABLISHED; failed raw outputs kept | Agree | Stop rule on any gate |
+
+**What the smoke runs changed** (declared in the config, before
+registration):
+1. **5G-LENA's TdmaPF splits every slot among all UEs.** It hands out one
+   symbol at a time to the best PF metric. With 10 UEs the TBs are 1–2
+   symbols × 51 RBs.
+   - The analog arm therefore runs with TB shapes different from the
+     12–13 symbols of E1.5.3.
+   - P2 compares H_TC with the analytic F2 under the same MCS rule.
+2. **5G-LENA's dynamic UL OFDMA (OfdmaPF) does not behave like F3.**
+   - Most UL slots go to one UE.
+   - RB counts swing between 1 and 51.
+   - First-transmission BLER is about 22%.
+   - Hypothesis H18: the UL MCS comes from the per-RB SINR of the previous
+     allocation. A larger new allocation spreads the UE's 23 dBm more
+     thinly.
+   - F3 is therefore tested at packet level as a **static partition** (part
+     S: one UE, data on RBs 0–4, the exact F3 allocation). Dynamic OFDMA is
+     a separate prediction (P4), expected to fail.
+3. **A 5-RB carrier never attaches.** Part S therefore uses the 51-RB
+   carrier with notched-RBG masks, applied from the application start.
+
+### E1.5.4: ten-UE F2/F3 test (PRE-REGISTERED 2026-11-09)
+
+- Config: `configs/e1/e1_5_4_multiuser.json`.
+- Script: `scripts/e1_5_4_multiuser.py`.
+- Tests: `tests/test_e1_5_4_multiuser.py`.
+
+**Common settings.**
+- E1.5.1 settings, `NrEesmIrT2`.
+- Saturating traffic per UE: DL 40 Mbit/s, UL 20 Mbit/s.
+- Simulation 1.0 s; window 0.3–1.0 s.
+
+**Per-user SE.** Decoded bits of the UE divided by the direction's used data
+resources of the whole cell, which is the E1.3/E1.5.3 normalization. Part S
+instead uses (51/5) × the UE's own resources. The per-user targets are
+0.15 (UL) and 0.225 (DL).
+
+| Part | Set-up | Role |
+|---|---|---|
+| H_T | 10 identical UEs, L = 96–134 dB (step 1), isotropic, TdmaPF, stock AMC | packet-level analog time share |
+| H_TC | as H_T, MCS fixed by the C-AMC rule | F2 under the same MCS rule as E1.5.5 |
+| H_O | as H_T, OfdmaPF | 5G-LENA dynamic FDMA |
+| S / S_C | one UE, data on RBs 0–4, same L grid, stock / C-AMC (5-RB 12-symbol rule) | F3 static partition |
+| M: A | 30° sector, 10 highest-loss positions; 3.5 GHz 8×16, 7.2 GHz 8×16, 7.2 GHz 16×32; seeds 1–3; fading channel, codebook beams, TdmaPF | analog, physical |
+| M: Ag / C | gain-folded A (per-UE mean beam gain), TdmaPF / OfdmaPF | analog vs digital-FDMA abstraction |
+| M: Dt / Do | losses without any gain, TdmaPF / OfdmaPF | beamless counterfactual |
+| M: B | arm A at 7.2 GHz 8×16, shared beam, OfdmaPF | same-beam diagnostic |
+
+**Gates** (any failure stops the stage):
+
+| Gate | Requirement |
+|---|---|
+| R6a–R6d | Byte-identical reruns, which show the new options leave the old paths unchanged: E1.5.2-0 (link mode and nrfading DirectPath); 3 E1.5.3 runs; 2 E1.5.3a fixed-MCS runs; 3 E1.5.2-1 codebook-beam runs |
+| E0 | Error model correct everywhere |
+| RES | Every TB matches one DCI. No RB clashes. Zero cross-UE symbol sharing in TDMA runs. Part S data stays on RBs 0–4 |
+| V | Every TB's SINR matches the prediction to 0.01 dB, with per-RB beam gains in nrfading runs |
+| POP | Every UE is attached, and present in the output |
+| BEAM | Arms A and B hold their installed beams |
+| FIX | Fixed-MCS runs use the fixed MCS on every TB |
+
+**Predictions** (scored):
+
+| Prediction | Statement |
+|---|---|
+| P1 | TDMA shares in [0.09, 0.11] in H_T and H_TC |
+| P2 | H_TC thresholds within 1 dB of analytic F2: UL 8.66 dB, DL 12.92 dB |
+| P3 | S_C thresholds within 1 dB of analytic F3: UL −1.27 dB full-band, DL 13.34 dB |
+| P4 | H_O UL threshold within 1 dB of S (expected to fail) |
+| P5 | Median per-UE SE ratio A/Ag < 1 (frequency selectivity costs SE) |
+| P6 | H18: first-transmission UL BLER is at least 0.10 higher after an RB-count increase than otherwise, pooled over H_O runs with UL SNR ≥ 0 dB |
+
+**Decisions for E1.5.5 (fixed now).**
+- **F2:** analytic C-AMC F2 if P2 holds; otherwise the H_TC packet
+  thresholds.
+- **F3:** analytic C-AMC F3 if P3 holds; otherwise the S_C thresholds.
+  F3 is labelled "static frequency partition with UE power concentration;
+  digital/hybrid gNB; gain-equivalent abstraction".
+- **If P4 fails:** hazard 18 is recorded. F3 is a scheduler-dependent bound
+  that dynamic OfdmaPF does not deliver.
+- **If any P5 median is below 0.9:** E1.5.5 carries a frequency-selectivity
+  sensitivity.
+
+**Limits.**
+- One cell, no inter-cell interference.
+- Full buffer, static channels, one layer, UE 1×1.
+- Ideal control channels.
+- One drop per configuration from the 27-position development set.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

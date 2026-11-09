@@ -813,6 +813,31 @@ interference guard. Otherwise it scores site 0 only.
   per case.
 - No P3.2a output on the real layout was computed.
 
+#### P3.2a run 1 (commit a1919f3): crashed at setup; Amendment 1 (2026-11-09)
+
+**The crash.** It happened before any computation: `NAMES` is a list and
+`EXTRA` a tuple, so allocating the count arrays raised a TypeError. The log
+is kept as `run1_stdout.txt`.
+
+**Amendment 1.**
+- One list `ALLN` replaces every `NAMES + EXTRA`. No logic changes.
+- A labelled smoke mode (`--smoke-realizations N`) runs the full pipeline:
+  - it refuses the measured-run folder;
+  - it forces the result to "fail".
+
+**Smoke run** (2 realizations, scratch folder).
+- Every gate was computable.
+- Q0, Q1a and Q3–Q7 passed.
+- Q1b and Q2 failed, as they must: they compare against E1c.3's
+  100-realization results. Q2 had no array mismatch.
+
+**Declared: the smoke run printed preliminary prediction values.**
+- P1: 0.00024 against 0.00185.
+- P2: 0.00034 against 0.00030.
+- D14: DL 0.00024, UL 0.00009.
+
+Predictions, the D14 rule and every threshold are unchanged.
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the

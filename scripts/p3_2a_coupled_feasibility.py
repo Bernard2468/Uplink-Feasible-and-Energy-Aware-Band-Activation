@@ -41,6 +41,7 @@ CHAIN = ('site0_only', 'q0.25', 'q0.5', 'q0.75', 'all_on')
 SCEN = ('all_on', 'all_off', 'serving_trxp_only', 'site0_only', 'ring2_off', 'q0.25', 'q0.5', 'q0.75')
 S0_NAMES = ('S0', 'S0_DL_7.2GHz', 'S0_UL_7.2GHz')
 EXTRA = ('OWN72_ON',) + S0_NAMES
+ALLN = list(NAMES) + list(EXTRA)                      # amendment 1: NAMES is a list, EXTRA a tuple (run 1 crashed)
 PAIRS = {'site0_only_minus_all_on': (('site0_only', 0.0), ('all_on', 0.0)),
          'ring2_off_minus_all_on': (('ring2_off', 0.0), ('all_on', 0.0)),
          'q0.5_minus_all_on': (('q0.5', 0.0), ('all_on', 0.0)),
@@ -295,16 +296,16 @@ def mix_fractions(counts, keys, nv, n_real, mixes):
             per_state[st], se_state[st] = {}, {}
             for p in PROFILES:
                 fr, se = {}, {}
-                for n in NAMES + EXTRA:
+                for n in ALLN:
                     v = counts[key + (st, p, n)] / n_real
                     fr[n] = float(v.mean())
                     se[n] = math.sqrt(float(np.sum(v * (1 - v))) / n_real) / nv[st]
                 per_state[st][p], se_state[st][p] = fr, se
         out[key] = {'per_state': per_state,
-                    'mixes': {mn: {p: {n: sum(w * per_state[s_][p][n] for s_, w in mm['weights'].items()) for n in NAMES + EXTRA}
+                    'mixes': {mn: {p: {n: sum(w * per_state[s_][p][n] for s_, w in mm['weights'].items()) for n in ALLN}
                                    for p in PROFILES} for mn, mm in mixes.items()},
                     'mixes_mc_se': {mn: {p: {n: math.sqrt(sum(w ** 2 * se_state[s_][p][n] ** 2 for s_, w in mm['weights'].items()))
-                                             for n in NAMES + EXTRA} for p in PROFILES} for mn, mm in mixes.items()}}
+                                             for n in ALLN} for p in PROFILES} for mn, mm in mixes.items()}}
     return out
 
 
@@ -338,6 +339,9 @@ def main():
     ap.add_argument('--config', default=str(CONFIG))
     ap.add_argument('--outdir', default=str(OUTDIR))
     ap.add_argument('--git-head', default=None)
+    ap.add_argument('--smoke-realizations', type=int, default=None,
+                    help='amendment 1: code-path smoke test on N realizations; never a measured run (forced FAIL, '
+                         'outdir must differ from the default)')
     args = ap.parse_args()
     t0 = time.time()
     conf = json.loads(Path(args.config).read_text(encoding='utf-8'))
@@ -346,6 +350,11 @@ def main():
     seed, n_real = int(conf['settings']['seed']), int(conf['settings']['realizations'])
     if seed != int(conf3['settings']['seed']) or n_real != int(conf3['settings']['realizations']):
         raise SystemExit('P3.2a must use the E1c.3 seed and realization count')
+    smoke = args.smoke_realizations is not None
+    if smoke:
+        if Path(args.outdir).resolve() == OUTDIR.resolve():
+            raise SystemExit('smoke runs must not write to the measured-run directory')
+        n_real = int(args.smoke_realizations)
     outdir = Path(args.outdir)
     (outdir / 'raw').mkdir(parents=True, exist_ok=True)
     validation = {}
@@ -421,7 +430,7 @@ def main():
         print(f'ISD {isd}: victims {[len(v) for v in victims.values()]}, rings {np.bincount(rings).tolist()}', flush=True)
         scen_keys = [(sc, dp, c) for c in CASES for dp in DP[c] for sc in SCEN]
         counts = {k + (st, p, n): np.zeros(nv[st], dtype=np.int16)
-                  for k in scen_keys for st in STATES for p in PROFILES for n in NAMES + EXTRA}
+                  for k in scen_keys for st in STATES for p in PROFILES for n in ALLN}
         pair_cases = {(pn, c): ab for pn, ab in PAIRS.items() for c in CASES
                       if all(dp in DP[c] for (_, dp) in ab)}
         pairs = {(pn, c, st, p, n): (np.zeros(nv[st], dtype=np.int16), np.zeros(nv[st], dtype=np.int16))
@@ -479,7 +488,7 @@ def main():
                             fl = flags_with_extra(res, cxs[c])
                             flags[(sc, dp)] = fl
                             for p in PROFILES:
-                                for n in NAMES + EXTRA:
+                                for n in ALLN:
                                     counts[(sc, dp, c, st, p, n)] += fl[p][n]
                     # Q3 all_off
                     for dp in DP[c]:
@@ -629,7 +638,8 @@ def main():
              'Q4': 'Q4_scalar', 'Q5': 'Q5_nesting', 'Q6': 'Q6_power_offset', 'Q7': 'Q7_leave_one_out'}
     for k, nm in names.items():
         validation[nm] = dict(gate[k], passed=all(v['passed'] for v in gate[k].values()))
-    gates_ok = all(v['passed'] for v in validation.values())
+    gates_ok = all(v['passed'] for v in validation.values()) and not smoke
+    validation['smoke_run'] = smoke
     validation['all_checks_passed'] = gates_ok
     # ---- predictions and decision (ISD 200, C, M2412, F2, site-0-served subset)
     pr = summary['isd']['200']['pairs_m2412']

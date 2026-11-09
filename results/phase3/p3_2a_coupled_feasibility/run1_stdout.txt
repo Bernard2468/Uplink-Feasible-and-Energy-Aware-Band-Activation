@@ -1,0 +1,8 @@
+ISD 200: victims [935, 5756], rings [1, 6, 12]
+Traceback (most recent call last):
+  File "/mnt/c/Users/FJ/Desktop/Uplink-Feasible and Energy-Aware Band Activation/scripts/p3_2a_coupled_feasibility.py", line 675, in <module>
+    main()
+  File "/mnt/c/Users/FJ/Desktop/Uplink-Feasible and Energy-Aware Band Activation/scripts/p3_2a_coupled_feasibility.py", line 424, in main
+    for k in scen_keys for st in STATES for p in PROFILES for n in NAMES + EXTRA}
+                                                                   ~~~~~~^~~~~~~
+TypeError: can only concatenate list (not "tuple") to list

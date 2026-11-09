@@ -1,6 +1,13 @@
 {
   "experiment": "P3.2a: coupled radio-feasibility engine. Exact recomputation of every victim's SINR and UL/DL feasibility for any on/off (or activity-weighted) state of the 57 7.2 GHz cells, on the unchanged E1c.3 model",
-  "status": "PRE-REGISTERED 2026-11-09, before the first measured run",
+  "status": "PRE-REGISTERED 2026-11-09, before the first measured run; AMENDMENT 1 after run 1 crashed at setup",
+  "amendments": [
+    {"id": 1, "date": "2026-11-09", "trigger": "run 1 (commit a1919f3) crashed before any computation: TypeError, list (NAMES) + tuple (EXTRA) when allocating the count arrays; log kept as run1_stdout.txt",
+     "changes": ["ALLN = list(NAMES) + list(EXTRA) replaces every NAMES + EXTRA (no change of logic)",
+                 "--smoke-realizations N: code-path smoke test on N realizations; refuses the measured-run directory; validation.smoke_run = true and all_checks_passed forced false"],
+     "smoke_run": "2 realizations, scratch directory: every gate computable; Q0, Q1a, Q3-Q7 pass; Q1b and Q2 fail as they must (they compare with E1c.3's 100-realization counts/summary; Q2 had 0 non-bitwise arrays)",
+     "declared_not_blind": "the smoke run printed 2-realization values of the prediction quantities: P1 gain_ring2_off 0.00024 vs gain_site0_only 0.00185; P2 loss_all_on 0.00034 vs loss_site0_only 0.00030; D14 DL 0.00024, UL 0.00009. Predictions P1, P2, the D14 rule and every gate threshold are unchanged."}
+  ],
   "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, P3.0 revision 2 (D10 rev, D11-D14) and P3.2a",
   "inherited_unchanged": "configs/e1/e1c3_directional.json and configs/e1/e1c2_interference.json: geometry, victims (site 0's cell), candidates, association, propagation, random streams 0-11, E1.5.5 V2 gains, specular calibration, thresholds; setting 'sd' (eta 1, full buffer, UL target power). scripts/e1c3_directional.py and scripts/e1c2_interference.py are imported, not modified",
   "settings": {"seed": 20261110, "realizations": 100, "isds": [200, 500], "isd_primary": 200, "isd_500": "qualified sensitivity (virtual sites, synthetic DL targets for 21 of 57 TRxPs)"},

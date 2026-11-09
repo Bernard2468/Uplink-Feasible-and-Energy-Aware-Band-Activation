@@ -1,0 +1,72 @@
+{
+  "experiment": "E1c.2: interference-aware (SINR) uplink/downlink feasibility of the co-sited 3.5/7.2 GHz layers in a 19-site layout around site 0, with the E1.5 model",
+  "status": "PRE-REGISTERED 2026-11-09, committed before the first interference evaluation; layout, models, settings, gates, predictions and decision rules are not changed after results are seen",
+  "protocol": "docs/PHASE_2_RADIO_PROTOCOL.md section 6, 'E1c.2'",
+  "code": {"geometry": "scripts/e1c2_geometry_sites.py", "engine": "scripts/e1c2_interference.py", "tests": "tests/test_e1c2_interference.py"},
+  "sources": {
+    "m2412_table5b_dense_urban_config_A": "verified 2026-11-09 from the ITU-R M.2412-0 Word file: BS antenna height 25 m; total transmit power per TRxP 44 dBm for 20 MHz; UE power class 23 dBm; 20% high-loss, 80% low-loss buildings; ISD 200 m; up to 256 TRxP elements, up to 8 UE elements; device deployment 80% indoor, 20% outdoor (in car), uniform over the area; inter-site interference 'Explicitly modelled'; BS / UE noise figure 5 / 7 dB; BS element gain 8 dBi; full buffer; 20 MHz TDD; 10 UEs per TRxP; indoor UT height 3(n_fl - 1) + 1.5",
+    "m2412_layout": "M.2412-0 section 8.3: base stations / sites on a regular grid following a hexagonal layout, 'a wrap-around configuration of 19 sites, each of 3 TRxPs'",
+    "m2412_power_control": "M.2412-0 contains no uplink power-control parameters (text search 2026-11-09): left to the proponent; TR 37.910 / TR 38.802 values could not be verified, so no P0/alpha constant is used (see ul_interference)",
+    "tr38901_lsp": "TR 38.901 clause 7.5 step 4 (as implemented by ns-3 and E1.2): large-scale parameters are independent across BS-UT links of different sites and shared by co-sited sectors"
+  },
+  "seen_before_registration": [
+    "all E1.5 and E1c.1 results",
+    "site exploration and the E1c.2 geometry tool (scripts/e1c2_geometry_sites.py): run 1 failed check S3 (indoor samples directly beneath a rooftop antenna have no horizontal direction to it; one floor-6 sample's ray leaves the building mesh); rule added: such samples are excluded and counted; run 2 passes S1-S4. ISD 200: site 0 + 17 rooftop sites + 1 mast, all 25 m except site 0 (27 m); ISD 500: 6 rooftop ring-1 sites, ring 2: 2 masts + 10 virtual (outside the scene); excluded indoor samples 3,886 (2.65%, ISD 200) and 1,291 (0.88%, ISD 500)",
+    "unit tests on a synthetic 7-site layout (engine = independent scalar implementation within 1e-9 dB) and a timing run on synthetic data of realistic size (about 2.3 s and 0.9 GB per realization)",
+    "no SINR, SNR or interference value of a real sample has been computed"
+  ],
+  "layout": {
+    "sites": "the e1c2 geometry: 19 sites (rings 0-2) per ISD, sector bearings 30/150/270 deg at every site (TR 38.901 Table 7.8-1), 3 TRxPs per site (57 TRxPs); site 0 = the E1.1 gNB",
+    "isd_m": {"200": "primary (M.2412 Dense Urban-eMBB); the 19 nominal cells lie within 516 m of site 0, inside the 600 m geometry", "500": "secondary (TR 38.901 UMa); ring 2 is virtual (outside the scene, NLOS links) and only the part of the layout within 600 m of site 0 has UE samples"},
+    "victims": "E1.1 outdoor points and E1c indoor samples (minus the per-ISD exclusions) inside site 0's nominal hexagonal cell (nearest lattice point = site 0; ties to the lower ring); every victim is weighted equally within its state, as E1c.1",
+    "ul_candidates": "per realization, 3000 candidate UEs drawn from the samples of the 19 nominal cells (within 600 m) with the M.2412 state mix (in car 0.2, indoor low 0.64, indoor high 0.16), each with its own random terms, associated like the victims; each TRxP's interferer is one of the candidates it serves, chosen uniformly; a TRxP serving no candidate contributes no UL interference (count reported)"
+  },
+  "propagation": {
+    "path_loss": "TR 38.901 UMa per link with the site's antenna height, the sample's hUT and the link's geometric LOS (outdoor: segment test; indoor: facade toward that site, d2D-in toward that site); hE per link drawn from the Table 7.4.1-1 Note 1 distribution (hUT >= 13 m); vectorized implementation checked against cmwave.radio.pathloss_3gpp (gate G2)",
+    "random_terms": "per link and realization: shadowing N(0, 4 dB LOS / 6 dB NLOS) outdoor and in car, O2I shadowing N(0, 7 dB) indoor, shared by both carriers and by the 3 sectors of a site, independent across sites and UEs; per UE and realization: building variate sigma_P x_P (indoor) or car variate 5 x_car, shared by all links and carriers; no spatial correlation between UEs (area fractions are per-sample marginals, as E1c.1)",
+    "o2i_version": "TR 38.901 V19.5.0"
+  },
+  "radio": {
+    "model": "E1.5.5 V2 per case (A_equal_elements primary, B_equal_aperture, C_deployment): serving link gain = E1.4 ideal-steering gain - D_cb (C: 4.5 dB on NLOS links), UE MRC gain on the DL desired signal only; C-AMC T2 mapping; F1/F2/F3 thresholds as E1.5.5/E1c.1 (scripts/e1c_area_maps.py thresholds), applied to SINR with interference treated as noise, uniform over the band",
+    "association": "per realization, each victim (and candidate) is served by the site with the largest 3.5 GHz received power with its beam (E1.4 gain - D) and best sector (element pattern); the same TRxP serves on 7.2 GHz (co-sited layers)",
+    "dl_interference": "every TRxP other than the serving one (the serving site's other two sectors and the three sectors of every other site) transmits at the case power with activity eta; power toward the victim = case power + element gain of that sector (TR 38.901 element, sector bearing) + 0 dB array gain (beam pointed at the TRxP's own UE: random-direction average)",
+    "ul_interference": "one UE per other TRxP (activity eta), received at the victim's serving TRxP with that sector's element gain (0 dB array average). Power: 'target' (primary): the power at which the interferer's own noise-limited SNR at its TRxP equals the profile's SNR threshold s* (F2: full band; F3: floor(N/10) PRBs), capped at 23 dBm (path-loss compensation to the service level, no P0/alpha constant; noise-limited target, so a lower bound on the power an interference-limited network would need); 'full': 23 dBm (upper bound); 'off': no UL interference. F1 victims (1 PRB) see the F2 interferers' power spread over N PRBs",
+    "victim_ul": "the victim transmits at 23 dBm (power-limited feasibility, as E1.3-E1c.1); F2: full band with F2 interferers; F3: floor(N/10) PRBs with F3 interferers on the same PRBs; F1: 1 PRB"
+  },
+  "settings": {
+    "primary": {"isd": 200, "eta": 1.0, "ul": "target", "act72": "all", "server": "best"},
+    "one_at_a_time": {
+      "eta0p5": "eta 0.5", "eta0p2": "eta 0.2",
+      "ul_off": "no UL interference", "ul_full": "UL interferers at 23 dBm",
+      "iso72": "only the serving TRxP's 7.2 GHz carrier on: no 7.2 GHz interference in either direction",
+      "noise_multi": "eta 0, no UL interference: 19-site best-server association without interference",
+      "single_noise": "site 0 serves, no interference (gate G1; equals E1c.1 in distribution)"
+    },
+    "applied_to": "every setting for ISD 200 and ISD 500 and for the cases A, B, C, with common random numbers",
+    "realizations": 100,
+    "seed": 20261110
+  },
+  "gates": {
+    "G0_inputs": "E1.1, E1c geometry, E1c.2 geometry, E1c.1 and E1.5 manifests all_checks_passed; hashes recorded",
+    "G1a_site0_link_budget": "site 0 is the E1.1 gNB (1e-9 m); for every victim, case, state and carrier the engine's site-0 link equals the E1c.1 rows (same samples, hE components and weights): deterministic loss, DL/UL gains within 1e-9 dB, total sigma and weights within 1e-12, d2D within 1e-6 m",
+    "G1_single_site_limit": "setting single_noise: for every ISD, case, state, profile and class or feasibility flag, the Monte-Carlo fraction over the victims agrees with the E1c.1 exact engine on the same samples within 5 standard errors (pooled over victims)",
+    "G2_path_loss": "the vectorized UMa path loss equals cmwave.radio.pathloss_3gpp for every victim link and hE component with positive probability within 1e-9 dB",
+    "G3_scalar_recompute": "per ISD, 50 (victim, realization) pairs of the primary setting, case A (realizations 0 and 1): serving site and TRxP identical, and DL SINR (both carriers) and UL SINR (F1, F2, F3, both carriers) within 1e-9 dB of an independent scalar implementation (math module, pathloss_3gpp scalar functions, re-typed element pattern and O2I table, explicit loops, its own candidate association and interferer selection) from the same random draws",
+    "G4_mapping_partition": "mappings non-decreasing (as E1c.1 C5); K1, K2, K3, K4, K6 partition every outcome",
+    "stop": "any gate fails: stop and diagnose"
+  },
+  "predictions_scored": {
+    "P1": "primary (ISD 200, full load, case A): the M.2412-mix median of the 7.2 GHz DL SINR is at least 3 dB below the median of the same victims' DL SNR in setting noise_multi (the 7.2 GHz DL is interference-limited at full load)"
+  },
+  "reported": [
+    "per ISD, setting, case, state and profile: class (K1-K4, K6) and feasibility fractions over site 0's cell with Monte-Carlo standard errors; M2412 and highloss50 mixes",
+    "E1c.1 exact fractions on the same victims (single site, noise-limited) beside noise_multi (association effect only) and the interference settings",
+    "SINR / SNR quantiles (5, 50, 95%) per carrier for DL, UL F2 and UL F3, per state and M2412 mix (0.05 dB histogram)",
+    "share of victims served by site 0; TRxPs without an UL interferer; mean target power of the interferers and share at 23 dBm"
+  ],
+  "decision_rules": {
+    "all_gates_pass": "the primary setting's fractions, with the eta / UL power / activation / ISD / case ranges, are the interference-aware area results of the paper and the load-dependent input of Phase 3; E1c.1 is the noise-limited bound",
+    "gate_fails": "stop and diagnose"
+  },
+  "limits": "one 19-site cluster in one scene, no wrap-around (victims only in site 0's cell; UEs beyond the layout edge attach to ring-2 sites); interference averaged over beam directions (0 dB array gain), not per-beam; activity eta as a mean factor; UL interferers' power from a noise-limited service-level rule, not a 3GPP P0/alpha set ('full' bounds it); ISD 500: ring 2 virtual, its cells and the outer part of ring 1 without UE samples (no UL interferers there; the ring-1 interferers come from the part of their cells nearer site 0); single layer; ideal UE MRC; D_cb measured at hUT 1.5 m and applied on every floor; TR 38.901 UMa formulas used below its 10 m minimum distance where the geometry has such links (as E1c.1)"
+}

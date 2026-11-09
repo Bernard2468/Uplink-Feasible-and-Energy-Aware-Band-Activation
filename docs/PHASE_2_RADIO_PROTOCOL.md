@@ -734,6 +734,129 @@ two radii, with the variant ranges, are the paper's single-site area
 results and the spatial input of Phase 3. E1c.2 (multiple sites,
 interference) is next and is pre-registered separately.
 
+### E1c.2 multi-site SINR feasibility (PRE-REGISTERED 2026-11-09)
+
+E1c.1 is single-site and noise-limited. M.2412 Dense Urban-eMBB requires
+inter-site interference to be "explicitly modelled" on 19 hexagonal sites
+of 3 TRxPs. E1c.2 adds the layout, best-server association and SINR.
+
+Files:
+- Config: `configs/e1/e1c2_interference.json` (normative).
+- Geometry: `scripts/e1c2_geometry_sites.py`, outputs in
+  `results/phase2/e1c2_geometry/`.
+- Engine: `scripts/e1c2_interference.py`.
+- Tests: `tests/test_e1c2_interference.py`.
+
+**Sources checked before registration.** From the M.2412-0 Word file,
+Table 5(b) Config A:
+- BS height 25 m; 44 dBm per TRxP (20 MHz); UE 23 dBm;
+- ISD 200 m; 80% indoor and 20% in car; 20% high-loss buildings;
+- noise figures 5 / 7 dB; 10 UEs per TRxP; full buffer.
+
+M.2412 gives no uplink power-control parameters. I could not verify
+3GPP P0/α values, so none is used (see UL power below).
+
+**Geometry (run before registration; geometry only).**
+- Layout: a hexagonal lattice anchored at site 0, rings 0–2.
+- Placement: each in-scene lattice point snaps to the nearest roof
+  (≥ 6 m) within 0.2·ISD, otherwise a 25 m ground mast. Antenna height is
+  max(25 m, roof + 1 m). Lattice points outside the scene become virtual
+  sites with NLOS links.
+- Link geometry: from every outdoor point and indoor sample to every site,
+  with LOS and the facade and d2D-in toward each site.
+
+Run 1 failed check S3. Indoor samples directly beneath a rooftop antenna
+have no horizontal direction to it, and one floor-6 ray leaves the
+building mesh. Such samples are now excluded and counted. Run 2 passes
+S1–S4 (site 0 reproduces E1.1 and E1c exactly; placement rule;
+finite facades; reproducible):
+
+| ISD | Sites | Excluded indoor samples |
+|---|---|---|
+| 200 | site 0 (27 m), 17 rooftop, 1 mast; all others at 25 m | 3,886 (2.65%) |
+| 500 | site 0, 6 rooftop (ring 1), 2 masts, 10 virtual (ring 2) | 1,291 (0.88%) |
+
+The run-1 manifest is kept.
+
+**Model** (the config is normative):
+- **Victims:** samples in site 0's nominal hexagonal cell, weighted equally
+  within each state, as E1c.1.
+- **Association:** each victim is served by the site with the largest
+  3.5 GHz received power with its beam (E1.4 gain − D, E1.5.5 V2) and its
+  best sector. The same TRxP serves at 7.2 GHz.
+- **DL interference:** every TRxP other than the serving one, including
+  the serving site's other two sectors. Each transmits the case power with
+  its sector's element gain toward the victim and 0 dB average array gain,
+  scaled by the activity η.
+- **UL interference:** one UE per other TRxP. Per realization, 3,000
+  candidates are drawn from the 19 cells with the M.2412 state mix,
+  associated like the victims, and each TRxP takes one of its own at
+  random. They are received with the victim's sector element gain.
+- **UL power:**
+  - *target* (primary): each interferer's own noise-limited SNR equals the
+    profile's threshold, capped at 23 dBm. This is a lower bound on the
+    power an interference-limited network needs.
+  - *full*: 23 dBm, the upper bound.
+  - *off*: no UL interference.
+  The victim always transmits 23 dBm, as in E1.3–E1c.1.
+- **Random terms:** shadowing (or O2I shadowing) per link, shared by the
+  carriers and by a site's sectors and independent across sites
+  (TR 38.901 clause 7.5). Building or car variate per UE. hE drawn per
+  link.
+- **Thresholds:** E1c.1's F1/F2/F3 thresholds applied to SINR, with
+  interference treated as noise and uniform over the band. The F2 and F3
+  uplink rules keep their E1.5.5 form, because SINR(n) has the same
+  dependence on the allocation n as SNR(n).
+
+**Settings.** The primary is ISD 200, η = 1, UL target power and every
+7.2 GHz layer on. One change at a time, for both ISDs and cases A, B, C,
+with common random numbers:
+- η 0.5 and 0.2;
+- UL interference off, or at full power;
+- `iso72`: only the serving TRxP's 7.2 GHz carrier on;
+- `noise_multi`: 19-site association without interference;
+- `single_noise`: site 0 serves, no interference (the G1 limit).
+
+100 realizations, seed 20261110.
+
+**Gates:**
+
+| Gate | Requirement |
+|---|---|
+| G0 | Inputs validated and hashed |
+| G1a | Site 0's link (loss, gains, σ, hE weights) equals the E1c.1 rows for every victim, case, state and carrier |
+| G1 | `single_noise` fractions agree with the E1c.1 exact engine on the same victims within 5 SE, for every ISD, case, state, profile and class or flag |
+| G2 | Vectorized UMa equals `pathloss_3gpp` for every victim link and hE component within 1e-9 dB |
+| G3 | 50 pairs per ISD: association identical, and every SINR within 1e-9 dB of an independent scalar implementation with its own candidate association |
+| G4 | Mappings non-decreasing; the classes partition every outcome |
+
+Before registration, the unit tests ran the engine against the scalar
+implementation on a synthetic 7-site layout (agreement within 1e-9 dB). A
+timing run on synthetic data of realistic size took about 2.3 s and
+0.9 GB per realization. No SINR of a real sample has been computed.
+
+**Prediction** (scored):
+- **P1:** primary, case A: the M.2412-mix median of the 7.2 GHz DL SINR is
+  at least 3 dB below the median DL SNR of `noise_multi`.
+
+**Decision (fixed now).** If every gate passes, the primary fractions,
+with the η, UL power, activation, ISD and case ranges, are the paper's
+interference-aware area results and the load-dependent input of Phase 3.
+E1c.1 remains the noise-limited bound.
+
+**Limits.**
+- One 19-site cluster, no wrap-around. UEs beyond the layout edge attach to
+  ring-2 sites.
+- Interference is averaged over beam directions (0 dB array gain); η is a
+  mean factor.
+- The UL interferer power is a service-level rule, not a 3GPP P0/α set;
+  `ul_full` bounds it.
+- At ISD 500, ring 2 is virtual, and only the part of the layout within
+  600 m has UE samples. Ring 2 and the outer part of ring 1 have no UL
+  interferers, while ring 1's interferers come from the part of their
+  cells nearer site 0.
+- Single layer; ideal UE MRC; D_cb measured at hUT 1.5 m.
+
 ### Original options considered
 
 Recommended (adopted): geometry-aware 3GPP model as the main engine. TR 38.901 UMa path

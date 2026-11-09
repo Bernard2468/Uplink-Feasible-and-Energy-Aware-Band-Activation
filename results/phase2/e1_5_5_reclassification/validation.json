@@ -1,0 +1,143 @@
+{
+  "X0_inputs": {
+    "input_sha256": {
+      "e1_4_antennas_o2i/summary.json": "e6c1d4c566ed9d1973450b836e21efb91ef4fd14a09b44ad6a95be2754462dec",
+      "e1_4_antennas_o2i/manifest.json": "b016fdde322ec30eda64f290c7ce94a83ffb43db2fe05073e3708c9fd4c55932",
+      "e1_5_0_surrogates/summary.json": "4e431bc9dbd6fe14b0fff0417569dae3bf3ec12b91b15b1f8414b366edb8cd95",
+      "e1_5_0_surrogates/manifest.json": "968cb383c2e099d7fb74e553d71d1c0f0cf6db8b6b29e0e99db8d8e9ef90498c",
+      "e1_5_2_1_beams/summary.json": "fe0b4821c8d6abf4b246596e82c292e082569dc7f14758ceb632e731cf36451f",
+      "e1_5_2_1_beams/manifest.json": "6d8551bd95c93c56e02a0f1fcd98dea9c07cd972fb316bd6f9305b3e59758021",
+      "e1_5_3_link_mapping/summary.json": "aaf099eac43feb9a7fa90856e0987a2df5eeb96d73ca8860a6d03565f0c69771",
+      "e1_5_3_link_mapping/manifest.json": "ce7ac5516490031cc90af3c9062deb158749dacf9a6d48cf1f83a7d890ccb47b",
+      "e1_5_3a_amc_diagnostic/summary.json": "100e3fa338720420fea65aa402e1237df9c6d85de8a475624ef4d5f8df40c5ac",
+      "e1_5_3a_amc_diagnostic/manifest.json": "80559d904c5e57597ea4e366c5b898e6a3a57a4fa338f5ae09974c235d0fdaac",
+      "e1_5_4_multiuser/summary.json": "2edc6368f256a8a3e12d03fd7a2f176f36cf1ddf57f3d441148732f1fdd4b969",
+      "e1_5_4_multiuser/manifest.json": "a86df31223fab38796787df80f7532609f59ce30e5b8768748f993be5caaba59"
+    },
+    "passed": true
+  },
+  "X3_mapping": {
+    "per_mapping": {
+      "camc_t2": {
+        "max_abs_err_at_grid": 0.0,
+        "max_abs_below_floor": 0.0
+      },
+      "camc_t1": {
+        "max_abs_err_at_grid": 0.0,
+        "max_abs_below_floor": 0.0
+      },
+      "raw_t2": {
+        "max_abs_err_at_grid": 0.0,
+        "max_abs_below_floor": 0.0
+      },
+      "camc_t2_trlow": {
+        "max_abs_err_at_grid": 0.0,
+        "max_abs_below_floor": 0.0
+      }
+    },
+    "camc_t2_non_decreasing": {
+      "DL": true,
+      "UL": true
+    },
+    "passed": true
+  },
+  "X8_mixes": {
+    "passed": true
+  },
+  "X1_e14_reproduction": {
+    "differing_fractions": 0,
+    "passed": true
+  },
+  "X2_e150_reproduction": {
+    "differing_fractions": 0,
+    "passed": true
+  },
+  "X4_gain": {
+    "passed": true
+  },
+  "X5_partition": {
+    "passed": true
+  },
+  "X6_dominance": {
+    "per_variant": {
+      "V0_e14": {
+        "lost": 0,
+        "viol": 0
+      },
+      "V1_gain": {
+        "lost": 0,
+        "viol": 0
+      },
+      "V1b_mapping": {
+        "lost": 0,
+        "viol": 0
+      },
+      "V2_primary": {
+        "lost": 0,
+        "viol": 0
+      },
+      "m_camc_t1": {
+        "lost": 0,
+        "viol": 0
+      },
+      "m_raw_t2": {
+        "lost": 0,
+        "viol": 0
+      },
+      "m_trlow": {
+        "lost": 0,
+        "viol": 0
+      },
+      "g_dp": {
+        "lost": 0,
+        "viol": 0
+      },
+      "g_eig": {
+        "lost": 0,
+        "viol": 0
+      },
+      "g_cb_ci_lo": {
+        "lost": 0,
+        "viol": 0
+      },
+      "g_cb_ci_hi": {
+        "lost": 0,
+        "viol": 0
+      },
+      "g_c_matched": {
+        "lost": 0,
+        "viol": 0
+      },
+      "pkt": {
+        "lost": 0,
+        "viol": 0
+      },
+      "sel": {
+        "lost": 0,
+        "viol": 0
+      },
+      "v19": {
+        "lost": 0,
+        "viol": 0
+      }
+    },
+    "gated": [
+      "V0_e14",
+      "V1_gain",
+      "V1b_mapping",
+      "V2_primary",
+      "g_dp",
+      "g_eig",
+      "g_cb_ci_lo",
+      "g_cb_ci_hi",
+      "g_c_matched",
+      "sel",
+      "v19"
+    ],
+    "passed": true
+  },
+  "X7_allocation_identity": {
+    "passed": true
+  },
+  "all_checks_passed": true
+}

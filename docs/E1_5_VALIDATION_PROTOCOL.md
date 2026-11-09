@@ -1765,5 +1765,162 @@ kept as V0.
 - The F1 floors were measured on 51-RB TBs but are applied to 1-PRB SNR.
 - The 27 positions × 200 realizations are not area-weighted.
 
+#### E1.5.5 results: all gates PASSED in run 1; P1–P3 held (2026-11-09)
+
+Run from `9385880`: 15 variants × 9 cases, about 3 min. Files are in
+`results/phase2/e1_5_5_reclassification/`: summary, `sensitivity.csv`,
+validation and manifest.
+
+Gates:
+- **X0, X3–X8 pass.**
+  - Every mapping is exact at its grid points.
+  - The gains match an independent recomputation.
+  - The classes partition every record, with K6 = 0 in shared states.
+  - Zero records are F2-UL feasible but F3-UL infeasible, in every variant
+    (gated or not).
+  - The allocation identity holds for every record.
+- **X1 and X2: 0 differing fractions.** E1.4 and E1.5.0 are reproduced
+  exactly.
+
+All tables are generated from `summary.json`.
+
+**E1.4 against E1.5** (M2412 mix; UL feasible fractions at both carriers,
+7.2 GHz DL, classes K1–K4; K6 = 0 everywhere):
+
+| Regime | Profile | Model | UL 3.5 | UL 7.2 | DL 7.2 | K1 | K2 | K3 | K4 |
+|---|---|---|---|---|---|---|---|---|---|
+| A | F2 | E1.4 | 0.702 | 0.592 | 0.908 | 0.592 | 0.110 | 0.206 | 0.092 |
+| A | F2 | E1.5 | 0.669 | 0.558 | 0.841 | 0.558 | 0.111 | 0.171 | 0.159 |
+| A | F3 | E1.4 | 0.832 | 0.732 | 0.908 | 0.732 | 0.100 | 0.076 | 0.092 |
+| A | F3 | E1.5 | 0.798 | 0.698 | 0.835 | 0.698 | 0.099 | 0.037 | 0.165 |
+| B | F2 | E1.4 | 0.702 | 0.682 | 0.948 | 0.682 | 0.020 | 0.246 | 0.052 |
+| B | F2 | E1.5 | 0.669 | 0.615 | 0.882 | 0.615 | 0.055 | 0.213 | 0.118 |
+| B | F3 | E1.4 | 0.832 | 0.808 | 0.948 | 0.808 | 0.023 | 0.116 | 0.052 |
+| B | F3 | E1.5 | 0.798 | 0.753 | 0.878 | 0.753 | 0.045 | 0.080 | 0.122 |
+| C | F2 | E1.4 | 0.598 | 0.534 | 0.956 | 0.534 | 0.064 | 0.359 | 0.044 |
+| C | F2 | E1.5 | 0.574 | 0.512 | 0.918 | 0.512 | 0.061 | 0.344 | 0.082 |
+| C | F3 | E1.4 | 0.737 | 0.678 | 0.956 | 0.678 | 0.060 | 0.219 | 0.044 |
+| C | F3 | E1.5 | 0.710 | 0.650 | 0.916 | 0.650 | 0.059 | 0.207 | 0.084 |
+| A, UE 1 Rx | F2 | E1.4 | 0.702 | 0.592 | 0.849 | 0.592 | 0.110 | 0.146 | 0.151 |
+| A, UE 1 Rx | F2 | E1.5 | 0.669 | 0.558 | 0.764 | 0.558 | 0.111 | 0.095 | 0.236 |
+| A, UE 1 Rx | F3 | E1.4 | 0.832 | 0.732 | 0.849 | 0.732 | 0.095 | 0.021 | 0.151 |
+| A, UE 1 Rx | F3 | E1.5 | 0.798 | 0.698 | 0.759 | 0.698 | 0.060 | 0.000 | 0.241 |
+| R0 | F2 | E1.4 | 0.349 | 0.243 | 0.499 | 0.243 | 0.106 | 0.150 | 0.501 |
+| R0 | F2 | E1.5 | 0.381 | 0.275 | 0.474 | 0.275 | 0.106 | 0.092 | 0.526 |
+| R0 | F3 | E1.4 | 0.481 | 0.380 | 0.499 | 0.380 | 0.096 | 0.023 | 0.501 |
+| R0 | F3 | E1.5 | 0.511 | 0.413 | 0.468 | 0.413 | 0.055 | 0.000 | 0.532 |
+
+**Attribution, in both orders:**
+
+| Regime, profile | E1.4 (V0) | + gain (V1) | + mapping only (V1b) | E1.5 (V2) |
+|---|---|---|---|---|
+| A, F2 | UL7.2 0.592, DL7.2 0.908, K3 0.206 | UL7.2 0.527, DL7.2 0.863, K3 0.229 | UL7.2 0.627, DL7.2 0.890, K3 0.157 | UL7.2 0.558, DL7.2 0.841, K3 0.171 |
+| A, F3 | UL7.2 0.732, DL7.2 0.908, K3 0.076 | UL7.2 0.669, DL7.2 0.860, K3 0.090 | UL7.2 0.764, DL7.2 0.887, K3 0.028 | UL7.2 0.698, DL7.2 0.835, K3 0.037 |
+| B, F2 | UL7.2 0.682, DL7.2 0.948, K3 0.246 | UL7.2 0.580, DL7.2 0.900, K3 0.267 | UL7.2 0.710, DL7.2 0.936, K3 0.203 | UL7.2 0.615, DL7.2 0.882, K3 0.213 |
+| B, F3 | UL7.2 0.808, DL7.2 0.948, K3 0.116 | UL7.2 0.722, DL7.2 0.898, K3 0.128 | UL7.2 0.840, DL7.2 0.934, K3 0.073 | UL7.2 0.753, DL7.2 0.878, K3 0.080 |
+| C, F2 | UL7.2 0.534, DL7.2 0.956, K3 0.359 | UL7.2 0.482, DL7.2 0.932, K3 0.388 | UL7.2 0.564, DL7.2 0.947, K3 0.315 | UL7.2 0.512, DL7.2 0.918, K3 0.344 |
+| C, F3 | UL7.2 0.678, DL7.2 0.956, K3 0.219 | UL7.2 0.614, DL7.2 0.931, K3 0.251 | UL7.2 0.706, DL7.2 0.945, K3 0.177 | UL7.2 0.650, DL7.2 0.916, K3 0.207 |
+
+**Sensitivity ranges.** Each range is the minimum to maximum over the 11
+sensitivity variants. The last column names the variant(s) at the range
+ends, where they differ from E1.5.
+
+| Regime, profile | class | E1.5 (V2) | sensitivity range | widest variant(s) |
+|---|---|---|---|---|
+| A, F2 | K1 | 0.558 | 0.489-0.578 | g_dp, g_eig |
+| A, F2 | K2 | 0.111 | 0.091-0.115 | g_cb_ci_lo, g_dp |
+| A, F2 | K3 | 0.171 | 0.165-0.198 | g_dp, pkt |
+| A, F2 | K4 | 0.159 | 0.141-0.223 | g_dp, g_eig |
+| A, F3 | K1 | 0.698 | 0.630-0.721 | g_dp, g_eig |
+| A, F3 | K2 | 0.099 | 0.091-0.100 | g_cb_ci_lo, g_dp |
+| A, F3 | K3 | 0.037 | 0.034-0.057 | g_eig, sel |
+| A, F3 | K4 | 0.165 | 0.147-0.227 | g_dp, g_eig |
+| B, F2 | K1 | 0.615 | 0.489-0.665 | g_dp, g_eig |
+| B, F2 | K2 | 0.055 | 0.027-0.091 | g_dp, g_eig |
+| B, F2 | K3 | 0.213 | 0.198-0.239 | g_dp, sel |
+| B, F2 | K4 | 0.118 | 0.087-0.223 | g_dp, g_eig |
+| B, F3 | K1 | 0.753 | 0.630-0.794 | g_dp, g_eig |
+| B, F3 | K2 | 0.045 | 0.027-0.091 | g_dp, g_eig |
+| B, F3 | K3 | 0.080 | 0.051-0.103 | g_dp, sel |
+| B, F3 | K4 | 0.122 | 0.090-0.228 | g_dp, g_eig |
+| C, F2 | K1 | 0.512 | 0.469-0.512 | g_c_matched |
+| C, F2 | K2 | 0.061 | 0.061-0.095 | g_c_matched, pkt |
+| C, F2 | K3 | 0.344 | 0.334-0.344 | g_c_matched |
+| C, F2 | K4 | 0.082 | 0.082-0.102 | g_c_matched |
+| C, F3 | K1 | 0.650 | 0.610-0.650 | g_c_matched |
+| C, F3 | K2 | 0.059 | 0.059-0.094 | g_c_matched |
+| C, F3 | K3 | 0.207 | 0.192-0.216 | g_c_matched, pkt |
+| C, F3 | K4 | 0.084 | 0.078-0.104 | g_c_matched, pkt |
+
+What is established (single site, SNR, 27 positions × 200 realizations,
+M2412 mix):
+
+1. **E1.4 was optimistic for the 7.2 GHz layer.**
+   - 7.2 GHz DL feasibility (F2) falls by 6.6–6.7 points in regimes A and B
+     and by 3.8 in C.
+   - UL 7.2 feasibility falls by 3.4 (A), 6.7 (B) and 2.2 (C).
+   - The largest class change is K4 (7.2 GHz DL not feasible): 0.092 →
+     0.159 in A and 0.052 → 0.118 in B.
+   - All three predictions held.
+2. **Two corrections pull in opposite directions; the gain correction
+   dominates.**
+   - The realised codebook gain alone (V1, F2) lowers UL 7.2 by 6.5 (A)
+     and 10.2 (B) points, and 7.2 GHz DL by 4.5 (A) and 4.8 (B).
+   - The NR link mapping alone (V1b) raises UL 7.2 by 2.8–3.5 points (A, B
+     and C; F2 and F3), because the UL threshold is 2.3 dB easier and the
+     TR cap of 2.0 is gone. It lowers F2 7.2 GHz DL by 0.9–1.8 points,
+     because the DL threshold is 2 dB harder.
+   - In both orders the gain step is the larger. For A, F2, UL 7.2: −6.5
+     then +3.1 points; or +3.5 then −6.9.
+3. **The equal-aperture advantage of regime B shrinks.**
+   - Under E1.4, B's 7.2 GHz UL was 9.0 points better than A's (F2). Under
+     E1.5 it is 5.7 points better.
+   - B's K2 (7.2 DL only, with 3.5 GHz UL) rises from 0.020 to 0.055.
+   - This matches E1.5.2-1: narrower beams capture less of the angular
+     spread.
+4. **The multiple-access assumption remains first-order.**
+   - Under E1.5, K3 ("7.2 DL works, no UL meets the service level") is
+     0.171 / 0.213 / 0.344 with time sharing (F2, analog), against
+     0.037 / 0.080 / 0.207 with a static frequency partition (F3, digital
+     or hybrid) for A / B / C.
+   - That is a 13–14 point reduction, the same size as in E1.5.0 (12.7–14).
+5. **The results are robust to the link-model details.**
+   - Mapping alternatives (C-AMC T1, raw 5G-LENA, TR low end) move every
+     class by ≤ 0.3 points in A, B and C.
+   - The E1.5.4 packet thresholds move them by ≤ 1.1 points (largest:
+     A, F3, K3 +1.1).
+   - The O2I V19.5.0 materials move them by ≤ 0.3 points.
+6. **The dominant uncertainty is the realised beam gain.**
+   - DirectPath, which is not a valid NLOS model (E1.5.2-1), gives the
+     pessimistic bound: K1 −6.8 to −12.6 points.
+   - The certified eigen bound gives the optimistic bound: K1 +2.0 to
+     +5.0 points.
+   - The D_cb CI moves K1 by ≤ 1.4 points.
+   - The selectivity factor (E1.5.4 post hoc) costs K1 2.5–3.2 points and
+     adds 2.0–2.6 to K3.
+   - For regime C, the measured matched-array deficits make 7.2 GHz worse
+     than the 4.5 dB rule: K1 −4.3 (F2), K2 +3.4. This is because the rule
+     gives O2I-at-LOS links no loss.
+7. **Hazard 15 label (F1 only).** F1 is link closure, not the service
+   profiles F2/F3, and is the only profile that depends on the decoding
+   floor.
+   - Up to 12.6% of indoor high-loss records (A, B, C; UL 7.2) close only
+     with TR's −10 dB low end. For the isotropic reference R0 it is up to
+     13.8%.
+   - F1 statements in the paper must carry this label. The F2 and F3 class
+     fractions under m_trlow equal V2 at the reported precision.
+
+**Decision applied (pre-registered).** V2 is the E1.5 classification for
+E1c and the paper. E1.4's numbers are superseded and kept as V0. The
+sensitivity ranges above accompany every class fraction.
+
+**E1.5 status.**
+- E1.5.0–E1.5.5 are complete. Section 6's condition for E1c is met:
+  E1.5.1–E1.5.4 passed, or their disagreements are explained (E1.5.1-D,
+  E1.5.4-0).
+- E1.5.2b (UE receive array) is not blocking. E1.5.5 keeps E1.4's ideal
+  UE MRC as a mean-SNR gain, with the 1-Rx case (S1) as its bound.
+- Regime C's gain and wide-band behaviour remain unmeasured, as stated.
+
 ## 6. Order and stop rules
 E1c (area maps) and the energy controller do not start until E1.5.1-E1.5.4 have passed or their disagreements are explained. A stage that fails stops the sequence until the cause is found and recorded.

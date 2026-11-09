@@ -507,15 +507,22 @@ def main():
     pt = geo['point_id']
     npt = int(pt.max()) + 1
     cnt = np.bincount(pt, minlength=npt)
+    # Coordinates indexed by point id like the map arrays; ids whose every floor was excluded
+    # (same-building rule) have no sample: NaN coordinates and NaN map values (run 2 listed only
+    # the present points here, misaligned with the maps; summary unaffected).
     first_pt = np.r_[True, np.diff(pt) != 0]
-    arrays['indoor_point_x'], arrays['indoor_point_y'] = geo['x'][first_pt], geo['y'][first_pt]
+    px, py = np.full(npt, np.nan), np.full(npt, np.nan)
+    px[pt[first_pt]], py[pt[first_pt]] = geo['x'][first_pt], geo['y'][first_pt]
+    arrays['indoor_point_x'], arrays['indoor_point_y'] = px, py
+    arrays['indoor_point_has_samples'] = cnt > 0
     for cname in ('A_equal_elements', 'B_equal_aperture', 'C_deployment'):
         for p in ('F2', 'F3'):
             vl, vh = maps_out[(cname, p, 'indoor_low')][1], maps_out[(cname, p, 'indoor_high')][1]
             for n in PARTITION:
                 mixed = 0.8 * vl[n] + 0.2 * vh[n]
-                arrays[f'{cname}|{p}|indoor_point_mix|{n.split("_")[0]}'] = (
-                    np.bincount(pt, weights=mixed, minlength=npt) / cnt).astype(np.float32)
+                arrays[f'{cname}|{p}|indoor_point_mix|{n.split("_")[0]}'] = np.divide(
+                    np.bincount(pt, weights=mixed, minlength=npt), cnt, out=np.full(npt, np.nan),
+                    where=cnt > 0).astype(np.float32)
     np.savez_compressed(outdir / 'raw' / 'maps.npz', **arrays)
     # ---- predictions
     def mixv(v, c, p, rn, n):

@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-2 (2026-11-09); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1).** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b pre-registered.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -558,12 +558,98 @@ decides between scoring the 7-site cluster and site 0 only.
 - asleep: light or deep;
 - transitioning: unavailable, consuming the sleep power plus E_add.
 
+### Revision 3 (2026-11-10, after P3.2a, before P3.2b)
+
+These decisions were fixed before any P3.2b output on the real layout.
+
+**D15: typical-site frame.**
+- The users are E1c.3's victims in site 0's hexagonal cell, as before.
+- A victim served by TRxP t counts as a user of the typical site's sector
+  t mod 3. In a homogeneous network the lattice translation makes this
+  exact, because every site has the same sector bearings.
+- Each victim's SINR is still computed at its physical position, with the
+  full 19-site environment (the P3.2a engine).
+- Loads and 7.2 GHz activation are periodic in the sector index. One fixed
+  point per realization, carrier and direction has three unknowns.
+- **Why:** it scores every victim. Scoring a 7-site cluster (D14) would need
+  victims in the ring-1 cells, which E1c.3 does not have. D14's truncation
+  result still bounds the outer-ring effect at ISD 200 (≤ 0.04 points).
+- **Limit:** no cell-to-cell traffic heterogeneity. P3.3 may add it as a
+  mean-field mixture.
+
+**D16: load-coupled flow-level resource model.**
+- **Load coupling** (Siomina and Yuan, IEEE TWC 2012). Each TRxP's
+  interference is multiplied by its realized occupancy: the DL load of its
+  carrier, or the UL load of its cell applied to its scheduled interferer.
+  3.5 / 7.2 GHz and DL / UL are four independent fixed points
+  L = min(1, f(L)), with f_k = T Σ_u w_u / (cap · SE(γ_u(L))).
+- **Flow level** (Bonald, Borst, Hegde and Proutière, CWI PNA-E0302, eq. 5).
+  Time-fair processor sharing gives a flow throughput θ_u = C_u (1 − L_k) if
+  the offered load ρ_k < 1, and 0 otherwise.
+  - Served traffic is d · min(1, 1/ρ).
+  - Unserved traffic is d · max(0, 1 − 1/ρ).
+- **Peak rate:** C = SE × N_PRB × 12 × 30 kHz × TDD share × (1 − OH).
+  - SE is C-AMC T2, in bits per Hz·s of occupied data resources, with DMRS
+    and HARQ losses inside.
+  - TDD is DDDSU with S = 10D:2G:2U (TR 38.864 Table B-1), so the DL share is
+    52/70 and the UL share 16/70.
+  - OH = 0.14 DL and 0.08 UL, from TS 38.306 V19.4.0 clause 4.1.2. These are
+    FR1 values; the spec defines no FR3 value. Because OH partly
+    double-counts DMRS it is conservative, and its effect is analytic.
+- **UL access:** full-band time sharing (the F2 SINR). A fluid PRB-adaptive
+  "rescue" for power-limited users is a sensitivity in case C.
+
+**D17: QoS target.**
+- The M.2410 Dense Urban 5th-percentile user SE (0.225 DL / 0.15 UL bit/s/Hz)
+  becomes a minimum flow throughput: R = SE5 × operating bandwidth of the
+  3.5 GHz layer × TDD share.
+  - This follows M.2410 §4.4's effective bandwidth, the operating bandwidth
+    normalized by the UL/DL ratio.
+  - In case C this is 16.7 Mbit/s DL and 3.43 Mbit/s UL, on either carrier.
+- **Criterion:** pooled outage of admitted users ≤ 5%. Users with no usable
+  link are excluded (D8); the all-user outage is also reported.
+- **Phase 2's F2** is this target at L = 0.9 without OH. F2 is therefore the
+  heavy-load special case of D17.
+
+**D18: traffic.**
+- **Calibration.** The offered DL traffic per site T_ℓ is set so that the
+  3.5-GHz-only network's mean 3.5 GHz DL occupancy equals the ETSI
+  ES 202 706-1 level, ℓ = 0.3 (medium) or 0.5 (busy hour). This is done per
+  ISD and case.
+- **Units.** x = T / T_0.5, so x = g is busy-hour growth.
+- **UL/DL volume ratio:**
+  - 10/90 is primary: Ericsson's "typical 90-to-10 percent downlink-to-uplink
+    ratio" (June 2025).
+  - 26/74 is an AI-era stress: Ericsson's measured GenAI split applied to all
+    traffic.
+- **Spatial demand:** every user offers the same mean traffic.
+- This closes open item 2. The UL source is a volume ratio, not a packet
+  model, which flow-level insensitivity allows.
+
+**D19: association and admission.**
+- **DL, 7.2 GHz on:** a user goes to 7.2 GHz iff its own 7.2 GHz cell is on
+  (D13), it is admitted there, and its full-buffer peak rate is at least the
+  3.5 GHz one. Otherwise it stays on 3.5 GHz.
+- **UL:** UL carrier aggregation uses the same rule. A DL-only SCell keeps the
+  UL on 3.5 GHz.
+- Association is static per state, at full-buffer SINR.
+- **Admission.** A carrier and direction is usable only if the full-buffer SE
+  reaches the C-AMC curve's first point above snr_min:
+  - DL: 0.197 at −0.64 dB;
+  - UL: 0.197 at −0.64 dB, which equals the UL snr_min.
+- **Why the admission rule.** Between snr_min (−1.64 dB) and −0.64 dB the DL
+  curve is 5G-LENA's MCS-0 BLER floor (SE 0.0016 at −1.64 dB, hazard 15).
+  A time-fair model would charge such users up to 120 times the resources per
+  bit, so a model artifact could drive the load.
+- **Reported separately:** the share of users in that band and in TR 36.942's
+  low end.
+
 ## 3. Stages and gates
 
 | Stage | Content | Gate (to be pre-registered) |
 |---|---|---|
 | P3.1 | Hardware energy models of both layers; state ladder | Source versions and hashes recorded; 1.3 Table II recomputed from 1.4 (both static-term forms reported); 1.2's totals (740 / 1658 / 300 / 1044 W, PA 262 W) reproduced, or, where an input is not stated in the source, labelled "not independently reproducible" under a rule fixed before the run (no input tuned to force agreement); TR tables transcribed and checked against the .docx; D10 feasibility; D4 state consistency (powers ≥ 0, ordered deep < light < micro, legal transitions, D ≥ T, energy in J); unit tests on small worked examples |
-| P3.2 | Split into P3.2a (coupled radio engine), P3.2b (traffic and resources), P3.2c (time-dependent energy); see D12 | P3.2a: gates Q0–Q7. P3.2b: load accounting closes (served + unserved = offered); realized L per class; identical workloads. P3.2c: state-machine and energy-ledger gates, causality, no service while asleep or waking, P_aux S0–S2 |
+| P3.2 | Split into P3.2a (coupled radio engine), P3.2b (traffic and resources), P3.2c (time-dependent energy); see D12 | P3.2a: gates Q0–Q7. P3.2b: gates B0–B8 (closure, calibration, identical workloads, fixed-point uniqueness, independent reference). P3.2c: state-machine and energy-ledger gates, causality, no service while asleep or waking, P_aux S0–S2 |
 | P3.3 | Controllers and baselines | Causality checks; DP = brute force on small instances; Δ ≥ transition times; wake delay enforced |
 | P3.4 | Evaluation | Paired seeds, confidence intervals, held-out seeds/geometry/load/hardware; H1–H4 scored as pre-registered |
 
@@ -921,6 +1007,81 @@ UL and the 3.5 GHz layer are unchanged by construction (Q6).
   would need a served/unserved split that was not pre-registered. So the
   map is not read as an interference ranking.
 
+### P3.2b traffic and resource layer (PRE-REGISTERED 2026-11-10)
+
+Config `configs/p3/p3_2b_traffic_resources.json`, code
+`scripts/p3_2b_traffic_resources.py`, tests
+`tests/test_p3_2b_traffic_resources.py` (10, on the synthetic layout and
+analytic toy cells). It imports the P3.2a engine unchanged and implements
+D15–D19.
+
+**What it computes.** It covers two networks:
+- 3.5 GHz only (all 7.2 GHz cells off);
+- all on, with UL carrier aggregation or with a DL-only SCell.
+
+For each network it computes, per carrier and direction:
+- the load-coupled occupancy;
+- the offered, served, unserved and not-admitted traffic;
+- the flow throughputs and the admitted-user outage.
+
+These are evaluated on a traffic grid. The grid is x ∈ {0.25, 0.5, 1, 1.5, 2,
+3, 4, 6} plus the ETSI medium level, in units of the calibrated busy hour; the
+UL grid is ρ·x for both UL/DL ratios.
+
+**Sustainable traffic** x* is the largest x at which the admitted-user outage
+is ≤ 5%:
+- found by bisection, to 0.005;
+- DL and UL separately; x*_both = min.
+
+**Scope:**
+
+| ISD | Cases (7.2 GHz DL offset) |
+|---|---|
+| 200 (primary) | A (0 dB), B (0 dB), C (0 / −3 / −10 dB = 53 / 50 / 43 dBm) |
+| 500 (qualified) | C (0 / −3 / −10 dB) |
+
+The UL rescue sensitivity covers case C at both ISDs. The primary point is
+ISD 200, C at 50 dBm, UL/DL = 10/90.
+
+**Gates:**
+
+| Gate | Check |
+|---|---|
+| B0 | P3.2a / E1c.3 / E1c.2 manifests and hashes; code constants equal the config |
+| B1 | The load-weighted engine with weights (1, w72) is bit-identical to P3.2a's engine (8 sector patterns, all offsets, realizations 0–1) |
+| B2 | The sector-grouped SINR equals the explicit 57-TRxP weighting within 1e-9 dB, for random loads |
+| B3 | Every fixed point converged (residual ≤ 1e-9); on realizations 0–9 the solution from L = 0 equals the one from L = 1 within 1e-8 (uniqueness) |
+| B4 | Served + unserved = offered (1e-12); the occupancy recomputed from served traffic equals L (1e-9); 0 ≤ L ≤ 1 |
+| B5 | Calibration residual ≤ 1e-9 |
+| B6 | The offered traffic per user is bit-identical across states and power levels |
+| B7 | Six identities and monotonicity checks: all-off DL independent of 7.2 GHz power; DL-only SCell UL = all-off UL bitwise; 3.5 GHz DL load with 7.2 on ≤ all off; loads and outage non-decreasing in traffic; zero traffic gives L = 0 and θ = C |
+| B8 | An independent per-user Python loop on the ungrouped engine reproduces the offered loads (1e-9) and outage flags at 8 primary-point instances |
+
+**Predictions** (ISD 200, C at 50 dBm):
+- **P1:** with 3.5 GHz only and UL/DL = 10/90, the UL reaches the
+  5th-percentile limit first (x*_UL < x*_DL).
+- **P2:** at UL/DL = 26/74 with all cells on and UL CA, a DL-only evaluation
+  overstates the sustainable traffic by at least 25% (x*_DL ≥ 1.25 x*_both).
+- **P3:** at UL/DL = 26/74, UL CA on 7.2 GHz adds at least 20% sustainable
+  traffic over a DL-only SCell.
+
+**Decision rule.** If all gates pass, P3.2b is the traffic layer of P3.2c and
+P3.3. P3.2c's growth sweep runs from g = 1 to at least the all-on UL-CA x*_both
+of the primary point, with the 3.5-GHz-only x*_both marked.
+
+**Declared before registration:**
+- the synthetic-layout tests and one synthetic probe;
+- the C-AMC floor values that motivated D19's admission rule;
+- E1c.3's Bernoulli-minus-mean pairs (≤ 1.1 points), which bound the
+  mean-interference approximation;
+- two smoke runs on the real layout, each on 2 realizations in a scratch
+  folder (127 s and 124 s):
+  - every gate was computable and passed; the overall verdict was forced to
+    fail by the smoke flag;
+  - between them, one memory change: per-user SINR arrays are dropped after
+    aggregation;
+  - smoke mode prints no result values, and its output files were not opened.
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the
@@ -929,7 +1090,9 @@ UL and the 3.5 GHz layer are unchanged by construction (Q6).
    tolerance, report it as "not independently reproducible". Never tune
    the input.
 2. **P3.2, UL traffic source** (independent of DL) and the daily load
-   profile source.
+   profile source. *Closed by D18 (2026-11-10):* the ETSI ES 202 706-1 load
+   levels and durations, and the Ericsson UL/DL volume ratios (10/90 primary,
+   26/74 stress).
 3. **P3.3, secondary-cell activation delay** from TS 38.133.
 4. **Radio–hardware architecture caveat** (D2, D3): stated in the paper,
    with E1.4 S4 as its radio-side size.

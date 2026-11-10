@@ -1,0 +1,108 @@
+{
+  "experiment": "P3.2b: traffic and resource layer. Load-coupled flow-level accounting of offered, served, unserved and unservable traffic and of realized occupancy per carrier and direction, on the unchanged P3.2a radio engine, for the 3.5-GHz-only network and the all-on 7.2 GHz network; traffic calibrated to the ETSI static load levels; sustainable traffic under the M.2410 5th-percentile target",
+  "status": "PRE-REGISTERED 2026-11-10, before the first measured run",
+  "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, P3.0 revision 3 (D15-D19) and P3.2b",
+  "inherited_unchanged": "configs/p3/p3_2a_coupled_feasibility.json and everything it inherits (E1c.3 'sd': geometry, victims in site 0's cell, candidates, best-server association, propagation, random streams, E1.5.5 V2 gains, specular calibration, C-AMC T2 mapping, UL target-power interferers, victim UL at 23 dBm). scripts/p3_2a_coupled_feasibility.py is imported, not modified; engine_terms() is called unchanged",
+  "seen_before_registration": [
+    "all P3.2a results (run 2, commit 6846ca8) and all earlier Phase 2/3 results, including E1c.3's Bernoulli-minus-mean activity pairs (|difference| <= 1.1 points of F2 feasibility at eta 0.2, ISD 500; <= 0.55 points at ISD 200)",
+    "the C-AMC T2 curve near its floor: DL SE 0.0016 at snr_min = -1.64 dB, 0.1969 at -0.64 dB; UL 0.1965 at snr_min = -0.64 dB (results/phase2/e1_5_3a_amc_diagnostic/summary.json); this motivated the admission rule (model.admission)",
+    "unit tests and one probe on the synthetic 7-site test layout only (group sizes, iteration counts 2-16, outage trends); no output on the real layout",
+    "a smoke run on the real layout (see smoke_run), for timing and code paths only"
+  ],
+  "sources": {
+    "load_coupling": "I. Siomina and D. Yuan, 'Analysis of cell load coupling for LTE network planning and optimization', IEEE Trans. Wireless Commun. 11(6), 2287-2297, 2012 (arXiv 1201.4116, SHA-256 128305bc...ede9 read 2026-11-10): gamma_j(rho) = P_i g_ij / (sum_k P_k g_kj rho_k + sigma^2), rho_i = sum_j d_j / (K B log2(1 + gamma_j(rho))); rho = expected fraction of time-frequency resources scheduled for data",
+    "flow_level": "T. Bonald, S. Borst, N. Hegde, A. Proutiere, 'Wireless data performance in multi-cell scenarios', CWI report PNA-E0302, 2003 (SHA-256 e2fd5cbf...7c32), eq. (5): multi-class processor sharing with load rho = sum_k lambda_k sigma / C_k, stable iff rho < 1, class-k flow throughput (1 - rho) C_k, insensitive to the flow-size distribution",
+    "tdd": "3GPP TR 38.864 V18.1.0 Table B-1 (SHA-256 99770bf7...8e1f): frame structure DDDSU (S slot 10D:2G:2U)",
+    "overhead": "3GPP TS 38.306 V19.4.0 (2026-09) clause 4.1.2 (38306-j40.zip SHA-256 97f3d1d6...9b3e): OH = 0.14 FR1 DL, 0.08 FR1 UL (0.18 / 0.10 FR2); no FR3 value is defined",
+    "qos": "ITU-R M.2410-0 (SHA-256 bd82d06d...c782) Table 1: 5th-percentile user SE Dense Urban-eMBB 0.225 (DL) / 0.15 (UL) bit/s/Hz; sec. 4.4: normalized user throughput = correctly received bits over the active session time divided by the channel bandwidth, 'the effective bandwidth is the operating bandwidth normalized appropriately considering the uplink/downlink ratio'; sec. 4.3: user throughput during active time",
+    "etsi_load": "ETSI ES 202 706-1 V1.7.1 (2022-08) (SHA-256 9aebd0fd...f7e3) Annex E NR static load: low = SSB + RMSI only (0 % PDSCH), medium 30 %, busy hour 50 % of PDSCH PRBs; clause 7 Table 3 default durations 6 / 10 / 8 h",
+    "ul_share": "Ericsson Mobility Report pages (read 2026-11-10): 'Typical traffic distribution is around a 90-to-10 percent downlink-to-uplink ratio, however, AI traffic has a higher uplink distribution, with 74 percent downlink and 26 percent uplink' (GenAI data traffic today, June 2025, datePublished 2025-06-24); 'uplink traffic constitutes, on average, around 8 percent of total traffic volume' (Analysis of traffic profiles, datePublished 2023-11-30)"
+  },
+  "settings": {"seed": 20261110, "realizations": 100, "isds": [200, 500], "isd_primary": 200,
+               "mix": "M2412 (in car 0.2, indoor low-loss 0.64, indoor high-loss 0.16); every victim weighted equally within its state (E1c.1)"},
+  "frame": {
+    "typical_site": "users = the E1c.3 victims of site 0's hexagonal cell; a victim served by TRxP t is, by the lattice translation of a homogeneous network, a user of the typical site's sector t mod 3 (sector bearings are the same at every site). Its SINR is computed at its physical position with the full 19-site environment (P3.2a engine). This replaces scoring a 7-site cluster (D14) for P3.2b",
+    "homogeneity": "every TRxP with sector index s carries load L_s (per carrier and direction) and 7.2 GHz activation a_s; one fixed point per realization, carrier and direction (3 unknowns)",
+    "states_evaluated": "3.5-GHz-only (a = 000) and all-on (a = 111); the 8 sector patterns enter gates B1/B2"
+  },
+  "model": {
+    "load_coupling": "the interference term of TRxP t is multiplied by its realized occupancy (DL: its PDSCH load on that carrier; UL: the PUSCH load of its cell, applied to its E1c.2 scheduled interferer at target power); mean interference (not Bernoulli); 3.5 GHz and 7.2 GHz, DL and UL are four independent fixed points (synchronized TDD, separate carriers)",
+    "fixed_point": "L = min(1, f(L)), f_k = T sum_{u in cell k} w_u / (cap SE_load(gamma_u(L))); plain iteration from L = 1 (monotone decrease to the maximal fixed point) until max |dL| <= 1e-10, at most 20000 iterations; offered load rho_k = f_k(L)",
+    "flow_level": "flow throughput theta_u = C_u (1 - L_k) if rho_k < 1, else 0 (unstable); served traffic d_u min(1, 1/rho_k), unserved d_u max(0, 1 - 1/rho_k)",
+    "peak_rate": "C = SE(gamma) x N_PRB x 12 x 30 kHz x TDD share x (1 - OH); SE = C-AMC T2 (E1.5.3a), bits per Hz per second of occupied data resources (DMRS and HARQ losses included; PDCCH, guard and TDD not)",
+    "tdd": {"pattern": "DDDSU, S = 10D:2G:2U", "tau_dl": 0.7428571428571429, "tau_ul": 0.22857142857142856,
+            "rule": "tau_dl = 52/70, tau_ul = 16/70 symbols of the 5-slot period; same pattern on both carriers"},
+    "overhead_ts38306": {"DL": 0.14, "UL": 0.08,
+                         "note": "FR1 values used at both carriers (7.2 GHz lies above FR1's 7.125 GHz edge; TS 38.306 defines no FR3 value). The C-AMC SE already contains DMRS, so OH partly double-counts it (conservative). Its effects are analytic: theta / R scales by (1 - OH); the UL/DL load ratio by (1 - OH_DL)/(1 - OH_UL) = 0.935"},
+    "admission": "a user is admitted on a carrier and direction iff its full-buffer SE (every ON TRxP of that carrier at weight 1) >= SE_adm, the C-AMC value at the curve's first grid point above snr_min (the 5G-LENA MCS-0 plateau; DL 0.1969 at -0.64 dB, UL 0.1965 at -0.64 dB). Between snr_min and that point the DL curve is the 5G-LENA MCS-0 BLER floor (hazard 15), where a time-fair model would charge up to 120x the resources per bit. Users admitted on no carrier are 'not admitted' (D8 unservable): their traffic is reported separately and they are excluded from the QoS criterion. Reported per direction: the not-admitted share, the share between snr_min and the admission point, and the share in TR 36.942's low end (-10 dB to snr_min)",
+    "association": {
+      "dl_off": "3.5 GHz if admitted",
+      "dl_on": "7.2 GHz iff the own 7.2 GHz cell is on (D13), admitted there and its full-buffer peak rate >= the 3.5 GHz one; else 3.5 GHz if admitted",
+      "ul_off": "3.5 GHz if admitted",
+      "ul_on_ulca": "UL carrier aggregation: the DL rule applied to the UL (F2 full-band SINR, victim at 23 dBm)",
+      "ul_on_scell_dl": "DL-only SCell: UL stays on 3.5 GHz (identical to ul_off by construction; gate B7b)",
+      "static": "association is fixed per state at full-buffer SINR (standard in load coupling); it does not follow the load"
+    },
+    "ul_access": "primary: full-band time-fair sharing (F2 SINR), as Phase 2's primary profile and the E1.5.4 packet-level F2 check",
+    "ul_rescue_sensitivity": "case C, both ISDs: a power-limited UL user below the admission SNR transmits on a fluid PRB share n/N = 10^((gamma - gamma_adm)/10) at gamma_adm (admitted iff n >= 1 PRB at full buffer); rate C_full x SE_adm x n/N, load per bit 1/(cap SE_adm). States off_rescue and on_ulca_rescue",
+    "qos": {"se5_m2410": {"DL": 0.225, "UL": 0.15}, "epsilon": 0.05,
+            "required_rate": "R_x = SE5_x x W_op(3.5 GHz) x tau_x (M.2410 sec. 4.4 effective bandwidth); W_op = the 3.5 GHz channel bandwidth of the case (C: 100 MHz, A/B: 20 MHz); the same absolute target on either carrier",
+            "outage": "user u is in outage in direction x iff theta_u < R_x; pooled admitted-user outage = sum over realizations and admitted users of w_u [outage] / sum of w_u; QoS criterion: pooled admitted-user outage <= epsilon (the 5th-percentile requirement); the all-user outage (not admitted counted as outage) is also reported"}
+  },
+  "traffic": {
+    "etsi_levels": [0.3, 0.5],
+    "calibration": "per ISD and radio case: the offered DL traffic per site T_ell such that the mean over realizations and sectors of the 3.5 GHz DL realized occupancy of the 3.5-GHz-only network equals ell (Illinois regula falsi, |residual| <= 1e-11); C's three 7.2 GHz power levels share it (the 3.5-GHz-only DL does not depend on them). The ETSI low level (0 % PDSCH) is zero traffic",
+    "units": "x = offered DL traffic / T_0.5 (x = 1 is the ETSI busy hour of today's 3.5 GHz layer; x = g is a growth factor g applied to the busy hour)",
+    "grid_x": [0.25, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0],
+    "grid_note": "the medium level x_30 = T_0.3 / T_0.5 is added to the grid of every case",
+    "ul_dl_ratio": {"ericsson_typical": {"value": 0.1111111111111111, "rule": "UL share 10 % of total volume (Ericsson typical 90/10): UL/DL = 10/90", "primary": true},
+                    "genai_2025": {"value": 0.35135135135135137, "rule": "UL share 26 % (Ericsson's measured GenAI traffic, June 2025) applied to all traffic: UL/DL = 26/74; an AI-era stress, not a forecast"}},
+    "ul_units": "UL traffic y = rho x (units of T_0.5); the UL grid is {rho x} for both rho; sustainable UL traffic y* converts to x*_UL = y* / rho exactly (the UL problem depends only on y)",
+    "spatial": "every user (victim and state) offers the same mean traffic: d_u = T w_u (DL), rho T w_u (UL), identical for every state, association rule and power level of a case (gate B6)"
+  },
+  "scope": {
+    "isd_200": {"A_equal_elements": [0.0], "B_equal_aperture": [0.0], "C_deployment": [0.0, -3.0, -10.0]},
+    "isd_500": {"C_deployment": [0.0, -3.0, -10.0]},
+    "dp_db_note": "7.2 GHz DL power offset: C 0 / -3 / -10 dB = 53 / 50 (primary, D10 rev) / 43 dBm",
+    "dl_states": ["off", "on"], "ul_states": ["off", "on_ulca", "on_scell_dl"], "ul_rescue_states": ["off_rescue", "on_ulca_rescue"],
+    "primary_point": "ISD 200, C at -3 dB (50 dBm), M2412, UL/DL = 10/90"
+  },
+  "sustainable_traffic": "per state: x*_DL = the largest x with pooled admitted-user DL outage <= 0.05 (bisection on [0, 16], bracket <= 0.005; 0 if the target fails at zero load; 16 if it holds there); y*_UL likewise on [0, 8] in UL units; x*_UL = y*/rho; x*_both = min(x*_DL, x*_UL) (DL and UL are independent); binding direction = the smaller. Network states: 3.5-GHz-only (off+off), all-on with UL CA (on+on_ulca), all-on with DL-only SCell (on+on_scell_dl), and the rescue variants for C",
+  "gates": {
+    "B0_inputs": "P3.2a, E1c.3 and E1c.2 manifests all_checks_passed; P3.2a config and outputs (summary, raw) and E1c.3 config and inputs equal their manifest hashes; code constants (TDD, OH, SE5, epsilon, rho, grid, ETSI levels) equal this config",
+    "B1_engine_extension_bitwise": "realizations 0 and 1, every mix state, case, power offset and the 8 sector patterns: engine_sinr_lc with weights (None, w72) equals P3.2a engine_sinr bitwise (all SINR arrays and own72)",
+    "B2_grouping": "the same instances with random per-sector load weights on both carriers and directions: the sector-grouped SINR equals engine_sinr_lc with the expanded 57-TRxP weights within 1e-9 dB (DL both carriers; UL F2 both carriers; 7.2 GHz for users whose cell is on)",
+    "B3_fixed_point": "every solve converged (max |dL| <= 1e-10) with residual |L - min(1, f(L))| <= 1e-9; on realizations 0-9 the solution from L = 0 equals the one from L = 1 within 1e-8 for every grid level, state and case (uniqueness check)",
+    "B4_closure": "per user and level: served + unserved = offered within 1e-12 relative; per cell, the occupancy recomputed from the served traffic equals L within 1e-9; 0 <= L <= 1",
+    "B5_calibration": "|mean all-off 3.5 GHz DL occupancy - ell| <= 1e-9 for ell = 0.3 and 0.5, every ISD and case",
+    "B6_identical_workloads": "per level and state, the per-user offered traffic reassembled from the carrier groups and the not-admitted users equals T w_u bitwise",
+    "B7_identities_monotonicity": "(a) all-off DL bitwise identical across C's power offsets; (b) UL on_scell_dl bitwise identical to UL off (loads, offered loads, outage), with no 7.2 GHz group; (c) 3.5 GHz DL load with 7.2 on <= all off, per instance (+1e-12); (d) loads non-decreasing along the grid (-1e-12); (e) pooled outage non-decreasing along the grid; (f) zero traffic: loads exactly 0 and theta = C bitwise; (g) the all-off state has no 7.2 GHz group",
+    "B8_independent_reference": "ISD 200, C, realization 0: DL off/on at x = 1 and 4 (-3 dB), UL off/on_ulca/on_ulca_rescue at y = (10/90) x 1 and (26/74) x 4: per cell the offered load recomputed with the ungrouped engine, per-user SE calls and a Python loop equals the solver's within 1e-9 relative, and the per-user outage flags agree",
+    "rule": "all gates must pass; a failure stops P3.2b and is diagnosed in an amendment; failed-run evidence is kept"
+  },
+  "predictions": {
+    "P1_ul_binds_today": "primary point, 3.5-GHz-only network, UL/DL = 10/90: x*_UL < x*_DL (the UL reaches the 5th-percentile limit at less traffic than the DL)",
+    "P2_dl_only_overstates_ai_era": "ISD 200, C at -3 dB, UL/DL = 26/74, all-on with UL CA: x*_DL >= 1.25 x*_both (a DL-only evaluation overstates the sustainable traffic by at least 25 %)",
+    "P3_ul_ca_value_ai_era": "ISD 200, C at -3 dB, UL/DL = 26/74: x*_both(all-on, UL CA) >= 1.2 x*_both(all-on, DL-only SCell)"
+  },
+  "expectations_not_scored": {
+    "convexity": "x_30 = T_0.3 / T_0.5 > 0.6: under load coupling the occupancy grows faster than linearly in the offered traffic",
+    "dl_on_offload": "in case C nearly all admitted DL traffic moves to 7.2 GHz when it is on (200 vs 100 MHz at similar SINR)"
+  },
+  "decision_rules": {
+    "all_gates_pass": "the P3.2b layer (solver, ETSI calibration, association, admission and QoS rules) is the traffic layer of P3.2c and P3.3; P3.2c's growth sweep spans g = 1 to at least the all-on UL-CA x*_both of the primary point, marking the 3.5-GHz-only x*_both",
+    "gate_fails": "stop; diagnose in an amendment before any P3.2c work"
+  },
+  "limits": [
+    "homogeneous network (typical-site frame): loads and activation are periodic in the sector index; no cell-to-cell traffic heterogeneity (P3.3 may add it as a mean-field mixture)",
+    "mean-interference load coupling (not per-slot activity); E1c.3's Bernoulli-minus-mean pairs bound the feasibility effect at <= 1.1 points",
+    "single-layer links, no MU-MIMO, on both carriers; the ETSI calibration absorbs the absolute capacity of the 3.5 GHz layer",
+    "UL interferers: E1c.2's scheduled candidate per TRxP at target power, scaled by its cell's UL load; on 7.2 GHz they are not filtered by the UL-CA rule (conservative for 7.2 GHz UL)",
+    "static association at full-buffer SINR; DL carrier chosen by peak rate (no load balancing between carriers)",
+    "flow-level means (insensitive), no packet dynamics, mobility or admission blocking",
+    "ETSI levels are BS measurement test loads; using them as today's daily profile of the 3.5 GHz layer is a modelling assumption",
+    "the QoS target is the 3.5 GHz layer's M.2410 rate on either carrier; M.2410 sec. 4.3 would sum it over aggregated bands, which would penalize activation"
+  ],
+  "smoke_run": "two smoke runs before registration (--smoke-realizations 2, scratch directory, 127 s and 124 s): every gate B0-B8 computable and passing (overall verdict forced FAIL by the smoke flag). The second followed one code change: per-user SINR arrays are dropped after aggregation (memory at ISD 500). The smoke mode prints no result values, and its output files were not opened",
+  "outputs": "results/phase3/p3_2b_traffic_resources/{summary.json, validation.json, manifest.json, run1_stdout.txt}; raw/loads_isd{200,500}.npz (per-instance loads and offered loads; git-ignored, hashes in the manifest)"
+}

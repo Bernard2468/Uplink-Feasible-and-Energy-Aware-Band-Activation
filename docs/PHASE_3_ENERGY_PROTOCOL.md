@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); P3.3 next.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered, run 1 pending; P3.4 after P3.3.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -798,14 +798,192 @@ which a sleeping cell sends only once its wake-up is complete.
 - Gates passed by P3.2a/P3.2b are not repeated. P3.2c inherits them through
   one bitwise reproduction gate (E2).
 
+### Revision 5 (2026-11-10, after P3.2c, before P3.3)
+
+These decisions were fixed before any P3.3 output. They answer the ChatGPT
+review of P3.2c (§8).
+
+**D27: three information classes.** Every controller belongs to exactly
+one:
+
+| Class | Knows at the decision for slot t |
+|---|---|
+| Offline oracle (benchmark only) | The whole realized traffic trace |
+| Online | The realized traffic of slots < t, and models fitted on development data only |
+| Rule | The realized traffic of slot t − 1 only, without forecasts |
+
+P3.2c's "best feasible schedule" is relabelled a **g-aware offline
+benchmark**: it was chosen knowing the day's growth level and each
+schedule's feasibility.
+
+**D28: the savings reference.**
+- Savings are measured against always-on (all 7.2 GHz cells on, UL
+  enabled).
+- A saving is reported only where the controller and always-on both meet the
+  violation budget (D32).
+- The 3.5-GHz-only network is reported only as the cost of missing capacity,
+  never as an equal-service baseline.
+
+**D29: a 3.5 GHz UL-load sensitivity** (adds to D25; the primary model is
+unchanged).
+- **The issue.** The measurement-anchored 3.5 GHz model keeps its receive
+  chains and UL PHY processing fully active in every UL slot, whatever the
+  UL load.
+- **The sensitivity ("UL-proportional receive power")** applies the model's
+  own idle-reduction factors in UL slots without scheduled data:
+
+  ΔP = −(1 − L_3.5,UL)·τ_UL·[M·P_TRX·(1 − δ_idle,TRX) / η_AFE + P_PHY·(B/B*)·K·(1 − δ_idle,PHY) / η_DBB]
+
+  - The terms are Golard's parameters as used in P3.1: M = 64, τ_UL = 0.25,
+    δ_idle,TRX = 0.5, δ_idle,PHY = 0.75.
+  - The reduction is at most about 35.5 W per 3.5 GHz cell, at zero UL load.
+  - It is applied to the "right" case only; the "left" case has no idle
+    mode.
+- **Label:** sensitivity, not a measured value.
+
+**D30: activation patterns; all-on is not assumed to give the most
+capacity.**
+- **The four patterns.** In the typical-site frame, an activation is a
+  pattern of the three sector indices. There are four canonical nested
+  patterns, k = 0–3 sectors on:
+
+  | k | Pattern |
+  |---|---|
+  | 0 | (0,0,0) |
+  | 1 | (1,0,0) |
+  | 2 | (1,1,0) |
+  | 3 | (1,1,1) |
+
+- **Rotations.** The other patterns are rotations of these. They are
+  equivalent in distribution, by the three-sector symmetry. Their spread is
+  reported as a diagnostic.
+- **Every pattern is solved exactly**, so interference and association
+  follow it (D8, D13).
+- **Capacity.** x* is computed per pattern under both criteria. The
+  pattern with the most capacity at each traffic level is reported.
+- **Limit (D15).** A pattern applies to every site at once. P3.3 has no
+  cell-specific control.
+
+**D31: traffic over time: the Milan Telecom Italia traces.**
+- **Source.**
+  - "Telecommunications – SMS, Call, Internet – MI", Harvard Dataverse
+    doi:10.7910/DVN/EGZHFV, version 1.3; Barlacchi et al., Sci. Data 2,
+    150055 (2015); ODbL 1.0.
+  - The variable is "Internet traffic activity", the number of CDRs per
+    235 m square and 10-minute interval, summed over country codes.
+  - It is a proxy for the traffic's time profile, not a byte count.
+- **Files.**
+  - 14 daily files, fetched unchanged by `scripts/p3_3_fetch_milan.py`.
+  - Each is verified against Dataverse's size and MD5, hashed with SHA-256,
+    and kept read-only in the git-ignored `external/milan_telecom/`.
+  - Only the hashes are committed.
+- **Development week:** Mon 4 – Sun 10 November 2013.
+- **Test week:** Mon 18 – Sun 24 November 2013. Its files are hashed in
+  P3.3 and read only in P3.4.
+- **Squares** (selected from development data only):
+  1. Candidates are squares with internet activity > 0 in every one of the
+     1008 development slots.
+  2. The 50 with the highest mean activity are kept: dense urban.
+  3. They are split into 25 development and 25 test squares by a seeded
+     permutation.
+- **Traffic.** x_t = g·a_t / a_ref.
+  - a_ref is a square's busiest hour of the development week: the maximum
+    6-slot mean.
+  - For test squares, a_ref also comes from the development week, so no
+    test-week data enter it.
+  - x is quantized to the nearest point of a 0.025 grid and clipped at 5.0
+    (clipping is counted). Every controller and the ledger use the
+    quantized value.
+- **Growth** g ∈ {0.5, 1.0, …, 3.5}.
+- **Mixes:** 10/90 and 26/74, constant over time (D18).
+- **Runs.** Each square runs as one continuous week (1008 slots).
+  Controllers carry their state across midnight. Every run starts with all
+  cells on.
+- **The local time convention** is checked on the development files and
+  required of the test files.
+
+**D32: controllers, timing and the violation budget.**
+- **Timing.**
+  - Decisions are taken at 10-minute slot boundaries (Δ = 600 s ≥ every
+    T_TR, D7).
+  - A cell that is woken is unavailable for T_wake = T_TR + T_SCell at the
+    start of the slot (D4, D23). During that time the previous pattern
+    serves the slot's traffic.
+  - A cell put to sleep stops serving at the boundary.
+- **Controllers:**
+
+  | Controller | Class | Decision |
+  |---|---|---|
+  | `aon` | — | k = 3 always (the savings reference) |
+  | `off` | — | k = 0 always (capacity cost only) |
+  | `tod` | Rule (time of day) | k = 3 from 06:00 to 24:00, else 0 (P3.2c `sch_medbusy`) |
+  | `thr_ul` | Rule | Capacity thresholds with hysteresis. The target is the smallest k with x_{t−1}·(1 + m) ≤ x*_all,both(k). Steps up at once; steps down only after H consecutive slots below the lower threshold |
+  | `thr_dl` | Rule, UL-agnostic | As `thr_ul`, with x*_all,DL(k) only; tuned on DL-only compliance |
+  | `exh` | Online | Minimum forecast slot energy among the patterns compliant at the forecast's upper bound (interference-aware exhaustive search) |
+  | `mpc` | Online (proposed) | Dynamic programming over a horizon of H slots on the upper-bound forecast, with transition energies; applies the first action |
+  | `oracle` | Offline | Dynamic programming over the realized week. Minimum energy subject to compliance in every slot where some pattern complies; otherwise the least-outage pattern |
+  | `oracle_dl` | Offline, UL-agnostic | As `oracle`, with DL-only compliance |
+
+- **Forecast** (fitted on development squares only): seasonal persistence.
+  - x̂_{t+h} = x_{t−1}·S_d(τ_{t+h}) / S_d(τ_{t−1}), where S_d is the mean
+    normalized profile of day type d (weekday or weekend) by slot of day.
+  - The upper bound is x̂·exp(q_α,h), where q_α,h is the α-quantile of the
+    development log-errors at horizon h.
+- **Violation budget.**
+  - A slot is **unavoidable** if no pattern is compliant at its traffic.
+  - Avoidable violation time counts 600 s for each other slot whose chosen
+    pattern fails the criterion, plus the wake-gap seconds where the
+    previous pattern fails.
+  - The budget is an avoidable violation share ≤ 1% of the time.
+- **Tuning** (development only, per controller and mix). The parameter grid
+  is:
+
+  | Controller | Parameters |
+  |---|---|
+  | `thr_*` | m ∈ {0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5} × H ∈ {1, 2, 3, 6} |
+  | `exh` | α ∈ {0.5, 0.9, 0.95, 0.99, 0.999} |
+  | `mpc` | α × H ∈ {1, 3, 6} |
+
+  - **Selection rule:** the minimum mean development energy in the primary
+    scenario, subject to the budget (the DL-only budget for the UL-agnostic
+    controller). If no setting meets it, the one with the least violation is
+    chosen and flagged.
+  - The selected parameters are frozen and applied unchanged to every
+    scenario. `exh`, `mpc` and the oracles use each scenario's own energy
+    model.
+- **Reported, together, per controller × mix × g × scenario:**
+  - energy per site-day, with intervals clustered by square and, separately,
+    over radio realizations;
+  - the saving vs `aon` (D28);
+  - avoidable and unavoidable violation shares under all three criteria;
+  - transitions and gap seconds;
+  - J per delivered bit;
+  - the measured decision time (median and 99th percentile; machine stated).
+
+**D33: P3.3 and P3.4 are separate measured runs.** This revises D26.
+- **P3.3 (development):**
+  - builds the radio table on the 100 P3.2b realizations;
+  - fits the forecast;
+  - tunes and freezes the controllers;
+  - reports development results, which are exploratory and not scored.
+- **P3.4 (held-out test):** pre-registered after P3.3 and before any test
+  data are read. It contains:
+  - the frozen parameters;
+  - numeric predictions for H1, H2 and H4 and for Q3;
+  - test squares × test week × 100 new radio realizations (r = 100–199,
+    the same seed and streams);
+  - the development T_0.5, frozen.
+
+  The test results cannot influence any design choice.
+
 ## 3. Stages and gates
 
 | Stage | Content | Gate (to be pre-registered) |
 |---|---|---|
 | P3.1 | Hardware energy models of both layers; state ladder | Source versions and hashes recorded; 1.3 Table II recomputed from 1.4 (both static-term forms reported); 1.2's totals (740 / 1658 / 300 / 1044 W, PA 262 W) reproduced, or, where an input is not stated in the source, labelled "not independently reproducible" under a rule fixed before the run (no input tuned to force agreement); TR tables transcribed and checked against the .docx; D10 feasibility; D4 state consistency (powers ≥ 0, ordered deep < light < micro, legal transitions, D ≥ T, energy in J); unit tests on small worked examples |
 | P3.2 | Split into P3.2a (coupled radio engine), P3.2b (traffic and resources), P3.2c (time-dependent energy); see D12 | P3.2a: gates Q0–Q7. P3.2b: gates B0–B8 (closure, calibration, identical workloads, fixed-point uniqueness, independent reference). P3.2c: state-machine and energy-ledger gates, causality, no service while asleep or waking, P_aux S0–S2 |
-| P3.3 | Controllers and baselines, with P3.4's held-out evaluation (D26) | Causality checks; DP = brute force on small instances; Δ ≥ transition times; wake delay enforced; paired seeds, confidence intervals, held-out seeds/load/hardware; H1–H4 scored as pre-registered |
-| P3.4 | Merged into P3.3 (D26) | — |
+| P3.3 | Controllers and baselines on development data (D27–D33) | Gates F0–F10 (provenance, radio reproduction, activation coupling, fixed point, all-user identity, traces, ledger, causality, DP = brute force, fairness, decision time) |
+| P3.4 | Held-out test of the frozen controllers (D33) | Pre-registered after P3.3; paired comparisons, confidence intervals; H1, H2, H4 and Q3 scored as pre-registered |
 
 ### P3.1 source-reproduced hardware energy models (PRE-REGISTERED 2026-11-09)
 
@@ -1798,6 +1976,96 @@ infeasible; the best feasible policy is in bold.
   P3.2c schedule at each g;
 - S0–S2 are reported for every P3.3 result.
 
+### P3.3 band-activation controllers on development data (PRE-REGISTERED 2026-11-10)
+
+Config `configs/p3/p3_3_controllers.json`. Code:
+- `scripts/p3_3_controllers.py`;
+- `scripts/p3_3_traces.py`;
+- `scripts/p3_3_fetch_milan.py` (data fetch).
+
+Tests `tests/test_p3_3_controllers.py`. It imports the P3.2c energy layer, and
+through it P3.2b and P3.1, unchanged. It implements D27–D33.
+
+**What it computes.**
+1. **Radio table.** The four nested patterns (D30) are solved on the
+   P3.2b population over x = 0–5.0 in steps of 0.025:
+   - DL at the three 7.2 GHz DL offsets;
+   - UL for both mixes;
+   - admitted and all-user x* per pattern;
+   - the pattern with the most capacity, and a rotation diagnostic.
+2. **Energy tables** for 20 scenarios. Each gives the site power per
+   realization, pattern and traffic level:
+   - primary 50 dBm × S0–S2;
+   - 53 and 43 dBm × S0–S2;
+   - Cat 2 × S0–S2;
+   - the D29 UL-load sensitivity × S0–S2;
+   - the 3.5 GHz "left" case, Set 3, and M_RF 64 / 128 / 1024 (S0).
+3. **Traces** (development week only, D31): the 25 development squares ×
+   7 growth levels give 175 week-long runs per mix. The seasonal-persistence
+   forecast and its error quantiles are fitted on them.
+4. **The nine controllers of D32.**
+   - The four tunable ones are tuned by the registered rule and frozen.
+   - All are evaluated in every scenario and mix.
+   - The decision time is measured.
+
+**Gates** (pass rule F0–F10):
+
+| Gate | Check |
+|---|---|
+| F0 | P3.1, P3.2b and P3.2c manifests and outputs match their hashes; P3.2c config hash. All 14 trace files present with their SHA-256. Code constants equal the config |
+| F1 | P3.2c's level batches recomputed bitwise (6 arrays); calibration equal; the 12 x* of patterns 0 and 3 equal P3.2c's. Table vs P3.2c at shared x: mean load within 1e-8, all-user outage within 1e-5 (a boundary user can flip between solver batches) |
+| F2 | Off-sector 7.2 GHz loads exactly 0; no off-sector user on 7.2 GHz; on-sector 7.2 GHz DL load > 0 at every x > 0 |
+| F3 | Fixed point, closure, occupancy identity, load range, identical workloads, monotone loads, zero traffic (as E3) |
+| F4 | out_all = n + (1 − n)·out_adm; monotone; all-user x* ≤ admitted x* (as E4) |
+| F5 | Every development file aligned to the local day; selection reproducible; selected squares complete; quantization error ≤ step/2; 25 + 25 disjoint squares |
+| F6 | 100 random runs recomputed by an independent scalar loop: energy and bits ≤ 1e-9 relative; violation seconds ≤ 1e-6 s; transitions equal |
+| F7 | Causality: for every non-oracle controller, decisions up to slot t are unchanged when the traffic of slots ≥ t is replaced (20 runs × 5 cuts) |
+| F8 | Oracle DP = brute force over 4⁶ sequences on 200 random instances and 50 real windows (≤ 1e-12) |
+| F9 | One trace array for every controller (hash recorded); only the oracles receive the full trace |
+| F10 | Reset and per-decision times recorded for every controller, with the machine |
+
+**No predictions are scored in P3.3** (D33). The development results are
+exploratory. P3.4's numeric predictions are registered after P3.3 and
+before any test data are read.
+
+**Decision rule.** If all gates pass, the following are frozen into P3.4's
+pre-registration:
+- the tuned parameters;
+- the forecast model and its quantiles;
+- the development x* thresholds;
+- the test squares' a_ref;
+- the development T_0.5.
+
+**Declared before registration.**
+- All P3.1, P3.2b and P3.2c outputs had been read. The Milan data paper was
+  read for the variable definitions.
+- One development file (2013-11-04) was opened to confirm the time
+  convention:
+  - CET local days: 2013-11-03T23:00Z to 2013-11-04T22:50Z;
+  - 144 aligned slots, 5 639 488 rows, 10 000 squares.
+- No other trace content was inspected. No square selection, normalization
+  or controller output was computed.
+- The test-week files were downloaded and verified (size, MD5, SHA-256)
+  only.
+- The guestbook email used for the download is the user's, given with the
+  user's consent. It is passed to the fetch script as an environment
+  variable and is not stored in the repository.
+- **Tests:** 12, on hand-checkable fixtures. The full suite (227) passes.
+- **A code-path smoke on 14 synthetic Milan-format files** (60 squares,
+  scratch folder, 416 s). Every gate F0–F10 was computable and passed; the
+  smoke flag forced the verdict to fail. It led to two changes before
+  registration:
+  - the `mpc` and `oracle` stage costs were vectorized and F7 was batched.
+    This affects run time only: the results are identical, and F8 checks the
+    DP;
+  - the F1 table-vs-P3.2c tolerance was split, because a boundary user can
+    flip between solver batches.
+- **One smoke run on the real files** (2 realizations, scratch folder,
+  523 s).
+  - Every gate F0–F10 was computable and passed; F1 is code path only.
+  - The verdict was forced to fail.
+  - It printed only gate lines, and its outputs were not opened.
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the
@@ -1889,3 +2157,20 @@ unverified date and the D7 misreading above. This table is the record.
 | Separate geometry randomness from traffic randomness | Agreed | P3.2c has no traffic randomness (flow-level means, ETSI step profile). It applies in P3.3 |
 | "Joules per correctly delivered bit" | Partly adopted | J per delivered bit is reported, with each policy's feasibility flags beside it; a bit delivered to a user below R is still delivered |
 | Git: the archive does not prove the remote state | Agreed | The user pushes; `git log origin/main..main` lists what is unpushed |
+
+## 8. Review of P3.2c and the P3.3 design (ChatGPT, 2026-11-10) and response
+
+| Point | Verdict | Action |
+|---|---|---|
+| (A) Separate the offline best schedule from a realizable controller | **Correct.** P3.2c's best schedule was chosen knowing g and each schedule's feasibility | D27: three information classes; the P3.2c best schedule is relabelled a g-aware offline benchmark |
+| (B) Never measure savings against an infeasible baseline | Agreed. P3.2c's savings were against `aon_ulsel`, which is feasible wherever any schedule is; 35-only was used only where feasible (E-P1 at 10/90, g = 1) | D28 makes it a rule: savings only where the controller and `aon` both meet the budget |
+| (C) Keep S0–S2 in every primary result | Agreed (already P3.2c's decision rule) | Every P3.3 scenario set includes S0–S2 |
+| (D) The 3.5 GHz model's missing UL-load term is a research risk | **Correct** | D29: a UL-proportional receive-power sensitivity built from the model's own idle factors (≤ 35.5 W per cell) |
+| All-on may not be the maximum-capacity configuration | **Correct, and checked rather than assumed** | D30: four nested patterns, each solved exactly; the maximum-capacity pattern is reported |
+| Controller set: always-on/off, threshold + hysteresis, interference-aware greedy, classical solver, proposed robust controller, offline oracle | Adopted | D32. With four nested patterns, exhaustive search is exact and cheap, so `exh` is the exhaustive per-slot optimizer and greedy coincides with it. The solver is the exact DP (`oracle`, and `mpc` over its horizon), verified against brute force (F8) |
+| Novelty must come from the 3.5/7.2 GHz UL feasibility, directional interference, hardware and switching, not from an algorithm's name | Agreed | No novelty is claimed for the DP or MPC |
+| "L2S: Learning to Optimize Sleep Strategy…", IEEE TVT 2026, as prior art | **Not verified.** A search found no paper with this title or name | Not cited until located on IEEE Xplore |
+| Validation gates (causality, radio consistency, coupling, service integrity, energy, transitions, exhaustive search, fairness, robustness, reproducibility) | Adopted | F0–F10. Robustness across S0–S2, mixes and independent demand is P3.4's held-out design |
+| Keep P3.3 (development) and P3.4 (frozen, held-out) separate | **Agreed; reverses D26** | D33: two measured runs. P3.4's test squares, test week and realizations 100–199 are read only after the freeze |
+| Report energy, feasibility, decision time and robustness together | Agreed | D32 reporting list; F10 |
+| ITU-R M.2412 counts all user locations | Agreed (already D21) | All-user is primary; admitted-user is reported alongside |

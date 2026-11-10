@@ -1,0 +1,472 @@
+{
+ "experiment": "P3.3: band-activation controllers on development data (P3.0 revision 5, D27-D33): radio table of the four nested sector patterns, energy tables of 20 scenarios, Milan development traces, nine controllers tuned and frozen for P3.4",
+ "status": "pre-registered 2026-11-10 (P3.0 revision 5); not yet run",
+ "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, Revision 5 and section P3.3",
+ "inputs": {
+  "p3_1": {
+   "manifest_sha256": "26548154a287f2eeff588452a9419d20cac9aff02bb5d7871a534ce13980eef3"
+  },
+  "p3_2b": {
+   "manifest_sha256": "90732da73f07b795df22275ad4cc80f4a9698c003ee3df58478e5495d40b46cb",
+   "run_of_record": "run 2"
+  },
+  "p3_2c": {
+   "manifest_sha256": "77edc30874235db559173447e5b0157fb2e20cbb9c21e55a058806dd2d4ccb0f",
+   "config_sha256": "2110b88101d09697d7c9a8bc298bfa6726dd967d9779a5d75f9668cbfaffad0a",
+   "run_of_record": "run 1 (results commit 8468962)"
+  }
+ },
+ "traces": {
+  "source": "Telecom Italia, Telecommunications - SMS, Call, Internet - MI, Harvard Dataverse doi:10.7910/DVN/EGZHFV version 1.3 (Barlacchi et al., Sci. Data 2, 150055, 2015); ODbL 1.0; Internet traffic activity = number of CDRs per square and 10-min interval, summed over country codes",
+  "fetch": "scripts/p3_3_fetch_milan.py: unchanged files, size and MD5 checked against Dataverse, SHA-256 recorded, read-only, in git-ignored external/milan_telecom/; the guestbook email is an environment variable, not stored",
+  "dev_dates": [
+   "2013-11-04",
+   "2013-11-05",
+   "2013-11-06",
+   "2013-11-07",
+   "2013-11-08",
+   "2013-11-09",
+   "2013-11-10"
+  ],
+  "test_dates": [
+   "2013-11-18",
+   "2013-11-19",
+   "2013-11-20",
+   "2013-11-21",
+   "2013-11-22",
+   "2013-11-23",
+   "2013-11-24"
+  ],
+  "files": {
+   "sms-call-internet-mi-2013-11-04.txt": "288b8d6b57abdc2b08d94d01646e91bde311b4bf4fe9dc8fbb52cfc5f273e320",
+   "sms-call-internet-mi-2013-11-05.txt": "b7d661374710d6c8dcf8a220b7ecbd4ece68b07aedf93d75fe477b59aa0843bf",
+   "sms-call-internet-mi-2013-11-06.txt": "8975004bc46643dc2f15e9a510471fdcf16c676ee8af217772cd65250bb254c9",
+   "sms-call-internet-mi-2013-11-07.txt": "68825035291791d32da776bb06d75f721173b5a03beab79b730961fe40d80959",
+   "sms-call-internet-mi-2013-11-08.txt": "748da75c30e19ab02f8fb19ba1a410020ce4446cfa1a19945fd0638c5ff9fdc6",
+   "sms-call-internet-mi-2013-11-09.txt": "2b7b17d94aa0dbb08eda59bcfecd670fe8ce236b39c8bc6d9cbe6319cb208319",
+   "sms-call-internet-mi-2013-11-10.txt": "87ddc593a211b89d74640788ca9c6c18685a1a95cd13d9926c5e312155ed4fc5",
+   "sms-call-internet-mi-2013-11-18.txt": "5c1a7687dca1e64e70bcfea88d1f06adf5d846aad47b21f822999955f334bd19",
+   "sms-call-internet-mi-2013-11-19.txt": "5e6682d76699e8a11ba336ddb979ef22818bcd78ff4b3847de8af353661f43fa",
+   "sms-call-internet-mi-2013-11-20.txt": "34ad6e301d6bfb4eaa09428b634565918c56c2d77fdfe4991bf791c60324f73d",
+   "sms-call-internet-mi-2013-11-21.txt": "069c8771eab66f24093519a8935197859362500cb8ece422ce6a52c23f5e5f27",
+   "sms-call-internet-mi-2013-11-22.txt": "8c409b4b1b2a9772b692db69ac2d55ea9b6fe797e590f76133295dcb7cf0104f",
+   "sms-call-internet-mi-2013-11-23.txt": "d3b8a541e5599ed9a3ad2fcdc999f5fa5afcc5b9cba1847084de657de4df74f5",
+   "sms-call-internet-mi-2013-11-24.txt": "249a1b2ca66f9cbd0c0676ff1fff4adcaa7a1bacc9e0047a8b48350fd735bb8a"
+  },
+  "test_week_rule": "the test-week files are hashed by P3.3 (gate F0) and read only by P3.4",
+  "local_offset_ms": 3600000,
+  "local_time": "CET = UTC+1 (no DST in November 2013); confirmed on 2013-11-04 (2013-11-03T23:00Z .. 2013-11-04T22:50Z, 144 aligned slots); required of every file (gate F5)",
+  "n_keep": 50,
+  "n_dev_squares": 25,
+  "split_seed": 20261111,
+  "selection": "candidates: Internet activity present and > 0 in all 1008 development slots; keep the 50 with the highest development-week mean (ties by square id); seeded permutation: first 25 development, last 25 test",
+  "ref_window_slots": 6,
+  "normalization": "x_t = g a_t / a_ref, a_ref = maximum 6-slot mean of the square over the development week (also for test squares)",
+  "x_step": 0.025,
+  "x_max": 5.0,
+  "quantization": "nearest grid point (half up), clipped at x_max (clipped slots counted)",
+  "week": "each square is one continuous week of 1008 slots starting Monday 00:00; every run starts with all cells on (k = 3)"
+ },
+ "growth": [
+  0.5,
+  1.0,
+  1.5,
+  2.0,
+  2.5,
+  3.0,
+  3.5
+ ],
+ "mixes": {
+  "ericsson_typical": 0.1111111111111111,
+  "genai_2025": 0.35135135135135137
+ },
+ "patterns": {
+  "0": [
+   0,
+   0,
+   0
+  ],
+  "1": [
+   1,
+   0,
+   0
+  ],
+  "2": [
+   1,
+   1,
+   0
+  ],
+  "3": [
+   1,
+   1,
+   1
+  ]
+ },
+ "pattern_note": "nested canonical patterns of the three sector indices (D30); rotations (0,1,0), (0,0,1), (0,1,1), (1,0,1) reported as a diagnostic at x = 1 and 2",
+ "radio_table": {
+  "population": "P3.2b ISD 200, C_deployment, 100 realizations (seed and streams of P3.2b; built by p3_2c_energy_ledger.build_population)",
+  "grid": "x = 0, 0.025, ..., 5.0 (201 levels); DL per pattern at DL offsets -3 (primary), 0, -10 dB; UL per pattern for both mixes (y = rho x)",
+  "x_star": "per pattern, admitted (B.bisect_traffic) and all-user (C.bisect_all), DL per offset and UL; thresholds x*_both = min(x*_DL, y*/rho)"
+ },
+ "epsilon": 0.05,
+ "violation_budget": 0.01,
+ "violation_rule": "a slot is unavoidable if no pattern complies at its traffic; avoidable violation seconds = (600 - gap) [chosen pattern fails] + gap [previous pattern fails] in other slots; budget: avoidable share <= 1 % of the time",
+ "timing": {
+  "slot_s": 600.0,
+  "decision": "at slot boundaries; a woken cell is unavailable for T_TR + T_SCell at the start of the slot, during which the previous pattern serves; a cell put to sleep stops serving at the boundary",
+  "t_scell_s": 0.105,
+  "tod_on_from_slot": 36
+ },
+ "controllers": [
+  "aon",
+  "off",
+  "tod",
+  "thr_ul",
+  "thr_dl",
+  "exh",
+  "mpc",
+  "oracle",
+  "oracle_dl"
+ ],
+ "classes": {
+  "aon": "fixed",
+  "off": "fixed",
+  "tod": "rule (time of day)",
+  "thr_ul": "rule",
+  "thr_dl": "rule (UL-agnostic)",
+  "exh": "online",
+  "mpc": "online (proposed)",
+  "oracle": "offline oracle",
+  "oracle_dl": "offline oracle (UL-agnostic)"
+ },
+ "controller_definitions": {
+  "aon": "k = 3 always (savings reference, D28)",
+  "off": "k = 0 always (capacity cost only)",
+  "tod": "k = 3 from 06:00 to 24:00, else 0",
+  "thr_ul": "target = smallest k with x_{t-1} (1 + m) <= x*_all,both(k) (else the maximum-capacity pattern); step up at once; step down to the maximum target of the streak after H consecutive slots with target < current",
+  "thr_dl": "as thr_ul with x*_all,DL(k) (UL-agnostic)",
+  "exh": "mpc with H = 1",
+  "mpc": "seasonal-persistence forecast x_hat(t+h) = x_{t-1} S_d(t+h) / S_d(t-1); upper bound x_hat exp(q_alpha,h) (ceil to the grid) defines the allowed set (compliant patterns, else the least-outage pattern) and the gap penalty; the point forecast (nearest) defines the energy; exact DP over H slots from the current pattern; the first action is applied",
+  "oracle": "exact DP over the realized week: allowed = compliant patterns where some pattern complies, else the least-outage pattern; cost = energy + 1e9 J/s x gap-violation seconds",
+  "oracle_dl": "as oracle with DL-only compliance"
+ },
+ "oracle_gap_penalty_j_per_s": 1000000000.0,
+ "forecast": "S_d(tau): mean normalized activity of the development squares per day type (Mon-Fri, Sat-Sun) and slot of day; q_alpha,h: alpha-quantile of log(x_true / x_hat) over the development squares and week, h = 0..5",
+ "tuning": {
+  "grids": {
+   "thr_ul": {
+    "m": [
+     0.0,
+     0.05,
+     0.1,
+     0.15,
+     0.2,
+     0.3,
+     0.4,
+     0.5
+    ],
+    "H": [
+     1,
+     2,
+     3,
+     6
+    ]
+   },
+   "thr_dl": {
+    "m": [
+     0.0,
+     0.05,
+     0.1,
+     0.15,
+     0.2,
+     0.3,
+     0.4,
+     0.5
+    ],
+    "H": [
+     1,
+     2,
+     3,
+     6
+    ]
+   },
+   "exh": {
+    "alpha": [
+     0.5,
+     0.9,
+     0.95,
+     0.99,
+     0.999
+    ]
+   },
+   "mpc": {
+    "alpha": [
+     0.5,
+     0.9,
+     0.95,
+     0.99,
+     0.999
+    ],
+    "H": [
+     3,
+     6
+    ]
+   }
+  },
+  "criterion": {
+   "thr_ul": "all_user",
+   "thr_dl": "dl_only_all_user",
+   "exh": "all_user",
+   "mpc": "all_user"
+  },
+  "rule": "per controller and mix, on development squares x growth grid in the primary scenario: minimum mean energy subject to avoidable violation share <= budget (criterion above); if none meets it, the least violation (flagged); parameters frozen for every scenario and for P3.4"
+ },
+ "scenarios": [
+  {
+   "name": "primary_S0",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S0",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "primary_S1",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S1",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "primary_S2",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S2",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "hw53_S0",
+   "dp": 0.0,
+   "hw": "53dBm_assumedPA_eta0.15_MRF256",
+   "S": "S0",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "hw53_S1",
+   "dp": 0.0,
+   "hw": "53dBm_assumedPA_eta0.15_MRF256",
+   "S": "S1",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "hw53_S2",
+   "dp": 0.0,
+   "hw": "53dBm_assumedPA_eta0.15_MRF256",
+   "S": "S2",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "hw43_S0",
+   "dp": -10.0,
+   "hw": "43dBm_SiGe_SiGe_MRF256",
+   "S": "S0",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "hw43_S1",
+   "dp": -10.0,
+   "hw": "43dBm_SiGe_SiGe_MRF256",
+   "S": "S1",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "hw43_S2",
+   "dp": -10.0,
+   "hw": "43dBm_SiGe_SiGe_MRF256",
+   "S": "S2",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "cat2_S0",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S0",
+   "cat": "cat2",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "cat2_S1",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S1",
+   "cat": "cat2",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "cat2_S2",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S2",
+   "cat": "cat2",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "ulsens_S0",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S0",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": true
+  },
+  {
+   "name": "ulsens_S1",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S1",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": true
+  },
+  {
+   "name": "ulsens_S2",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S2",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": true
+  },
+  {
+   "name": "left_S0",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S0",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "left",
+   "ulsens": false
+  },
+  {
+   "name": "set3_S0",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF256",
+   "S": "S0",
+   "cat": "cat1",
+   "set": "set3",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "mrf64_S0",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF64",
+   "S": "S0",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "mrf128_S0",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF128",
+   "S": "S0",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  },
+  {
+   "name": "mrf1024_S0",
+   "dp": -3.0,
+   "hw": "50dBm_SiGe_SiGe_MRF1024",
+   "S": "S0",
+   "cat": "cat1",
+   "set": "set1",
+   "case35": "right",
+   "ulsens": false
+  }
+ ],
+ "ul_sensitivity": "D29: P_3.5 - (1 - L_3.5,UL) tau_UL [M P_TRX (1 - d_TRX)/eta_AFE + P_PHY (B/B*)^a4 K (1 - d_PHY)/eta_DBB] (about 35.5 W per cell at zero UL load), right case only",
+ "labels": {
+  "on/on_ulca": "carrier selection (D20)",
+  "aon": "all 7.2 GHz cells on, UL enabled",
+  "oracle": "offline benchmark with perfect foresight; never a deployable result",
+  "tod": "time-of-day schedule (P3.2c sch_medbusy)",
+  "g_aware_benchmark": "P3.2c best feasible schedule (D27)"
+ },
+ "gates": {
+  "F0_provenance": "P3.1, P3.2b, P3.2c manifests passed and equal to the hashes above, their outputs equal their manifest hashes, P3.2c config hash; all 14 trace files present with the SHA-256 above; code constants equal this config",
+  "F1_radio_reproduction": "P3.2c's level batches recomputed bitwise (DL off, DL on at -3 dB, UL off, UL on_ulca: 6 arrays); calibration equal; the 12 admitted and all-user x* of patterns 0 and 3 equal P3.2c's exactly; table vs P3.2c at shared x: mean 3.5 GHz DL load within 1e-8, all-user outage within 1e-5 (a few boundary users may flip between solver batches)",
+  "F2_activation_coupling": "off-sector 7.2 GHz loads exactly 0; no off-sector user on 7.2 GHz; on-sector 7.2 GHz DL load > 0 at every x > 0",
+  "F3_fixed_point": "as P3.2c E3 for every table state",
+  "F4_all_user": "as P3.2c E4 for every table state and pattern",
+  "F5_traces": "every development file aligned to the local day (144 slots, no row outside, none misaligned); selection reproducible; selected squares complete; quantization error <= step/2; 25 + 25 disjoint squares",
+  "F6_ledger": "100 random runs recomputed by an independent scalar loop: energy and bits <= 1e-9 relative, violation seconds <= 1e-6 s, transitions equal",
+  "F7_causality": "every non-oracle controller: decisions up to slot t unchanged when the traffic of slots >= t is replaced (20 runs x 5 cuts each)",
+  "F8_dp_correctness": "oracle DP = brute force over 4^6 sequences on 200 random instances and 50 real 6-slot windows (<= 1e-12 relative)",
+  "F9_fairness": "one trace array for every controller (hash recorded); only the oracles receive the full trace",
+  "F10_decision_time": "reset and per-decision wall time (median, 99th percentile) recorded for every controller, with the machine",
+  "pass_rule": "F0-F10"
+ },
+ "reported": "per controller x mix x g x scenario: energy per site-day (intervals over squares and over realizations), saving vs aon only where both meet the budget (D28), avoidable and unavoidable violation shares (three criteria), transitions, gap seconds, J per delivered Mbit, mean k; max-capacity pattern per mix and offset; tuning log; decision times",
+ "decision_rules": {
+  "all_gates_pass": "the tuned parameters, forecast model, thresholds and development T_0.5 are frozen; P3.4 is pre-registered (test squares x test week x realizations 100-199) with numeric predictions for H1, H2, H4 and Q3 before any test data are read",
+  "gate_fails": "stop; keep the evidence; amendment before any rerun"
+ },
+ "declared_before_registration": [
+  "All P3.1, P3.2b and P3.2c outputs had been read. The Milan data paper (PMC4622222) was read for the variable definitions.",
+  "One development file (2013-11-04) was opened to confirm the time convention (CET local days, 144 aligned slots, 5 639 488 rows, 10 000 squares). No other trace content was inspected; no square selection, normalization or controller output was computed before registration.",
+  "The test-week files were downloaded and verified (size, MD5, SHA-256) only.",
+  "Unit tests: 12 (hand-checkable fixtures); full suite passing.",
+  "A code-path smoke on 14 SYNTHETIC Milan-format files (60 squares, scratch folder, 416 s): every gate F0-F10 computable and passing; verdict forced FAIL by the smoke flag. It led to two changes before registration: the stage costs of mpc and oracle were vectorized and F7 batched (run time only; results identical, F8 checks the DP), and the F1 table-vs-P3.2c tolerance was split (load 1e-8, outage 1e-5) because one boundary user can flip between solver batches.",
+  "One smoke run on the real files (--smoke-realizations 2, scratch folder, 523 s): every gate F0-F10 computable and passing (F1 code path only); verdict forced FAIL; it printed only gate lines and its output files were not opened."
+ ],
+ "outputs": {
+  "folder": "results/phase3/p3_3_controllers",
+  "files": [
+   "summary.json",
+   "validation.json",
+   "manifest.json",
+   "run1_stdout.txt",
+   "raw/table_isd200.npz (git-ignored)",
+   "raw/runs.json.gz (git-ignored)"
+  ]
+ }
+}

@@ -1,6 +1,6 @@
 {
   "experiment": "P3.2b: traffic and resource layer. Load-coupled flow-level accounting of offered, served, unserved and unservable traffic and of realized occupancy per carrier and direction, on the unchanged P3.2a radio engine, for the 3.5-GHz-only network and the all-on 7.2 GHz network; traffic calibrated to the ETSI static load levels; sustainable traffic under the M.2410 5th-percentile target",
-  "status": "PRE-REGISTERED 2026-11-10, before the first measured run",
+  "status": "PRE-REGISTERED 2026-11-10, before the first measured run; AMENDMENT 1 2026-11-10, after run 1 and before run 2 (see amendment_1)",
   "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, P3.0 revision 3 (D15-D19) and P3.2b",
   "inherited_unchanged": "configs/p3/p3_2a_coupled_feasibility.json and everything it inherits (E1c.3 'sd': geometry, victims in site 0's cell, candidates, best-server association, propagation, random streams, E1.5.5 V2 gains, specular calibration, C-AMC T2 mapping, UL target-power interferers, victim UL at 23 dBm). scripts/p3_2a_coupled_feasibility.py is imported, not modified; engine_terms() is called unchanged",
   "seen_before_registration": [
@@ -104,5 +104,29 @@
     "the QoS target is the 3.5 GHz layer's M.2410 rate on either carrier; M.2410 sec. 4.3 would sum it over aggregated bands, which would penalize activation"
   ],
   "smoke_run": "two smoke runs before registration (--smoke-realizations 2, scratch directory, 127 s and 124 s): every gate B0-B8 computable and passing (overall verdict forced FAIL by the smoke flag). The second followed one code change: per-user SINR arrays are dropped after aggregation (memory at ISD 500). The smoke mode prints no result values, and its output files were not opened",
-  "outputs": "results/phase3/p3_2b_traffic_resources/{summary.json, validation.json, manifest.json, run1_stdout.txt}; raw/loads_isd{200,500}.npz (per-instance loads and offered loads; git-ignored, hashes in the manifest)"
+  "amendment_1": {
+    "date": "2026-11-10, after run 1 (commit 55353d6, gates B0-B8 passed) and before run 2",
+    "finding": "the registered text fixes the UL admission point at the UL snr_min, -0.64 dB, SE 0.1965 (model.admission; seen_before_registration; protocol D19: 'UL: 0.197 at -0.64 dB, which equals the UL snr_min'). The code took the first C-AMC grid point strictly above snr_min, and the registered unit test asserted g_adm > snr_min; in the UL that point is +0.36 dB, SE 0.19716. The UL curve has no BLER-floor point (SE 0 below snr_min, 0.1965 at it), so run 1 excluded UL users on the MCS-0 plateau whom D8 counts as servable. Users affected in run 1 (UL share_between_snr_min_and_admission): A and B 0.144 %, C ISD 200 0.391 %, C ISD 500 2.399 %. The DL point (-0.64 dB, above the -1.64 dB floor point) is unaffected",
+    "change": "admission point = the C-AMC value at the first grid point at or above snr_min whose SE is on the MCS-0 plateau (SE >= 0.1; the DL floor point has SE 0.0016). Nothing else changes: model, scope, grids, thresholds, gates B0-B8 and predictions are as registered",
+    "admission_points": {
+      "DL": {"snr_db": -0.6387267686522335, "se": 0.1969498910675381},
+      "UL": {"snr_db": -0.6387267686522335, "se": 0.1965110709374372}
+    },
+    "run1": {
+      "folder": "results/phase3/p3_2b_traffic_resources/run1",
+      "git_head": "55353d6f96b47dbfeb8cb60cafbe65f733f52059",
+      "config_sha256": "61b7cd789f5cc745ba2bcecd0c36d1279192123ec0ae33b50e2cf6bd76ce1409",
+      "manifest_sha256": "135b8559c44792f365ef07245bc52b415f838d3485296f61e387928a6c8625c0"
+    },
+    "gates": {
+      "B0_added": "run 1 evidence intact (manifest hash, git head, config hash and every output hash it lists); the admission points of every case equal admission_points exactly",
+      "B9_amendment1_dl_unchanged": "run 2 equals run 1 exactly in every field the UL admission point cannot reach (victims; per case the constants without the UL admission point, user count, calibration, grids, DL hazard-15 labels, all DL results, every x*_DL) and in every raw DL array; per case the UL not-admitted share equals run 1's minus run 1's share between snr_min and the admission point (<= 1e-12), that share is 0, and the TR 36.942 low-end share is unchanged"
+    },
+    "pass_rule": "B0-B9",
+    "result_of_record": "run 2, for every P3.2b number and for the traffic layer of P3.2c and P3.3; run 1 is kept as evidence",
+    "predictions": "unchanged. Their registered verdicts are those of run 1 (P1 failed; P2 and P3 held). Run 2 recomputes them under the registered admission point; a verdict that differs between the runs is reported as admission-sensitive, not substituted",
+    "not_blind": "every run-1 result was seen before this amendment. The direction of the UL effect is not fixed a priori: the added users add load and also enter the outage denominator",
+    "smoke_run": "one smoke run of the amended code before registration (--smoke-realizations 2, scratch directory, 202 s): every gate B0-B9 computable and passing (B9 as a self-comparison, code path only; overall verdict forced FAIL by the smoke flag). It prints no result values, and its output files were not opened. Unit tests 12 OK; full suite 201 OK"
+  },
+  "outputs": "results/phase3/p3_2b_traffic_resources/{summary.json, validation.json, manifest.json, run2_stdout.txt}; raw/loads_isd{200,500}.npz (per-instance loads and offered loads; git-ignored, hashes in the manifest); run 1 evidence in run1/ (same layout, run1_stdout.txt)"
 }

@@ -13,6 +13,8 @@ Model (typical-site frame, homogeneous network):
   theta_u = C_u (1 - L_k) if the offered load rho_k < 1, else 0.
 - Peak rate C = SE (C-AMC T2) x N_PRB x 12 x 30 kHz x TDD share x (1 - OH); QoS target R = SE5 x W_op(3.5 GHz) x TDD
   share (M.2410 Table 1 and sec. 4.4); criterion: pooled outage of admitted users <= 5 %.
+Amendment 1 (after run 1, before run 2): the admission point is the first C-AMC grid point at or above snr_min on the
+MCS-0 plateau (UL -0.64 dB as registered; run 1 used +0.36 dB); gate B9 requires every DL output to equal run 1's.
 Outputs in --outdir: summary.json, validation.json, manifest.json; raw/loads_isd<ISD>.npz (git-ignored).
 """
 import argparse
@@ -58,6 +60,8 @@ DL_STATES = ('off', 'on')
 UL_STATES = ('off', 'on_ulca', 'on_scell_dl')
 UL_RESCUE_STATES = ('off_rescue', 'on_ulca_rescue')
 RESCUE_CASES = ('C_deployment',)
+PLATEAU_MIN_SE = 0.1        # amendment 1: admission on the MCS-0 plateau (the hazard-15 floor point has SE 0.0016)
+RUN1_DIR = OUTDIR / 'run1'  # amendment 1: run 1 evidence, the reference of gate B9
 
 
 # ---------------------------------------------------------------- engine extension (per-carrier load weights)
@@ -130,9 +134,12 @@ def required_rate(bw_op_35, d):
 
 
 def admission_point(se_fn, d, snr_min):
-    """(SNR, SE) of the C-AMC curve at its first grid point above snr_min (the 5G-LENA MCS-0 plateau)."""
+    """(SNR, SE) of the C-AMC curve at its first grid point at or above snr_min that lies on the 5G-LENA MCS-0 plateau
+    (SE >= PLATEAU_MIN_SE): DL -0.64 dB (its -1.64 dB snr_min point is the MCS-0 BLER floor, SE 0.0016, hazard 15) and
+    UL -0.64 dB = the UL snr_min (SE 0.1965), as D19 and the config register. Amendment 1: run 1 took the first point
+    strictly above snr_min, which moved the UL point to +0.36 dB on the same plateau."""
     xs, ys = se_fn.grid
-    k = int(np.flatnonzero(xs[d] > snr_min)[0])
+    k = int(np.flatnonzero((xs[d] >= snr_min) & (ys[d] >= PLATEAU_MIN_SE))[0])
     return float(xs[d][k]), float(ys[d][k])
 
 
@@ -480,6 +487,63 @@ def reference_check(Tr, cx, ctx, U, st, sols, traffic, r=0):
 
 
 # ---------------------------------------------------------------- main
+# ---------------------------------------------------------------- amendment 1 (gate B9)
+def dl_view(s):
+    """Every summary field that the UL admission point cannot reach: per ISD the victims; per case the constants
+    (DL admission point only), user count, calibration, grids, DL hazard-15 labels, all DL results and every x*_DL."""
+    out = {}
+    for isd, si in s['isd'].items():
+        out[isd] = {'victims': si['victims'], 'cases': {}}
+        for c, cr in si['cases'].items():
+            k = dict(cr['constants'])
+            k['se_admission'], k['snr_admission_db'] = k['se_admission']['DL'], k['snr_admission_db']['DL']
+            out[isd]['cases'][c] = {
+                'constants': k, 'n_users_total': cr['n_users_total'], 'calibration': cr['calibration'],
+                'grid_x': cr['grid_x'], 'grid_y_ul': cr['grid_y_ul'],
+                'hazard15_DL': cr['hazard15_labels_3.5GHz_full_buffer']['DL'], 'DL': cr['DL'],
+                'x_star_DL': {kk: v['x_star_DL'] for kk, v in cr['sustainable_traffic'].items()}}
+    return out
+
+
+def amendment_check(s1, s2, raw1, raw2):
+    """Gate B9. s1 / raw1: run 1 summary and raw arrays (per ISD dicts), s2 / raw2: this run. (a) every field of
+    dl_view and every raw DL array is exactly equal (the DL never uses the UL admission point); (b) per case the UL
+    not-admitted share drops by exactly run 1's share between snr_min and its admission point (<= 1e-12), that share
+    is now 0, and the TR 36.942 low-end share is unchanged."""
+    view_equal = dl_view(s1) == dl_view(s2)
+    raw_n, raw_bad = 0, 0
+    for isd in sorted(set(raw1) | set(raw2)):
+        k1 = sorted(k for k in raw1.get(isd, {}) if '|DL|' in k)
+        k2 = sorted(k for k in raw2.get(isd, {}) if '|DL|' in k)
+        raw_bad += int(k1 != k2)
+        for k in set(k1) & set(k2):
+            raw_n += 1
+            raw_bad += int(not np.array_equal(raw1[isd][k], raw2[isd][k]))
+    shift, between2, low_bad, n_cases = 0.0, 0.0, 0, 0
+    for isd, si in s2['isd'].items():
+        for c, cr in si['cases'].items():
+            h1 = s1['isd'][isd]['cases'][c]['hazard15_labels_3.5GHz_full_buffer']['UL']
+            h2 = cr['hazard15_labels_3.5GHz_full_buffer']['UL']
+            shift = max(shift, abs(h2['not_admitted_share'] - (h1['not_admitted_share'] - h1['share_between_snr_min_and_admission'])))
+            between2 = max(between2, h2['share_between_snr_min_and_admission'])
+            low_bad += int(h2['share_in_tr36942_low_end'] != h1['share_in_tr36942_low_end'])
+            n_cases += 1
+    return {'dl_view_equal': bool(view_equal), 'raw_dl_arrays_compared': raw_n, 'raw_dl_mismatches': raw_bad,
+            'ul_not_admitted_shift_max_abs': shift, 'ul_between_share_max': between2, 'ul_low_end_changed': low_bad,
+            'cases_compared': n_cases,
+            'passed': bool(view_equal and raw_n > 0 and raw_bad == 0 and shift <= 1e-12 and between2 == 0.0
+                           and low_bad == 0 and n_cases > 0)}
+
+
+def load_raw(d):
+    """Raw per-ISD arrays of an output folder, keyed by ISD as in the summary."""
+    out = {}
+    for isd in sorted(SCOPE):
+        with np.load(Path(d) / 'raw' / f'loads_isd{isd}.npz') as z:
+            out[str(isd)] = {k: z[k] for k in z.files}
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--config', default=str(CONFIG))
@@ -524,7 +588,15 @@ def main():
               and tuple(conf['traffic']['grid_x']) == GRID_X and tuple(conf['traffic']['etsi_levels']) == ELLS)
     in_sha = {'p3_2a_coupled_feasibility/manifest.json': sha256(A.OUTDIR / 'manifest.json'),
               'configs/p3/p3_2a_coupled_feasibility.json': sha256(A.CONFIG)}
-    validation['B0_inputs'] = {'input_sha256': in_sha, 'constants_match_config': bool(consts), 'passed': bool(b0 and consts)}
+    # amendment 1: run 1 evidence (the reference of gate B9) is intact
+    a1 = conf['amendment_1']
+    r1man = json.loads((RUN1_DIR / 'manifest.json').read_text())
+    run1_ok = (sha256(RUN1_DIR / 'manifest.json') == a1['run1']['manifest_sha256'] and r1man['all_checks_passed']
+               and r1man['git_head_at_run'] == a1['run1']['git_head'] and r1man['config_sha256'] == a1['run1']['config_sha256']
+               and all(sha256(RUN1_DIR / k) == v for k, v in r1man['outputs_sha256'].items()))
+    in_sha['p3_2b_traffic_resources/run1/manifest.json'] = sha256(RUN1_DIR / 'manifest.json')
+    validation['B0_inputs'] = {'input_sha256': in_sha, 'constants_match_config': bool(consts), 'run1_evidence_intact': bool(run1_ok),
+                               'passed': bool(b0 and consts and run1_ok)}
     if not validation['B0_inputs']['passed']:
         raise SystemExit('B0 failed')
     s153 = json.loads((M2.e155.E153_DIR / 'summary.json').read_text())
@@ -540,6 +612,15 @@ def main():
     if tuple(sorted(mix)) != tuple(sorted(MIX_STATES)) or abs(sum(mix.values()) - 1.0) > 1e-12:
         raise SystemExit('unexpected M2412 mix')
     cxs = {c: M2.case_context(cases[c], maps, pkt_off, sel_r) for c in A.CASES}
+    adm_reg = a1['admission_points']   # B0, amendment 1: the admission points equal the registered values exactly
+    adm_ok = True
+    for c in A.CASES:
+        ctx_c = Ctx(cxs[c], cases[c]['carriers'])
+        adm_ok = adm_ok and all(ctx_c.g_adm[d] == adm_reg[d]['snr_db'] and ctx_c.se_adm[d] == adm_reg[d]['se'] for d in DIRS)
+    validation['B0_inputs']['admission_points_match_config'] = bool(adm_ok)
+    if not adm_ok:
+        validation['B0_inputs']['passed'] = False
+        raise SystemExit('B0 failed: admission points')
     freqs = cxs['A_equal_elements']['freqs']
     with np.load(M2.E11_DIR / 'site_tx0_mask.npz') as z:
         mask = {k: z[k] for k in z.files}
@@ -835,6 +916,14 @@ def main():
              'B8': 'B8_independent_reference'}
     for k, nm in names.items():
         validation[nm] = dict(gb[k], passed=bool(gb[k]) and all(v['passed'] for v in gb[k].values()))
+    # ---- B9 (amendment 1): everything the UL admission point cannot reach equals run 1 exactly
+    s2 = json.loads(json.dumps(summary, default=float))
+    if smoke:   # code path only: run 1 has 100 realizations
+        s1, raw1, ref = s2, load_raw(outdir), 'smoke self-comparison (code path only)'
+    else:
+        s1, raw1, ref = json.loads((RUN1_DIR / 'summary.json').read_text()), load_raw(RUN1_DIR), 'run 1 (results/phase3/p3_2b_traffic_resources/run1)'
+    validation['B9_amendment1_dl_unchanged'] = dict(amendment_check(s1, s2, raw1, load_raw(outdir)), reference=ref)
+    s1 = s2 = raw1 = None
     gates_ok = all(v['passed'] for v in validation.values() if isinstance(v, dict)) and not smoke
     validation['smoke_run'] = smoke
     validation['all_checks_passed'] = gates_ok

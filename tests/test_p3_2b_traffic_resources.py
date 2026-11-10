@@ -1,6 +1,8 @@
 """P3.2b traffic and resource layer on E1c.3's synthetic 7-site layout and on analytic toy groups: engine extension
 bitwise equal to P3.2a, sector grouping equal to the explicit engine, rates and constants, load-coupled fixed point
 (convergence, uniqueness, monotonicity, closure), calibration, bisection, association rules, independent reference."""
+import copy
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -136,14 +138,24 @@ class Synthetic(unittest.TestCase):
         self.assertAlmostEqual(e.cap_factor(546, 'UL'), 546 * 12 * 30e3 * 16 / 70 * 0.92, places=6)
         self.assertAlmostEqual(e.required_rate(100e6, 'DL'), 0.225 * 100e6 * 52 / 70, places=6)
         self.assertAlmostEqual(e.required_rate(100e6, 'UL'), 0.15 * 100e6 * 16 / 70, places=6)
+        reg = json.loads(e.CONFIG.read_text(encoding='utf-8'))['amendment_1']['admission_points']
+        for ctx in self.ctx.values():       # amendment 1: the registered points, exactly
+            for d in e.DIRS:
+                self.assertEqual(ctx.g_adm[d], reg[d]['snr_db'])
+                self.assertEqual(ctx.se_adm[d], reg[d]['se'])
         ctx = self.ctx['C_deployment']
         self.assertEqual(ctx.bw_op35, 100e6)
+        self.assertEqual(ctx.g_adm['UL'], ctx.floor['UL'])                    # the UL snr_min is on the plateau
+        self.assertGreater(ctx.g_adm['DL'], ctx.floor['DL'])                  # the DL snr_min point is the BLER floor
+        self.assertLess(float(ctx.se(np.array([ctx.floor['DL']]), 'DL')[0]), e.PLATEAU_MIN_SE)
         for d in e.DIRS:
-            self.assertGreater(ctx.g_adm[d], ctx.floor[d])
             self.assertEqual(float(ctx.se(np.array([ctx.g_adm[d]]), d)[0]), ctx.se_adm[d])
-            self.assertGreater(ctx.se_adm[d], 0.1)
+            self.assertGreaterEqual(ctx.se_adm[d], e.PLATEAU_MIN_SE)
             below = np.linspace(ctx.floor[d] - 3.0, ctx.g_adm[d] - 1e-9, 50)
             self.assertTrue(np.all(ctx.se(below, d) < ctx.se_adm[d]))
+            above = np.linspace(ctx.g_adm[d], ctx.g_adm[d] + 2.0, 50)
+            self.assertTrue(np.all(e.admitted(above, ctx.se, d, ctx.se_adm[d], ctx.g_adm[d], 273, False)))
+            self.assertFalse(np.any(e.admitted(below, ctx.se, d, ctx.se_adm[d], ctx.g_adm[d], 273, False)))
 
     def test_rescue_rates(self):
         ctx = self.ctx['C_deployment']
@@ -261,6 +273,58 @@ class Synthetic(unittest.TestCase):
         v = np.array([3.0, 1.0, 2.0, 4.0])
         w = np.array([0.1, 0.4, 0.4, 0.1])
         self.assertEqual(e.weighted_quantiles(v, w, (0.05, 0.5, 0.95)), [1.0, 2.0, 4.0])
+
+
+class AmendmentGate(unittest.TestCase):
+    """Gate B9's comparator on a minimal summary: passes when only UL quantities move as the amendment implies,
+    fails on any change that the UL admission point cannot cause."""
+
+    @staticmethod
+    def pair():
+        h = {'DL': {'not_admitted_share': 0.0, 'share_between_snr_min_and_admission': 0.0, 'share_in_tr36942_low_end': 0.0},
+             'UL': {'not_admitted_share': 0.3, 'share_between_snr_min_and_admission': 0.1, 'share_in_tr36942_low_end': 0.15}}
+        cr = {'constants': {'n_prb': [273, 546], 'se_admission': {'DL': 0.19695, 'UL': 0.19716},
+                            'snr_admission_db': {'DL': -0.6387, 'UL': 0.3613}, 'snr_min_db': {'DL': -1.6387, 'UL': -0.6387}},
+              'n_users_total': 10, 'calibration': {'T_bps_per_site': {'0.3': 1.0, '0.5': 2.0}, 'x_medium_over_busy': 0.5},
+              'grid_x': [0.5, 1.0], 'grid_y_ul': [0.1], 'hazard15_labels_3.5GHz_full_buffer': h,
+              'DL': {'0.0|off': {'x_star': {'x_star': 1.5}, 'grid': [{'x': 0.5, 'outage_admitted_pooled': 0.0}]}},
+              'UL': {'off': {'y_star': {'x_star': 0.3}}},
+              'sustainable_traffic': {'0.0|off+off|ericsson_typical': {'x_star_DL': 1.5, 'x_star_UL': 2.7, 'x_star_both': 1.5,
+                                                                       'binding': 'DL'}}}
+        s1 = {'isd': {'200': {'victims': {'outdoor_points': 3, 'indoor_samples': 4}, 'cases': {'C_deployment': cr}}}}
+        s2 = copy.deepcopy(s1)
+        c2 = s2['isd']['200']['cases']['C_deployment']
+        c2['constants']['se_admission']['UL'], c2['constants']['snr_admission_db']['UL'] = 0.19651, -0.6387
+        c2['hazard15_labels_3.5GHz_full_buffer']['UL'].update(not_admitted_share=0.3 - 0.1, share_between_snr_min_and_admission=0.0)
+        c2['UL']['off']['y_star']['x_star'] = 0.25
+        c2['sustainable_traffic']['0.0|off+off|ericsson_typical'].update(x_star_UL=2.25)
+        raw1 = {'200': {'C_deployment|DL|0.0|off|0|L': np.arange(6.0), 'C_deployment|UL|off|0|L': np.ones(3)}}
+        raw2 = {'200': {'C_deployment|DL|0.0|off|0|L': np.arange(6.0), 'C_deployment|UL|off|0|L': np.zeros(3)}}
+        return s1, s2, raw1, raw2
+
+    def test_passes_when_only_ul_moves(self):
+        s1, s2, raw1, raw2 = self.pair()
+        r = e.amendment_check(s1, s2, raw1, raw2)
+        self.assertTrue(r['passed'], r)
+        self.assertEqual((r['raw_dl_arrays_compared'], r['cases_compared']), (1, 1))
+
+    def test_fails_on_any_dl_or_label_change(self):
+        def mutated(fn):
+            s1, s2, raw1, raw2 = self.pair()
+            fn(s2['isd']['200']['cases']['C_deployment'], raw2['200'])
+            return e.amendment_check(s1, s2, raw1, raw2)['passed']
+        self.assertFalse(mutated(lambda c, r: c['DL']['0.0|off']['x_star'].update(x_star=1.5 + 1e-15)))
+        self.assertFalse(mutated(lambda c, r: c['DL']['0.0|off']['grid'][0].update(outage_admitted_pooled=1e-300)))
+        self.assertFalse(mutated(lambda c, r: c['sustainable_traffic']['0.0|off+off|ericsson_typical'].update(x_star_DL=1.4)))
+        self.assertFalse(mutated(lambda c, r: c['calibration'].update(x_medium_over_busy=0.51)))
+        self.assertFalse(mutated(lambda c, r: c['constants']['se_admission'].update(DL=0.2)))
+        self.assertFalse(mutated(lambda c, r: c['hazard15_labels_3.5GHz_full_buffer']['DL'].update(not_admitted_share=1e-9)))
+        self.assertFalse(mutated(lambda c, r: c['hazard15_labels_3.5GHz_full_buffer']['UL'].update(not_admitted_share=0.3)))
+        self.assertFalse(mutated(lambda c, r: c['hazard15_labels_3.5GHz_full_buffer']['UL'].update(
+            share_between_snr_min_and_admission=1e-9)))
+        self.assertFalse(mutated(lambda c, r: c['hazard15_labels_3.5GHz_full_buffer']['UL'].update(share_in_tr36942_low_end=0.14)))
+        self.assertFalse(mutated(lambda c, r: r.update({'C_deployment|DL|0.0|off|0|L': np.arange(6.0) + 1e-12})))
+        self.assertFalse(mutated(lambda c, r: r.pop('C_deployment|DL|0.0|off|0|L')))
 
 
 if __name__ == '__main__':

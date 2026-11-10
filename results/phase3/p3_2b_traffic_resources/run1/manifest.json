@@ -1,0 +1,18 @@
+{
+  "generated_utc": "2026-11-10T08:35:13.844383+00:00",
+  "tool": "scripts/p3_2b_traffic_resources.py",
+  "git_head_at_run": "55353d6f96b47dbfeb8cb60cafbe65f733f52059",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "config_sha256": "61b7cd789f5cc745ba2bcecd0c36d1279192123ec0ae33b50e2cf6bd76ce1409",
+  "input_sha256": {
+    "p3_2a_coupled_feasibility/manifest.json": "71dc8462352991b7daec7f57e3386fa66a5945c41f141e89b494cd9a44585f82",
+    "configs/p3/p3_2a_coupled_feasibility.json": "178357fb0b8d0c7fb64cb99cca7ed6ed9e50364a2446212900aaf0009d3a44a1"
+  },
+  "outputs_sha256": {
+    "summary.json": "c9dc7e1d29571dc5285deea8cc86a1ef04e202211258d722b8f6d43994316fee",
+    "raw/loads_isd200.npz": "8ed391c6a319d9c9f769a43b28f4d02121f3592497935357243bd9dbc7d7ae7d",
+    "raw/loads_isd500.npz": "c2406c9fa282ac81f4c959f16cc002816660ac8ca3064e6aaf1a418453c4bccd"
+  },
+  "all_checks_passed": true
+}

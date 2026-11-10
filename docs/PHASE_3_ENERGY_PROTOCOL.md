@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b pre-registered.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b run 1 passed its gates, amendment 1 (UL admission point) registered, run 2 pending.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -1081,6 +1081,104 @@ of the primary point, with the 3.5-GHz-only x*_both marked.
   - between them, one memory change: per-user SINR arrays are dropped after
     aggregation;
   - smoke mode prints no result values, and its output files were not opened.
+
+#### P3.2b run 1 (commit 55353d6): gates B0–B8 PASSED; UL admission point off the register (2026-11-10, 5576 s)
+
+Evidence is kept in `results/phase3/p3_2b_traffic_resources/run1/`. Raw
+arrays are git-ignored, with their hashes in the manifest.
+
+| Gate | Result |
+|---|---|
+| B0 | Inputs and constants pass |
+| B1 | 240 (ISD 200) and 144 (ISD 500) engine comparisons, all bit-identical |
+| B2 | Max 2.8e-14 dB over 1.49 M and 5.93 M user comparisons |
+| B3 | 138 fixed points converged (residual ≤ 2.3e-11, ≤ 20 iterations); from L = 0 and from L = 1 they agree to 3.8e-11 over 18 360 loads |
+| B4 | Closure ≤ 2.2e-16; occupancy identity ≤ 2.0e-11; no load outside [0, 1] |
+| B5 | Calibration residuals pass |
+| B6 | 432 workload comparisons, 0 mismatches |
+| B7 | 0 violations of the six identities and monotonicity checks |
+| B8 | 10 primary-point instances (4 DL, 6 UL); offered loads within 1.8e-14 relative; 0 outage mismatches |
+
+**Registered prediction verdicts** (ISD 200, C at 50 dBm):
+
+| Prediction | Run 1 values | Verdict |
+|---|---|---|
+| P1: x*_UL < x*_DL, 3.5 GHz only, 10/90 | x*_UL 3.059 against x*_DL 1.445 | **Failed** (the DL binds; the UL needs 2.1× more traffic) |
+| P2: x*_DL ≥ 1.25 x*_both, all on with UL CA, 26/74 | 3.719 against 2.413 (ratio 1.54) | **Held** |
+| P3: UL CA ≥ 1.2 × DL-only SCell, x*_both, 26/74 | 2.413 against 0.967 (ratio 2.49) | **Held** |
+
+Run 1's sustainable UL traffic y* (units of T_0.5), kept for comparison with
+run 2:
+
+| ISD, case | off | on, UL CA | off, rescue | on, UL CA, rescue |
+|---|---|---|---|---|
+| 200, A | 0.4570 | 0.6328 | — | — |
+| 200, B | 0.4570 | 0.7578 | — | — |
+| 200, C | 0.3398 | 0.8477 | 0.2188 | 0.4063 |
+| 500, C | 0.1641 | 0.2656 | 0 (fails unloaded) | 0 (fails unloaded) |
+
+**Found while verifying the outputs, after the run.**
+- The run's UL admission point is +0.36 dB (SE 0.19716). The registered
+  text fixes it at the UL snr_min, −0.64 dB (SE 0.1965):
+  - D19: "UL: 0.197 at −0.64 dB, which equals the UL snr_min";
+  - the config's `model.admission` and `seen_before_registration`.
+- **Cause.** The code took the C-AMC curve's first grid point *strictly*
+  above snr_min. The registered unit test asserted g_adm > snr_min, so the
+  test and the code agreed with each other and not with the text.
+- **Why it matters.**
+  - The UL curve has no BLER-floor point. Its SE is 0 below snr_min and
+    0.1965 at it, and +0.36 dB lies on the same MCS-0 plateau (0.19716).
+  - Run 1 therefore refused UL users whom D8 counts as servable and whom
+    the rule was never meant to exclude.
+  - Affected users (run 1's UL "share between snr_min and admission"):
+    A and B 0.144%, C ISD 200 0.391%, C ISD 500 2.399%.
+- **The DL is unaffected.** Its point (−0.64 dB) lies above the −1.64 dB
+  BLER-floor point under either reading.
+- **No gate could catch it.** B0 compared the TDD, OH, SE5, ε, ρ and grid
+  constants, not the admission point.
+
+#### P3.2b Amendment 1 (registered before run 2)
+
+Recorded in the config (`amendment_1`).
+
+- **Change.** The admission point is the C-AMC value at the first grid
+  point at or above snr_min whose SE is on the MCS-0 plateau (SE ≥ 0.1; the
+  DL floor point has SE 0.0016).
+  - DL: −0.6387 dB, SE 0.19695 (unchanged).
+  - UL: −0.6387 dB, SE 0.19651 (as registered).
+  - Model, scope, grids, thresholds, gates B0–B8 and predictions are
+    unchanged.
+- **B0, added checks.**
+  - Run 1's evidence is intact: manifest hash, git head, config hash, and
+    every output hash.
+  - Every case's admission points equal the registered values exactly.
+- **New gate B9.** Run 2 must equal run 1 exactly wherever the UL admission
+  point cannot reach:
+  - every DL result and raw DL array;
+  - calibration, grids, user counts, DL labels and every x*_DL.
+
+  Per case, the UL not-admitted share must equal run 1's minus run 1's
+  "between" share (to 1e-12), that share must be 0, and the TR 36.942
+  low-end share must be unchanged.
+- **Pass rule:** B0–B9.
+- **Result of record:** run 2, for every P3.2b number and for the traffic
+  layer of P3.2c and P3.3. Run 1 stays as evidence.
+- **Predictions.**
+  - Unchanged. Their registered verdicts are run 1's: P1 failed, P2 and P3
+    held.
+  - Run 2 recomputes them. A verdict that differs between the runs is
+    reported as admission-sensitive, not substituted.
+- **Not blind.**
+  - Every run-1 result was seen before this amendment.
+  - The direction of the UL effect is not fixed in advance: the added users
+    add load, and they also enter the outage denominator.
+- **Tests:** 12 (the admission test now asserts the registered values; two
+  new tests check B9's comparator). The full suite passes (201 tests).
+- **Smoke run** (2 realizations, scratch folder, 202 s).
+  - Every gate B0–B9 was computable and passed. B9 ran as a
+    self-comparison, to exercise the code path only.
+  - The smoke flag forced the overall verdict to fail.
+  - It printed no result values, and its output files were not opened.
 
 ## 4. Open items
 

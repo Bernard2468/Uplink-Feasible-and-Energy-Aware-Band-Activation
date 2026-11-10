@@ -1,0 +1,71 @@
+ISD 200: victims [935, 5756], cases ['A_equal_elements', 'B_equal_aperture', 'C_deployment']
+ISD 200: realization 10/100, 28 s
+ISD 200: realization 20/100, 47 s
+ISD 200: realization 30/100, 67 s
+ISD 200: realization 40/100, 89 s
+ISD 200: realization 50/100, 111 s
+ISD 200: realization 60/100, 131 s
+ISD 200: realization 70/100, 152 s
+ISD 200: realization 80/100, 174 s
+ISD 200: realization 90/100, 194 s
+ISD 200: realization 100/100, 215 s
+  ISD 200 A_equal_elements DL dp 0.0 off: 72 s
+  ISD 200 A_equal_elements DL dp 0.0 on: 122 s
+  ISD 200 A_equal_elements UL off: 180 s
+  ISD 200 A_equal_elements UL on_ulca: 237 s
+  ISD 200 A_equal_elements UL on_scell_dl: 276 s
+ISD 200 A_equal_elements done, 276 s
+  ISD 200 B_equal_aperture DL dp 0.0 off: 67 s
+  ISD 200 B_equal_aperture DL dp 0.0 on: 108 s
+  ISD 200 B_equal_aperture UL off: 162 s
+  ISD 200 B_equal_aperture UL on_ulca: 213 s
+  ISD 200 B_equal_aperture UL on_scell_dl: 250 s
+ISD 200 B_equal_aperture done, 250 s
+  ISD 200 C_deployment DL dp 0.0 off: 64 s
+  ISD 200 C_deployment DL dp 0.0 on: 97 s
+  ISD 200 C_deployment DL dp -3.0 off: 147 s
+  ISD 200 C_deployment DL dp -3.0 on: 185 s
+  ISD 200 C_deployment DL dp -10.0 off: 233 s
+  ISD 200 C_deployment DL dp -10.0 on: 267 s
+  ISD 200 C_deployment UL off: 325 s
+  ISD 200 C_deployment UL on_ulca: 375 s
+  ISD 200 C_deployment UL on_scell_dl: 418 s
+  ISD 200 C_deployment UL off_rescue: 468 s
+  ISD 200 C_deployment UL on_ulca_rescue: 518 s
+ISD 200 C_deployment done, 518 s
+ISD 200 done in 1259 s; gates B1 PASS B2 PASS B3 PASS B4 PASS B5 PASS B6 PASS B7 PASS B8 PASS
+ISD 500: victims [4541, 38921], cases ['C_deployment']
+ISD 500: realization 10/100, 49 s
+ISD 500: realization 20/100, 82 s
+ISD 500: realization 30/100, 113 s
+ISD 500: realization 40/100, 144 s
+ISD 500: realization 50/100, 176 s
+ISD 500: realization 60/100, 208 s
+ISD 500: realization 70/100, 239 s
+ISD 500: realization 80/100, 270 s
+ISD 500: realization 90/100, 302 s
+ISD 500: realization 100/100, 334 s
+  ISD 500 C_deployment DL dp 0.0 off: 531 s
+  ISD 500 C_deployment DL dp 0.0 on: 767 s
+  ISD 500 C_deployment DL dp -3.0 off: 1121 s
+  ISD 500 C_deployment DL dp -3.0 on: 1473 s
+  ISD 500 C_deployment DL dp -10.0 off: 2079 s
+  ISD 500 C_deployment DL dp -10.0 on: 2477 s
+  ISD 500 C_deployment UL off: 2854 s
+  ISD 500 C_deployment UL on_ulca: 3177 s
+  ISD 500 C_deployment UL on_scell_dl: 3443 s
+  ISD 500 C_deployment UL off_rescue: 3666 s
+  ISD 500 C_deployment UL on_ulca_rescue: 3980 s
+ISD 500 C_deployment done, 3981 s
+ISD 500 done in 4315 s; gates B1 PASS B2 PASS B3 PASS B4 PASS B5 PASS B6 PASS B7 PASS
+B0_inputs PASS
+B1_engine_extension_bitwise PASS
+B2_grouping PASS
+B3_fixed_point PASS
+B4_closure PASS
+B5_calibration PASS
+B6_identical_workloads PASS
+B7_identities_monotonicity PASS
+B8_independent_reference PASS
+predictions {"P1_ul_binds_today": {"x_star_UL": 3.05859375, "x_star_DL": 1.4453125, "held": false}, "P2_dl_only_overstates_ai_era": {"x_star_DL": 3.71875, "x_star_both": 2.412560096153846, "held": true}, "P3_ul_ca_value_ai_era": {"x_star_both_ulca": 2.412560096153846, "x_star_both_scell_dl": 0.9672475961538461, "held": true}, "basis": "ISD 200, C_deployment at -3 dB (50 dBm), M2412; sustainable traffic in units of the calibrated ETSI busy-hour traffic"}
+P3.2b GATES PASSED 5576 s

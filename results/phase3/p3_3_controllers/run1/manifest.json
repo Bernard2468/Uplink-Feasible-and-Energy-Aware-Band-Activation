@@ -1,0 +1,35 @@
+{
+  "generated_utc": "2026-11-10T19:47:04.301939+00:00",
+  "tool": "scripts/p3_3_controllers.py",
+  "git_head_at_run": "b6cd066db0600b2631dc7e622ecc808695ad7dd3",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "scipy": "1.17.1",
+  "pandas": "3.0.6",
+  "config_sha256": "61689625708fcc5e8d8eba88b2e8857a933ef105012d4148af229a079044be49",
+  "input_sha256": {
+    "p3_1/manifest.json": "26548154a287f2eeff588452a9419d20cac9aff02bb5d7871a534ce13980eef3",
+    "p3_2b/manifest.json": "90732da73f07b795df22275ad4cc80f4a9698c003ee3df58478e5495d40b46cb",
+    "p3_2c/manifest.json": "77edc30874235db559173447e5b0157fb2e20cbb9c21e55a058806dd2d4ccb0f",
+    "traces/sms-call-internet-mi-2013-11-04.txt": "288b8d6b57abdc2b08d94d01646e91bde311b4bf4fe9dc8fbb52cfc5f273e320",
+    "traces/sms-call-internet-mi-2013-11-05.txt": "b7d661374710d6c8dcf8a220b7ecbd4ece68b07aedf93d75fe477b59aa0843bf",
+    "traces/sms-call-internet-mi-2013-11-06.txt": "8975004bc46643dc2f15e9a510471fdcf16c676ee8af217772cd65250bb254c9",
+    "traces/sms-call-internet-mi-2013-11-07.txt": "68825035291791d32da776bb06d75f721173b5a03beab79b730961fe40d80959",
+    "traces/sms-call-internet-mi-2013-11-08.txt": "748da75c30e19ab02f8fb19ba1a410020ce4446cfa1a19945fd0638c5ff9fdc6",
+    "traces/sms-call-internet-mi-2013-11-09.txt": "2b7b17d94aa0dbb08eda59bcfecd670fe8ce236b39c8bc6d9cbe6319cb208319",
+    "traces/sms-call-internet-mi-2013-11-10.txt": "87ddc593a211b89d74640788ca9c6c18685a1a95cd13d9926c5e312155ed4fc5",
+    "traces/sms-call-internet-mi-2013-11-18.txt": "5c1a7687dca1e64e70bcfea88d1f06adf5d846aad47b21f822999955f334bd19",
+    "traces/sms-call-internet-mi-2013-11-19.txt": "5e6682d76699e8a11ba336ddb979ef22818bcd78ff4b3847de8af353661f43fa",
+    "traces/sms-call-internet-mi-2013-11-20.txt": "34ad6e301d6bfb4eaa09428b634565918c56c2d77fdfe4991bf791c60324f73d",
+    "traces/sms-call-internet-mi-2013-11-21.txt": "069c8771eab66f24093519a8935197859362500cb8ece422ce6a52c23f5e5f27",
+    "traces/sms-call-internet-mi-2013-11-22.txt": "8c409b4b1b2a9772b692db69ac2d55ea9b6fe797e590f76133295dcb7cf0104f",
+    "traces/sms-call-internet-mi-2013-11-23.txt": "d3b8a541e5599ed9a3ad2fcdc999f5fa5afcc5b9cba1847084de657de4df74f5",
+    "traces/sms-call-internet-mi-2013-11-24.txt": "249a1b2ca66f9cbd0c0676ff1fff4adcaa7a1bacc9e0047a8b48350fd735bb8a"
+  },
+  "outputs_sha256": {
+    "summary.json": "2e0867f04bed08d0417d8a613dbfe01709fb6e22b0251b9edc13f741d99b0a3d",
+    "raw/table_isd200.npz": "ccab2d36fbe055efeeaa80df4b96723bf8c2c46e28d9e1d66dc0ed90092f8bb5",
+    "raw/runs.json.gz": "fc9ffd01ba333f6cf43709c40a2345c91188bb14c1e496d9f9eef35f6496fa63"
+  },
+  "all_checks_passed": true
+}

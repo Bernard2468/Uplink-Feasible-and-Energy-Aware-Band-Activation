@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered, run 1 pending; P3.4 after P3.3.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 run 1 passed its gates, amendment 1 (eight patterns, fallback, per-S tuning) registered, run 2 pending; P3.4 after P3.3.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -2065,6 +2065,138 @@ pre-registration:
   - Every gate F0–F10 was computable and passed; F1 is code path only.
   - The verdict was forced to fail.
   - It printed only gate lines, and its outputs were not opened.
+
+#### P3.3 run 1 (commit b6cd066): gates F0–F10 PASSED; three design errors found in verification (2026-11-10, 10 281 s)
+
+Evidence is kept in `results/phase3/p3_3_controllers/run1/` (manifest
+SHA-256 33a6c7ea…). Raw arrays are git-ignored, with their hashes in the
+manifest.
+
+**Gates.**
+- F0: all 14 trace hashes verified.
+- F1: 6 P3.2c arrays bitwise; 12 x* exact; table vs P3.2c load 7.9e-13,
+  outage 0.
+- F2: no off-sector 7.2 GHz load or user.
+- F3: 3618 workload comparisons, residual ≤ 2.0e-11.
+- F4: identity to 1.8e-13.
+- F5: 9998 complete candidate squares; 2 and 3 clipped slots at g = 3 and
+  3.5.
+- F6: 100 runs, energy to 1.1e-14.
+- F7: 700 checks, 0 violations.
+- F8: 250 instances, 3.8e-16.
+- F9 and F10: recorded. Median decision time 0.05 ms (`thr`), 0.25 ms
+  (`exh`), 0.33 ms (`mpc`); 45 ms per week for `oracle`.
+
+**Found while verifying the outputs.** Each of the following is a design
+error that no gate could catch.
+1. **D30's symmetry assumption is false.** The registered rotation
+   diagnostic shows the three sectors are not equivalent. The users are
+   points of a real building map, and the UL-weak users cluster in sector
+   index 2.
+
+   | Pattern | UL all-user outage, 26/74, x = 1 | DL all-user outage, x = 2 |
+   |---|---|---|
+   | (1,0,0) | 37.7% | 53.9% |
+   | (0,1,0) | 36.7% | 46.3% |
+   | (0,0,1) | **4.0%** | **21.5%** |
+   | (1,1,0) | 30.5% | — |
+   | (0,1,1) | 3.0% | — |
+   | (1,0,1) | 3.4% | — |
+
+   The canonical chain (1,0,0) → (1,1,0) leaves exactly that sector off. The
+   controllers were denied the most useful partial patterns.
+2. **The fallback "least worst-direction outage" pattern is pathological.**
+   It applied where no pattern complies, in the oracle, and at the MPC's
+   upper bound.
+   - Near saturation both directions are about 99% in outage, and the rule
+     picks k = 1 by 0.1 point: 0.9888 against 0.9905 for all-on at 26/74,
+     x = 3.5. That leaves the DL unserved where all-on would comply.
+   - As a result, raising the MPC's quantile *increased* its violations:
+     α = 0.9 gave 1.4%, α = 0.999 gave 13.9%.
+   - `oracle` shows 9.1% DL-only violations at 26/74, g = 3.5.
+3. **Tuning in S0 alone selects the grid edge.**
+   - At 10/90, S0 energy falls as the threshold margin grows: waking
+     7.2 GHz early saves energy at high load (P3.2c E-P1). The rule
+     therefore picked m = 0.5, the largest value.
+   - That margin is then far too cautious under S1/S2.
+   - `exh` and `mpc` missed the budget at 26/74 (1.39% and 1.28%) because
+     of error 2.
+
+**Not affected:**
+- the radio table of the four canonical patterns;
+- the traces;
+- the gates;
+- the conclusion that all-on is the maximum-capacity *canonical* pattern.
+  The canonical patterns' x*_both,all is 1.445 / 1.574 / 1.766 / 3.719 at
+  10/90, and 0.856 / 0.878 / 0.901 / 2.201 at 26/74 (−3 dB).
+
+Run 1's development results are superseded by run 2 and are not reported
+as findings.
+
+#### P3.3 Amendment 1 (registered before run 2)
+
+Recorded in the config (`amendment_1`). Every change follows from a
+run-1 finding above, on development data only. P3.4's test data are
+untouched.
+
+1. **All eight sector patterns** (revises D30).
+   - Every pattern is solved exactly.
+   - Patterns are indexed (0,0,0), (1,0,0), (0,1,0), (0,0,1), (1,1,0),
+     (1,0,1), (0,1,1), (1,1,1).
+   - **Transitions are make-before-break.**
+     - When any cell wakes, the previous pattern serves for
+       T_wake = T_TR + T_SCell. Cells leaving it go to sleep after the
+       gap.
+     - When no cell wakes, the cells leaving sleep at the boundary.
+     - Energy: Pw[new]·(600 − gap) + [n_wake > 0]·(Pw[old]·T_wake +
+       n_wake·(P_act − P_deep)·T_SCell) + n_sleep·E_add.
+     - For nested transitions this is run 1's formula.
+2. **Fallback = the maximum-capacity pattern.** It is used where no pattern
+   complies (`oracle`, and `mpc` at its upper bound): the largest
+   x*_all,both, or x*_all,DL for the DL-only criterion. It replaces the
+   least-outage pattern.
+3. **Tuning per overhead scenario.**
+   - Each tunable controller is tuned per mix and per S0/S1/S2 at the
+     primary hardware. The parameters of the matching S are used in every
+     scenario.
+   - The `thr` margin grid gains 0.75 and 1.0.
+4. **Threshold rule for non-nested patterns.**
+   - The target is the pattern with the fewest cells on whose threshold
+     covers x_{t−1}(1 + m); ties go to the higher x*. If none covers it, the
+     maximum-capacity pattern.
+   - If the current pattern does not cover x_{t−1}(1 + m), the rule switches
+     at once.
+   - Otherwise it moves to a pattern with fewer cells only after H
+     consecutive slots in which one covers it. It then takes the
+     highest-capacity target of that streak.
+   - For nested patterns this is run 1's rule.
+5. **F8 brute force over 8⁴ sequences** (T = 4): 200 random instances and
+   50 real windows. 8⁶ is too slow.
+6. **Reuse of run 1's verified table.**
+   - The four canonical patterns' tables (loads, outages, served fractions)
+     and their x* are loaded from run 1. The raw file's SHA-256 is checked
+     against run 1's manifest.
+   - Only the four rotated patterns are solved anew; F3/F4 apply to them.
+   - **New gate F11:**
+     - run 1's evidence is intact (manifest hash, every output hash);
+     - recomputing the all-on DL state (−3 dB) and the all-on UL state
+       (26/74) reproduces run 1's arrays bitwise;
+     - every reused array has the expected shape.
+- **Pass rule:** F0–F11.
+- **Result of record:** run 2. Run 1 stays as evidence.
+- **Not blind.** Run 1's development results were seen before this
+  amendment.
+- **Checks before run 2.**
+  - **Tests:** 13, including make-before-break swaps, transition counts and
+    the maximum-capacity fallback. The full suite (228) passes.
+  - **Reuse path:** a key and shape check found all 46 run-1 arrays and 32 x*
+    entries; run 1's manifest, git head, config and table hashes match.
+  - **One smoke run on the real files** (2 realizations, scratch folder,
+    942 s).
+    - Every gate F0–F11 was computable and passed. F1 and F11 are code path
+      only, because reuse needs 100 realizations.
+    - The verdict was forced to fail.
+    - It printed only gate lines, and its outputs were not opened.
 
 ## 4. Open items
 

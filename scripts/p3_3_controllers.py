@@ -4,15 +4,17 @@ Pre-registered in configs/p3/p3_3_controllers.json. Imports, unchanged: scripts/
 population, all-user outage), and through it the P3.2b traffic layer and the P3.1 energy models;
 scripts/p3_3_traces.py (Milan traces, development week only).
 
-1. Radio table: the P3.2b population of ISD 200, case C, solved for the four nested sector patterns k = 0..3 (D30) on
+1. Radio table: the P3.2b population of ISD 200, case C, solved for all eight sector patterns (amendment 1; D30) on
    the traffic grid x = 0, 0.025, ..., 5.0 (DL at three 7.2 GHz DL offsets; UL for both mixes); per pattern the
-   admitted and all-user x* (bisection as P3.2b).
+   admitted and all-user x* (bisection as P3.2b). The four canonical patterns are loaded from run 1's verified table
+   (amendment 1, gate F11); the four rotated patterns are solved here.
 2. Energy tables per scenario: per pattern and traffic level the site power of every radio realization (D25, D29).
 3. Traces: development squares x development week, normalized by each square's busiest hour, x = g a / a_ref,
    quantized (D31); seasonal-persistence forecast fitted on development data.
 4. Controllers (D32): aon, off, tod, thr_ul, thr_dl, exh (= mpc with H = 1), mpc, oracle, oracle_dl; tuned on development
-   data by the registered rule and frozen for P3.4.
-5. Gates F0-F10.
+   data per mix and overhead scenario by the registered rule and frozen for P3.4. Transitions are make-before-break;
+   where no pattern complies the fallback is the maximum-capacity pattern (amendment 1).
+5. Gates F0-F11.
 Outputs in --outdir: summary.json, validation.json, manifest.json; raw/table_isd200.npz, raw/runs.json.gz (git-ignored).
 """
 import argparse
@@ -44,9 +46,16 @@ CONFIG = ROOT / 'configs/p3/p3_3_controllers.json'
 OUTDIR = ROOT / 'results/phase3/p3_3_controllers'
 ISD, CASE = 200, 'C_deployment'
 N_SECT = B.N_SECT
-PATTERNS = {0: (0, 0, 0), 1: (1, 0, 0), 2: (1, 1, 0), 3: (1, 1, 1)}
-ROTATIONS = {1: ((0, 1, 0), (0, 0, 1)), 2: ((0, 1, 1), (1, 0, 1))}
-KS = (0, 1, 2, 3)
+PATTERNS = {0: (0, 0, 0), 1: (1, 0, 0), 2: (0, 1, 0), 3: (0, 0, 1), 4: (1, 1, 0), 5: (1, 0, 1), 6: (0, 1, 1), 7: (1, 1, 1)}
+NP = len(PATTERNS)
+KS = tuple(range(NP))
+FULL = 7                                           # all 7.2 GHz cells on
+CANON = {0: 0, 1: 1, 2: 4, 3: 7}                   # run 1's nested pattern k -> pattern index (amendment 1)
+NEW_PATTERNS = (2, 3, 5, 6)                        # solved in run 2
+N_ON = np.array([sum(PATTERNS[p]) for p in KS])
+NW = np.array([[sum(int(b and not a) for a, b in zip(PATTERNS[o], PATTERNS[n])) for n in KS] for o in KS])   # cells woken o -> n
+NS = np.array([[sum(int(a and not b) for a, b in zip(PATTERNS[o], PATTERNS[n])) for n in KS] for o in KS])   # cells put to sleep
+RUN1_DIR = OUTDIR / 'run1'
 MIXES = dict(C.MIXES)
 MIX_KEYS = tuple(MIXES)
 DPS = (-3.0, 0.0, -10.0)
@@ -59,8 +68,8 @@ SPLIT_SEED = 20261111
 PENALTY_J_PER_S = 1e9
 T_SCELL = C.t_scell_s(20.0)
 CRITS = ('all_user', 'admitted', 'dl_only_all_user')
-TUNE = {'thr_ul': {'m': (0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5), 'H': (1, 2, 3, 6)},
-        'thr_dl': {'m': (0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5), 'H': (1, 2, 3, 6)},
+TUNE = {'thr_ul': {'m': (0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0), 'H': (1, 2, 3, 6)},
+        'thr_dl': {'m': (0.0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0), 'H': (1, 2, 3, 6)},
         'exh': {'alpha': (0.5, 0.9, 0.95, 0.99, 0.999)},
         'mpc': {'alpha': (0.5, 0.9, 0.95, 0.99, 0.999), 'H': (3, 6)}}
 TUNE_CRIT = {'thr_ul': 'all_user', 'thr_dl': 'dl_only_all_user', 'exh': 'all_user', 'mpc': 'all_user'}
@@ -69,6 +78,8 @@ CLASS = {'aon': 'fixed', 'off': 'fixed', 'tod': 'rule (time of day)', 'thr_ul': 
          'exh': 'online', 'mpc': 'online (proposed)', 'oracle': 'offline oracle', 'oracle_dl': 'offline oracle (UL-agnostic)'}
 TOD_ON_FROM_SLOT = 36                 # 06:00
 H_MAX = 6
+TUNE_SCEN = {'S0': 'primary_S0', 'S1': 'primary_S1', 'S2': 'primary_S2'}    # amendment 1: tuning per overhead scenario
+BRUTE_T = 4                           # amendment 1: 8^4 sequences
 
 
 def scenario_list():
@@ -116,13 +127,14 @@ def ul_reduction_w(conf1):
 # ---------------------------------------------------------------- accounting (shared by every controller)
 class Model:
     """Tables for one (mix, DL offset) and one energy scenario, in the form the simulator and the controllers use.
-    comp[k, i], anyc[i], lo[i] per criterion; Pw[k, i, r] site power per realization; Pm = mean over r."""
+    comp[p, i], anyc[i] and maxcap (the fallback pattern) per criterion; Pw[p, i, r] site power per realization;
+    Pm = mean over r. p indexes PATTERNS."""
 
     def __init__(self, tab, mi, dpi, en):
         self.xg, self.T50, self.rho = tab['xg'], tab['T50'], MIXES[MIX_KEYS[mi]]
         self.comp = {c: tab['comp'][c][:, mi, dpi, :] for c in CRITS}
         self.anyc = {c: tab['anyc'][c][mi, dpi, :] for c in CRITS}
-        self.lo = {c: tab['lo'][c][mi, dpi, :] for c in CRITS}
+        self.maxcap = {c: int(tab['maxcap'][c][mi, dpi]) for c in CRITS}
         self.sDL, self.sUL = tab['sDL'][:, dpi, :], tab['sUL'][:, mi, :]
         self.thr = {'both': tab['thr_both'][:, mi, dpi], 'dl': tab['thr_dl'][:, dpi]}
         if en is not None:
@@ -133,23 +145,26 @@ class Model:
             self.tw = self.t_tr + self.t_sc
 
     def slot_energy_mean(self, k, kp, i):
-        """Expected slot energy [J] for k (this slot) after kp (previous slot) at traffic index i (broadcastable)."""
-        up = k > kp
+        """Expected slot energy [J] for pattern k (this slot) after kp (previous slot) at traffic index i (broadcastable).
+        Make-before-break (amendment 1): if any cell wakes, the previous pattern serves for tw and the cells leaving it
+        sleep after the gap; one E_add per cell entering sleep."""
+        nw, ns = NW[kp, k], NS[kp, k]
+        up = nw > 0
         gap = np.where(up, self.tw, 0.0)
-        return (self.Pm[k, i] * (SLOT_S - gap) + np.where(up, self.Pm[kp, i] * self.tw + (k - kp) * (self.p_act - self.p_deep) * self.t_sc, 0.0)
-                + np.maximum(0, kp - k) * self.e_add)
+        return (self.Pm[k, i] * (SLOT_S - gap) + np.where(up, self.Pm[kp, i] * self.tw + nw * (self.p_act - self.p_deep) * self.t_sc, 0.0)
+                + ns * self.e_add)
 
     def gap_violation(self, k, kp, i, crit):
-        up = k > kp
+        up = NW[kp, k] > 0
         return np.where(up & ~self.comp[crit][kp, i] & self.anyc[crit][i], self.tw, 0.0)
 
 
 def simulate(ctrl, xi, model, per_real=True):
     """Run a controller over traces xi (n, T) of grid indices. Decisions for slot t see xi[:, :t] only (the oracle is
-    given the whole trace at reset). Returns per-run totals."""
+    given the whole trace at reset). Returns per-run totals. Every run starts with all cells on."""
     n, T = xi.shape
     ctrl.reset(n, model, xi if ctrl.is_oracle else None)
-    kp = np.full(n, 3, dtype=np.int64)
+    kp = np.full(n, FULL, dtype=np.int64)
     R = model.Pw.shape[2]
     E = np.zeros((n, R)) if per_real else np.zeros(n)
     out = {'viol_s': {c: np.zeros(n) for c in CRITS}, 'unavoid_s': {c: np.zeros(n) for c in CRITS},
@@ -159,12 +174,13 @@ def simulate(ctrl, xi, model, per_real=True):
     for t in range(T):
         k = np.asarray(ctrl.decide(t, xi[:, :t]), dtype=np.int64)
         i = xi[:, t]
-        up = k > kp
+        nw, ns = NW[kp, k], NS[kp, k]
+        up = nw > 0
         gap = np.where(up, model.tw, 0.0)
         if per_real:
             Pk, Pp = model.Pw[k, i, :], model.Pw[kp, i, :]
-            E += (Pk * (SLOT_S - gap)[:, None] + np.where(up[:, None], Pp * model.tw + ((k - kp) * (model.p_act - model.p_deep) * model.t_sc)[:, None], 0.0)
-                  + (np.maximum(0, kp - k) * model.e_add)[:, None])
+            E += (Pk * (SLOT_S - gap)[:, None] + np.where(up[:, None], Pp * model.tw + (nw * (model.p_act - model.p_deep) * model.t_sc)[:, None], 0.0)
+                  + (ns * model.e_add)[:, None])
         else:
             E += model.slot_energy_mean(k, kp, i)
         for c in CRITS:
@@ -175,8 +191,8 @@ def simulate(ctrl, xi, model, per_real=True):
         x = model.xg[i]
         out['bits'] += (model.sDL[k, i] * (SLOT_S - gap) + model.sDL[kp, i] * gap) * x * model.T50
         out['bits'] += (model.sUL[k, i] * (SLOT_S - gap) + model.sUL[kp, i] * gap) * model.rho * x * model.T50
-        out['n_wake'] += np.maximum(0, k - kp)
-        out['n_sleep'] += np.maximum(0, kp - k)
+        out['n_wake'] += nw
+        out['n_sleep'] += ns
         out['gap_s'] += gap
         ks[rows, t] = k
         kp = k
@@ -185,7 +201,7 @@ def simulate(ctrl, xi, model, per_real=True):
     return out
 
 
-# ---------------------------------------------------------------- controllers (D32)
+# ---------------------------------------------------------------- controllers (D32, amendment 1)
 class Fixed:
     is_oracle = False
 
@@ -206,49 +222,60 @@ class TimeOfDay:
         self.n = n
 
     def decide(self, t, past):
-        return np.full(self.n, 3 if t % TR.SLOTS_DAY >= TOD_ON_FROM_SLOT else 0)
+        return np.full(self.n, FULL if t % TR.SLOTS_DAY >= TOD_ON_FROM_SLOT else 0)
 
 
 class Threshold:
-    """Capacity thresholds with hysteresis on the measured traffic of the previous slot. kind 'both' (UL-feasible,
-    thresholds x*_all,both) or 'dl' (UL-agnostic, x*_all,DL)."""
+    """Capacity thresholds with hysteresis on the measured traffic of the previous slot (amendment 1 for non-nested
+    patterns). kind 'both' (UL-feasible, thresholds x*_all,both) or 'dl' (UL-agnostic, x*_all,DL).
+    target = the pattern with the fewest cells on whose threshold covers x(1 + m), ties to the higher threshold; none:
+    the maximum-capacity pattern. Switch at once if the current pattern does not cover x(1 + m); otherwise move to fewer
+    cells only after H consecutive slots in which a pattern with fewer cells covers it, taking the highest-capacity
+    target of that streak."""
     is_oracle = False
 
     def __init__(self, m, H, kind):
         self.m, self.H, self.kind = m, H, kind
 
     def reset(self, n, model, full):
-        self.n, self.xg, self.th = n, model.xg, model.thr[self.kind]
-        self.k = np.full(n, 3)
+        self.n, self.xg, self.th = n, model.xg, np.asarray(model.thr[self.kind], dtype=float)
+        self.k = np.full(n, FULL)
         self.cnt = np.zeros(n, dtype=np.int64)
-        self.mx = np.full(n, -1)
+        self.best = np.full(n, -1)
         self.kmax = int(np.argmax(self.th))
+        # order of preference: fewer cells first, then higher threshold, then lower index
+        self.order = np.array(sorted(KS, key=lambda p: (N_ON[p], -self.th[p], p)))
 
     def target(self, x):
-        ok = (x * (1.0 + self.m))[:, None] <= self.th[None, :]
-        return np.where(ok.any(axis=1), np.argmax(ok, axis=1), self.kmax)
+        need = x * (1.0 + self.m)
+        ok = need[:, None] <= self.th[self.order][None, :]
+        first = np.argmax(ok, axis=1)
+        return np.where(ok.any(axis=1), self.order[first], self.kmax)
 
     def decide(self, t, past):
         if t == 0:
             return self.k.copy()
-        tg = self.target(self.xg[past[:, -1]])
-        upw = tg >= self.k
-        self.cnt = np.where(upw, 0, self.cnt + 1)
-        self.mx = np.where(upw, -1, np.maximum(self.mx, tg))
-        drop = (~upw) & (self.cnt >= self.H)
-        newk = np.where(upw, tg, np.where(drop, self.mx, self.k))
+        x = self.xg[past[:, -1]]
+        tg = self.target(x)
+        insufficient = x * (1.0 + self.m) > self.th[self.k]
+        fewer = (~insufficient) & (N_ON[tg] < N_ON[self.k])
+        self.cnt = np.where(fewer, self.cnt + 1, 0)
+        better = np.where(self.best < 0, tg, np.where(self.th[tg] > self.th[np.maximum(self.best, 0)], tg, self.best))
+        self.best = np.where(fewer, better, -1)
+        drop = fewer & (self.cnt >= self.H)
+        newk = np.where(insufficient, tg, np.where(drop, self.best, self.k))
         self.cnt = np.where(drop, 0, self.cnt)
-        self.mx = np.where(drop, -1, self.mx)
+        self.best = np.where(drop, -1, self.best)
         self.k = newk
         return newk.copy()
 
 
 def dp_plan(cost, allowed, k0):
-    """Exact dynamic program. cost (T, n, 4 kp, 4 k), allowed (T, n, 4 k) -> decisions (n, T) from kp = k0 at t = 0,
-    and the optimal value (n,). Ties: the lowest k."""
-    T, n = cost.shape[0], cost.shape[1]
-    V = np.zeros((n, 4))
-    pol = np.zeros((T, n, 4), dtype=np.int8)
+    """Exact dynamic program. cost (T, n, P kp, P k), allowed (T, n, P k) -> decisions (n, T) from kp = k0 at t = 0,
+    and the optimal value (n,). Ties: the lowest index."""
+    T, n, P = cost.shape[0], cost.shape[1], cost.shape[-1]
+    V = np.zeros((n, P))
+    pol = np.zeros((T, n, P), dtype=np.int8)
     for t in range(T - 1, -1, -1):
         c = np.where(allowed[t][:, None, :], cost[t] + V[:, None, :], np.inf)
         pol[t] = np.argmin(c, axis=2)
@@ -263,22 +290,22 @@ def dp_plan(cost, allowed, k0):
 
 
 def allowed_set(model, i, crit):
-    """(..., 4) allowed patterns at traffic indices i (any shape): the compliant patterns where some pattern complies,
-    else only the least-outage pattern."""
+    """(..., P) allowed patterns at traffic indices i (any shape): the compliant patterns where some pattern complies,
+    else only the maximum-capacity pattern (amendment 1)."""
     i = np.asarray(i)
-    kk = np.arange(4)
+    kk = np.arange(NP)
     comp_i = np.moveaxis(model.comp[crit][:, i], 0, -1)
-    return np.where(model.anyc[crit][i][..., None], comp_i, kk == model.lo[crit][i][..., None])
+    return np.where(model.anyc[crit][i][..., None], comp_i, kk == model.maxcap[crit])
 
 
 def stage_cost(model, i, crit, i_energy=None):
-    """(..., 4 kp, 4 k) cost and (..., 4 k) allowed set at traffic indices i (any shape): slot energy (at i_energy if
+    """(..., P kp, P k) cost and (..., P k) allowed set at traffic indices i (any shape): slot energy (at i_energy if
     given, else at i) + PENALTY x gap violation (at i); allowed set at i."""
     i = np.asarray(i)
     ie = i if i_energy is None else np.asarray(i_energy)
-    kk = np.arange(4)
-    k = kk.reshape((1,) * i.ndim + (1, 4))
-    kp = kk.reshape((1,) * i.ndim + (4, 1))
+    kk = np.arange(NP)
+    k = kk.reshape((1,) * i.ndim + (1, NP))
+    kp = kk.reshape((1,) * i.ndim + (NP, 1))
     cost = model.slot_energy_mean(k, kp, ie[..., None, None]) + PENALTY_J_PER_S * model.gap_violation(k, kp, i[..., None, None], crit)
     return cost, allowed_set(model, i, crit)
 
@@ -290,16 +317,16 @@ class Oracle:
         self.crit = crit
 
     def reset(self, n, model, full):
-        cost, allowed = stage_cost(model, np.asarray(full).T, self.crit)       # (T, n, 4, 4), (T, n, 4)
-        self.plan, self.value = dp_plan(cost, allowed, 3)
+        cost, allowed = stage_cost(model, np.asarray(full).T, self.crit)       # (T, n, P, P), (T, n, P)
+        self.plan, self.value = dp_plan(cost, allowed, FULL)
 
     def decide(self, t, past):
         return self.plan[:, t]
 
 
 class MPC:
-    """Seasonal-persistence forecast with the alpha-quantile upper bound; DP over min(H, T - t) slots on the bound
-    (allowed sets) and the point forecast (energy), with the gap penalty; first action applied. H = 1 is 'exh'."""
+    """Seasonal-persistence forecast with the alpha-quantile upper bound; DP over H slots on the bound (allowed sets,
+    gap penalty) and the point forecast (energy); first action applied. H = 1 is 'exh'."""
     is_oracle = False
 
     def __init__(self, alpha, H, S, q, crit='all_user'):
@@ -307,7 +334,7 @@ class MPC:
 
     def reset(self, n, model, full):
         self.n, self.model = n, model
-        self.k = np.full(n, 3)
+        self.k = np.full(n, FULL)
 
     def decide(self, t, past):
         if t == 0:
@@ -320,10 +347,9 @@ class MPC:
         xh = TR.forecast(x_prev[:, None], t - 1, hh[None, :], self.S)                             # (n, H)
         ip = np.minimum(np.floor(xh / step + 0.5).astype(np.int64), top)                         # point forecast: energy
         iu = np.minimum(np.ceil(xh * np.exp(np.asarray(self.q[:Tn]))[None, :] / step - 1e-9).astype(np.int64), top)   # upper bound
-        cost, allowed = stage_cost(md, iu.T, self.crit, i_energy=ip.T)                           # (H, n, 4, 4), (H, n, 4)
-        # DP over the horizon from the current pattern of each run; the first action is applied
-        V = np.zeros((self.n, 4))
-        pol = np.zeros((Tn, self.n, 4), dtype=np.int64)
+        cost, allowed = stage_cost(md, iu.T, self.crit, i_energy=ip.T)                           # (H, n, P, P), (H, n, P)
+        V = np.zeros((self.n, NP))
+        pol = np.zeros((Tn, self.n, NP), dtype=np.int64)
         for h in range(Tn - 1, -1, -1):
             c = np.where(allowed[h][:, None, :], cost[h] + V[:, None, :], np.inf)
             pol[h] = np.argmin(c, axis=2)
@@ -335,7 +361,7 @@ class MPC:
 
 def make_controller(name, params, S, qtab):
     if name == 'aon':
-        return Fixed(3)
+        return Fixed(FULL)
     if name == 'off':
         return Fixed(0)
     if name == 'tod':
@@ -356,7 +382,7 @@ def make_controller(name, params, S, qtab):
 # ---------------------------------------------------------------- independent scalar reference (gate F6)
 def reference_run(ks, xi_row, tab_np, mi, dpi, en):
     """Pure-Python slot loop over one run's decisions: energy (mean over realizations), avoidable violation seconds per
-    criterion, delivered bits, wakes and sleeps. Written separately from simulate()."""
+    criterion, delivered bits, wakes and sleeps. Written separately from simulate(): cell counts from the pattern tuples."""
     xg, T50, rho = tab_np['xg'], tab_np['T50'], MIXES[MIX_KEYS[mi]]
     Pm = en['Pw'][:, mi, :, :].mean(axis=2)
     tw = en['t_tr'] + en['t_sc']
@@ -364,17 +390,18 @@ def reference_run(ks, xi_row, tab_np, mi, dpi, en):
     bits = 0.0
     viol = {c: 0.0 for c in CRITS}
     wakes = sleeps = 0
-    prev = 3
+    prev = FULL
     for t in range(len(xi_row)):
         k, i = int(ks[t]), int(xi_row[t])
-        g_ = tw if k > prev else 0.0
+        woken = sum(1 for a, b in zip(PATTERNS[prev], PATTERNS[k]) if b == 1 and a == 0)
+        slept = sum(1 for a, b in zip(PATTERNS[prev], PATTERNS[k]) if a == 1 and b == 0)
+        g_ = tw if woken > 0 else 0.0
         e += float(Pm[k, i]) * (SLOT_S - g_)
-        if k > prev:
-            e += float(Pm[prev, i]) * tw + (k - prev) * (en['p_act'] - en['p_deep']) * en['t_sc']
-            wakes += k - prev
-        if prev > k:
-            e += (prev - k) * en['e_add']
-            sleeps += prev - k
+        if woken > 0:
+            e += float(Pm[prev, i]) * tw + woken * (en['p_act'] - en['p_deep']) * en['t_sc']
+        e += slept * en['e_add']
+        wakes += woken
+        sleeps += slept
         for c in CRITS:
             comp = tab_np['comp'][c][:, mi, dpi, i]
             if comp.any():
@@ -387,18 +414,18 @@ def reference_run(ks, xi_row, tab_np, mi, dpi, en):
 
 
 def brute_force(model, xi_row, crit):
-    """Exhaustive search over 4^T sequences (small T): minimum of the oracle's objective."""
+    """Exhaustive search over P^T sequences (small T): minimum of the oracle's objective."""
     T = len(xi_row)
     best = math.inf
-    for seq in product(range(4), repeat=T):
-        kp, tot, ok = 3, 0.0, True
+    for seq in product(range(NP), repeat=T):
+        kp, tot, ok = FULL, 0.0, True
         for t, k in enumerate(seq):
             i = xi_row[t]
             if model.anyc[crit][i]:
                 if not model.comp[crit][k, i]:
                     ok = False
                     break
-            elif k != model.lo[crit][i]:
+            elif k != model.maxcap[crit]:
                 ok = False
                 break
             tot += float(model.slot_energy_mean(np.int64(k), np.int64(kp), np.int64(i)))
@@ -467,6 +494,8 @@ def main():
         'scenarios': conf['scenarios'] == SCENARIOS,
         'timing': conf['timing']['slot_s'] == SLOT_S and conf['timing']['t_scell_s'] == T_SCELL and conf['timing']['tod_on_from_slot'] == TOD_ON_FROM_SLOT,
         'oracle_penalty': conf['oracle_gap_penalty_j_per_s'] == PENALTY_J_PER_S,
+        'amendment_1': ('amendment_1' in conf and conf['tuning'].get('tune_scenarios') == TUNE_SCEN
+                        and conf['amendment_1']['pass_rule'] == 'F0-F11' and conf['gates']['pass_rule'] == 'F0-F11'),
     }
     validation['F0_provenance'] = {'inputs': prov, 'constants': consts, 'passed': bool(all(prov.values()) and all(consts.values()))}
     if not validation['F0_provenance']['passed']:
@@ -564,100 +593,142 @@ def main():
     xs_dl, ys_ul = s2c['constants']['traffic_dl_x'], s2c['constants']['traffic_ul_y']
     if not smoke:
         raw2c = dict(np.load(C.OUTDIR / 'raw' / 'levels_isd200.npz'))
-        for key, d, k, dp, tv in (('DL|0.0|off', 'DL', 0, 0.0, xs_dl), ('DL|-3.0|on', 'DL', 3, -3.0, xs_dl),
-                                  ('UL|off', 'UL', 0, 0.0, ys_ul), ('UL|on_ulca', 'UL', 3, 0.0, ys_ul)):
-            ev = B.eval_state(U, ctx, state(d, k, dp), np.array(tv) * T50, quantiles=False)
+        for key, d, p, dp, tv in (('DL|0.0|off', 'DL', 0, 0.0, xs_dl), ('DL|-3.0|on', 'DL', FULL, -3.0, xs_dl),
+                                  ('UL|off', 'UL', 0, 0.0, ys_ul), ('UL|on_ulca', 'UL', FULL, 0.0, ys_ul)):
+            ev = B.eval_state(U, ctx, state(d, p, dp), np.array(tv) * T50, quantiles=False)
             for fi, s_ in ev['sols'].items():
                 f1['raw_compared'] += 1
                 f1['raw_mismatches'] += int(not np.array_equal(s_['L'], raw2c[f'{key}|L{fi}']))
         raw2c = None
-    # ---- the table
+    # ---- amendment 1: run 1 evidence and reuse of its canonical-pattern table (gate F11)
+    reuse = not smoke
+    a1 = conf['amendment_1']
+    man_r1 = json.loads((RUN1_DIR / 'manifest.json').read_text())
+    f11 = {'run1_manifest': bool(sha256(RUN1_DIR / 'manifest.json') == a1['run1']['manifest_sha256'] and man_r1['all_checks_passed']
+                                 and man_r1['git_head_at_run'] == a1['run1']['git_head'] and man_r1['config_sha256'] == a1['run1']['config_sha256']),
+           'run1_outputs': all(sha256(RUN1_DIR / k) == v for k, v in man_r1['outputs_sha256'].items()),
+           'reuse': reuse, 'shapes_ok': True, 'spot_arrays_compared': 0, 'spot_mismatches': 0}
     t_tab = time.time()
     DL, UL = {}, {}
-    for k in KS:
+
+    def solve_dl(p, dp):
+        st = state('DL', p, dp)
+        ev = B.eval_state(U, ctx, st, xg * T50, check=make_check(st), quantiles=False)
+        for s_ in ev['sols'].values():
+            track(s_)
+            f3['monotone_load_bad'] += int(np.sum(np.diff(s_['L'], axis=0) < -1e-12))
+            f3['zero_traffic_bad'] += int(np.any(s_['L'][0] != 0.0))
+        L0 = ev['sols'][0]['L']
+        L1 = ev['sols'][1]['L'] if 1 in ev['sols'] else np.zeros_like(L0)
+        return {'L0': L0, 'L1': L1, 'agg': ev['agg'], 'reused': False,
+                'oa': np.array([a['outage_all_users'] for a in ev['agg']]), 'om': np.array([a['outage_admitted_pooled'] for a in ev['agg']]),
+                's': np.array([a['traffic_fractions']['served'] for a in ev['agg']])}
+
+    def solve_ul(p, mx):
+        st = state('UL', p)
+        ev = B.eval_state(U, ctx, st, xg * MIXES[mx] * T50, check=make_check(st), quantiles=False)
+        for s_ in ev['sols'].values():
+            track(s_)
+            f3['monotone_load_bad'] += int(np.sum(np.diff(s_['L'], axis=0) < -1e-12))
+            f3['zero_traffic_bad'] += int(np.any(s_['L'][0] != 0.0))
+        L0 = ev['sols'][0]['L']
+        L1 = ev['sols'][1]['L'] if 1 in ev['sols'] else np.zeros_like(L0)
+        return {'L0': L0, 'L1': L1, 'agg': ev['agg'], 'reused': False,
+                'oa': np.array([a['outage_all_users'] for a in ev['agg']]), 'om': np.array([a['outage_admitted_pooled'] for a in ev['agg']]),
+                's': np.array([a['traffic_fractions']['served'] for a in ev['agg']])}
+
+    s1r = None
+    if reuse:
+        r1 = dict(np.load(RUN1_DIR / 'raw' / f'table_isd{ISD}.npz'))
+        s1r = json.loads((RUN1_DIR / 'summary.json').read_text())
+        for k1, p in CANON.items():
+            for di, dp in enumerate(DPS):
+                DL[(p, dp)] = {'L0': r1[f'DL_L0_k{k1}_dp{dp}'], 'L1': r1[f'DL_L1_k{k1}_dp{dp}'], 'reused': True,
+                               'oa': r1['oDLa'][k1, di], 'om': r1['oDLm'][k1, di], 's': r1['sDL'][k1, di]}
+            for mi, mx in enumerate(MIX_KEYS):
+                UL[(p, mx)] = {'L0': r1[f'UL_L0_k{k1}_{mx}'], 'L1': r1[f'UL_L1_k{k1}_{mx}'], 'reused': True,
+                               'oa': r1['oULa'][k1, mi], 'om': r1['oULm'][k1, mi], 's': r1['sUL'][k1, mi]}
+        for rec in list(DL.values()) + list(UL.values()):
+            f11['shapes_ok'] = f11['shapes_ok'] and rec['L0'].shape == (G, K) and rec['L1'].shape == (G, K) and rec['oa'].shape == (G,)
+        r1 = None
+        # spot recomputation: the all-on DL state at -3 dB and the all-on UL state at 26/74 must equal run 1's bitwise
+        for d, key in (('DL', (FULL, -3.0)), ('UL', (FULL, 'genai_2025'))):
+            fresh = solve_dl(*key) if d == 'DL' else solve_ul(*key)
+            ref = DL[key] if d == 'DL' else UL[key]
+            for f in ('L0', 'L1', 'oa', 'om', 's'):
+                f11['spot_arrays_compared'] += 1
+                f11['spot_mismatches'] += int(not np.array_equal(fresh[f], ref[f]))
+            fresh = None
+    todo = NEW_PATTERNS if reuse else KS
+    for p in todo:
         for dp in DPS:
-            if k == 0 and dp != DPS[0]:
+            if p == 0 and dp != DPS[0]:
                 DL[(0, dp)] = DL[(0, DPS[0])]
                 continue
-            st = state('DL', k, dp)
-            ev = B.eval_state(U, ctx, st, xg * T50, check=make_check(st), quantiles=False)
-            for s_ in ev['sols'].values():
-                track(s_)
-                f3['monotone_load_bad'] += int(np.sum(np.diff(s_['L'], axis=0) < -1e-12))
-                f3['zero_traffic_bad'] += int(np.any(s_['L'][0] != 0.0))
-            L0 = ev['sols'][0]['L']
-            L1 = ev['sols'][1]['L'] if 1 in ev['sols'] else np.zeros_like(L0)
-            DL[(k, dp)] = {'L0': L0, 'L1': L1, 'agg': ev['agg'], 'car': st['car'], 'sec': U['sec']}
+            DL[(p, dp)] = solve_dl(p, dp)
         for mx in MIX_KEYS:
-            st = state('UL', k)
-            ev = B.eval_state(U, ctx, st, xg * MIXES[mx] * T50, check=make_check(st), quantiles=False)
-            for s_ in ev['sols'].values():
-                track(s_)
-                f3['monotone_load_bad'] += int(np.sum(np.diff(s_['L'], axis=0) < -1e-12))
-                f3['zero_traffic_bad'] += int(np.any(s_['L'][0] != 0.0))
-            L0 = ev['sols'][0]['L']
-            L1 = ev['sols'][1]['L'] if 1 in ev['sols'] else np.zeros_like(L0)
-            UL[(k, mx)] = {'L0': L0, 'L1': L1, 'agg': ev['agg'], 'car': st['car']}
-    ev = st = None
+            UL[(p, mx)] = solve_ul(p, mx)
     print(f'table solved ({time.time() - t_tab:.0f} s)', flush=True)
-    # F2 activation coupling
+    f11['passed'] = bool((not reuse) or (f11['run1_manifest'] and f11['run1_outputs'] and f11['shapes_ok']
+                                         and f11['spot_arrays_compared'] == 10 and f11['spot_mismatches'] == 0))
+    validation['F11_run1_reuse'] = f11
+    # F2 activation coupling (all eight patterns; association recomputed for reused ones)
     f2 = {'off_sector_72_load_nonzero': 0, 'off_sector_users_on_72': 0, 'on_sector_72_load_zero_at_traffic': 0}
     cell_sec = np.arange(K) % N_SECT
-    for (k, dp), rec in DL.items():
-        pat = np.array(PATTERNS[k])
+    for (p, dp), rec in DL.items():
+        pat = np.array(PATTERNS[p])
         off = pat[cell_sec] == 0
         f2['off_sector_72_load_nonzero'] += int(np.sum(rec['L1'][:, off] != 0.0))
-        f2['off_sector_users_on_72'] += int(np.sum((rec['car'] == 1) & (pat[rec['sec']] == 0)))
-        if k > 0:
+        car = state('DL', p, dp)['car']
+        f2['off_sector_users_on_72'] += int(np.sum((car == 1) & (pat[U['sec']] == 0)))
+        if pat.any():
             f2['on_sector_72_load_zero_at_traffic'] += int(np.sum(rec['L1'][1:, ~off].mean(axis=1) <= 0.0))
-    for (k, mx), rec in UL.items():
-        pat = np.array(PATTERNS[k])
+    for (p, mx), rec in UL.items():
+        pat = np.array(PATTERNS[p])
         off = pat[cell_sec] == 0
         f2['off_sector_72_load_nonzero'] += int(np.sum(rec['L1'][:, off] != 0.0))
-        f2['off_sector_users_on_72'] += int(np.sum((rec['car'] == 1) & (pat[U['sec']] == 0)))
-    # rotation diagnostic (not a gate)
-    rot = {}
-    for k, pats in ROTATIONS.items():
-        for pat in (PATTERNS[k],) + pats:
-            for x_ in (1.0, 2.0):
-                ed = B.eval_state(U, ctx, state('DL', k, DP_PRIMARY, pat), [x_ * T50], quantiles=False)['agg'][0]
-                eu = B.eval_state(U, ctx, state('UL', k, 0.0, pat), [x_ * MIXES['genai_2025'] * T50], quantiles=False)['agg'][0]
-                rot[f'k{k}|{pat}|x{x_}'] = {'DL_out_all': ed['outage_all_users'], 'UL_out_all_26_74': eu['outage_all_users'],
-                                            'DL_L72_mean': ed['loads'].get('7.2GHz', {}).get('mean', 0.0)}
-    f2['rotation_diagnostic'] = rot
+        car = state('UL', p)['car']
+        f2['off_sector_users_on_72'] += int(np.sum((car == 1) & (pat[U['sec']] == 0)))
     f2['passed'] = bool(f2['off_sector_72_load_nonzero'] == 0 and f2['off_sector_users_on_72'] == 0 and f2['on_sector_72_load_zero_at_traffic'] == 0)
     validation['F2_activation_coupling'] = f2
-    # x* per pattern (admitted and all-user)
+    # x* per pattern (admitted and all-user): canonical patterns from run 1, the others by bisection
     xs_tab = {}
-    for k in KS:
-        for dp in DPS:
-            if k == 0 and dp != DPS[0]:
+    if reuse:
+        for k1, p in CANON.items():
+            for dp in DPS:
                 for c in ('adm', 'all'):
-                    xs_tab[f'DL|{k}|{dp}|{c}'] = xs_tab[f'DL|0|{DPS[0]}|{c}']
+                    xs_tab[f'DL|{p}|{dp}|{c}'] = s1r['x_star_per_pattern'][f'DL|{k1}|{dp}|{c}']
+            for c in ('adm', 'all'):
+                xs_tab[f'UL|{p}|{c}'] = s1r['x_star_per_pattern'][f'UL|{k1}|{c}']
+    for p in todo:
+        for dp in DPS:
+            if p == 0 and dp != DPS[0]:
+                for c in ('adm', 'all'):
+                    xs_tab[f'DL|{p}|{dp}|{c}'] = xs_tab[f'DL|0|{DPS[0]}|{c}']
                 continue
-            st = state('DL', k, dp)
-            xs_tab[f'DL|{k}|{dp}|adm'] = B.bisect_traffic(U, ctx, st, T50)
-            xs_tab[f'DL|{k}|{dp}|all'] = C.bisect_all(U, ctx, st, T50, B.X_MAX)
-        st = state('UL', k)
-        xs_tab[f'UL|{k}|adm'] = B.bisect_traffic(U, ctx, st, T50, hi=B.Y_MAX)
-        xs_tab[f'UL|{k}|all'] = C.bisect_all(U, ctx, st, T50, B.Y_MAX)
+            st = state('DL', p, dp)
+            xs_tab[f'DL|{p}|{dp}|adm'] = B.bisect_traffic(U, ctx, st, T50)
+            xs_tab[f'DL|{p}|{dp}|all'] = C.bisect_all(U, ctx, st, T50, B.X_MAX)
+        st = state('UL', p)
+        xs_tab[f'UL|{p}|adm'] = B.bisect_traffic(U, ctx, st, T50, hi=B.Y_MAX)
+        xs_tab[f'UL|{p}|all'] = C.bisect_all(U, ctx, st, T50, B.Y_MAX)
     st = None
     if not smoke:
         xa, xm = s2c['x_star']['all_user'], s2c['x_star']['admitted']
-        pairs = (('DL|0|0.0', 'DL|0.0|off'), ('DL|3|-3.0', 'DL|-3.0|on'), ('DL|3|0.0', 'DL|0.0|on'), ('DL|3|-10.0', 'DL|-10.0|on'),
-                 ('UL|0', 'UL|off'), ('UL|3', 'UL|on_ulca'))
+        pairs = (('DL|0|0.0', 'DL|0.0|off'), (f'DL|{FULL}|-3.0', 'DL|-3.0|on'), (f'DL|{FULL}|0.0', 'DL|0.0|on'), (f'DL|{FULL}|-10.0', 'DL|-10.0|on'),
+                 ('UL|0', 'UL|off'), (f'UL|{FULL}', 'UL|on_ulca'))
         for mine, theirs in pairs:
             for c, ref in (('all', xa), ('adm', xm)):
                 f1['x_star_compared'] += 1
                 f1['x_star_mismatches'] += int(json.loads(json.dumps(xs_tab[f'{mine}|{c}'], default=float)) != ref[theirs])
         lv = s2c['levels']
-        for key, d, k, dp in (('DL|off|0.0', 'DL', 0, 0.0), ('DL|on|-3.0', 'DL', 3, -3.0)):
+        for key, p, dp in (('DL|off|0.0', 0, 0.0), ('DL|on|-3.0', FULL, -3.0)):
             for a in lv[key]:
                 ix = np.flatnonzero(np.abs(xg - a['x']) < 1e-12)
                 if ix.size:
-                    rec = DL[(k, dp)]['agg'][int(ix[0])]
-                    f1['table_vs_p32c_load_max_abs'] = max(f1['table_vs_p32c_load_max_abs'], abs(rec['loads']['3.5GHz']['mean'] - a['loads']['3.5GHz']['mean']))
-                    f1['table_vs_p32c_outage_max_abs'] = max(f1['table_vs_p32c_outage_max_abs'], abs(rec['outage_all_users'] - a['outage_all_users']))
+                    rec = DL[(p, dp)]
+                    f1['table_vs_p32c_load_max_abs'] = max(f1['table_vs_p32c_load_max_abs'], abs(float(rec['L0'][int(ix[0])].mean()) - a['loads']['3.5GHz']['mean']))
+                    f1['table_vs_p32c_outage_max_abs'] = max(f1['table_vs_p32c_outage_max_abs'], abs(float(rec['oa'][int(ix[0])]) - a['outage_all_users']))
         f1['passed'] = bool(f1['calibration_equal'] and f1['raw_compared'] == 6 and f1['raw_mismatches'] == 0
                             and f1['x_star_compared'] == 12 and f1['x_star_mismatches'] == 0
                             and f1['table_vs_p32c_load_max_abs'] <= 1e-8 and f1['table_vs_p32c_outage_max_abs'] <= 1e-5)
@@ -667,71 +738,70 @@ def main():
     validation['F1_radio_reproduction'] = f1
     U = None
     print(f'x* and F1 done ({time.time() - t0:.0f} s)', flush=True)
-    # F3, F4
+    # F3 (solved states), F4 (identity on solved states; monotonicity on every pattern; x* order)
     validation['F3_fixed_point'] = dict(f3, passed=bool(f3['not_converged'] == 0 and f3['max_residual'] <= 1e-9 and f3['closure_max_rel'] <= 1e-12
                                                        and f3['occupancy_identity_max_abs'] <= 1e-9 and f3['load_range_bad'] == 0
                                                        and f3['workload_comparisons'] > 0 and f3['workload_mismatches'] == 0
                                                        and f3['monotone_load_bad'] == 0 and f3['zero_traffic_bad'] == 0))
-    f4 = {'identity_max_abs': 0.0, 'monotone_all_bad': 0, 'all_above_admitted': 0}
+    f4 = {'identity_max_abs': 0.0, 'monotone_all_bad': 0, 'all_above_admitted': 0, 'identity_states': 0}
     for rec in list(DL.values()) + list(UL.values()):
-        prev = -1.0
-        for a in rec['agg']:
-            n_ = a['not_admitted_share']
-            f4['identity_max_abs'] = max(f4['identity_max_abs'], abs(a['outage_all_users'] - (n_ + (1.0 - n_) * a['outage_admitted_pooled'])))
-            f4['monotone_all_bad'] += int(a['outage_all_users'] < prev - 1e-12)
-            prev = a['outage_all_users']
+        f4['monotone_all_bad'] += int(np.sum(np.diff(rec['oa']) < -1e-12))
+        if 'agg' in rec:
+            f4['identity_states'] += 1
+            for a in rec['agg']:
+                n_ = a['not_admitted_share']
+                f4['identity_max_abs'] = max(f4['identity_max_abs'], abs(a['outage_all_users'] - (n_ + (1.0 - n_) * a['outage_admitted_pooled'])))
     for key in xs_tab:
         if key.endswith('|all'):
             f4['all_above_admitted'] += int(xs_tab[key]['x_star'] > xs_tab[key[:-4] + '|adm']['x_star'])
-    validation['F4_all_user'] = dict(f4, passed=bool(f4['identity_max_abs'] <= 1e-12 and f4['monotone_all_bad'] == 0 and f4['all_above_admitted'] == 0))
-    # numpy tables
+    validation['F4_all_user'] = dict(f4, passed=bool(f4['identity_states'] > 0 and f4['identity_max_abs'] <= 1e-12 and f4['monotone_all_bad'] == 0
+                                                     and f4['all_above_admitted'] == 0))
+    # numpy tables (all eight patterns)
     nM, nD = len(MIX_KEYS), len(DPS)
-    tab = {'xg': xg, 'T50': T50, 'oDLa': np.zeros((4, nD, G)), 'oDLm': np.zeros((4, nD, G)), 'sDL': np.zeros((4, nD, G)),
-           'oULa': np.zeros((4, nM, G)), 'oULm': np.zeros((4, nM, G)), 'sUL': np.zeros((4, nM, G))}
-    for k in KS:
+    tab = {'xg': xg, 'T50': T50, 'oDLa': np.zeros((NP, nD, G)), 'oDLm': np.zeros((NP, nD, G)), 'sDL': np.zeros((NP, nD, G)),
+           'oULa': np.zeros((NP, nM, G)), 'oULm': np.zeros((NP, nM, G)), 'sUL': np.zeros((NP, nM, G))}
+    for p in KS:
         for di, dp in enumerate(DPS):
-            for i, a in enumerate(DL[(k, dp)]['agg']):
-                tab['oDLa'][k, di, i], tab['oDLm'][k, di, i] = a['outage_all_users'], a['outage_admitted_pooled']
-                tab['sDL'][k, di, i] = a['traffic_fractions']['served']
+            tab['oDLa'][p, di], tab['oDLm'][p, di], tab['sDL'][p, di] = DL[(p, dp)]['oa'], DL[(p, dp)]['om'], DL[(p, dp)]['s']
         for mi, mx in enumerate(MIX_KEYS):
-            for i, a in enumerate(UL[(k, mx)]['agg']):
-                tab['oULa'][k, mi, i], tab['oULm'][k, mi, i] = a['outage_all_users'], a['outage_admitted_pooled']
-                tab['sUL'][k, mi, i] = a['traffic_fractions']['served']
+            tab['oULa'][p, mi], tab['oULm'][p, mi], tab['sUL'][p, mi] = UL[(p, mx)]['oa'], UL[(p, mx)]['om'], UL[(p, mx)]['s']
     od_a, od_m = tab['oDLa'][:, None, :, :], tab['oDLm'][:, None, :, :]
     ou_a, ou_m = tab['oULa'][:, :, None, :], tab['oULm'][:, :, None, :]
     tab['comp'] = {'all_user': (od_a <= EPS) & (ou_a <= EPS), 'admitted': (od_m <= EPS) & (ou_m <= EPS),
-                   'dl_only_all_user': np.broadcast_to(od_a <= EPS, (4, nM, nD, G)).copy()}
-    worst = {'all_user': np.maximum(od_a, ou_a), 'admitted': np.maximum(od_m, ou_m), 'dl_only_all_user': np.broadcast_to(od_a, (4, nM, nD, G))}
+                   'dl_only_all_user': np.broadcast_to(od_a <= EPS, (NP, nM, nD, G)).copy()}
     tab['anyc'] = {c: tab['comp'][c].any(axis=0) for c in CRITS}
-    tab['lo'] = {c: (3 - np.argmin(worst[c][::-1], axis=0)) for c in CRITS}       # least outage; ties -> larger k
-    tab['thr_both'] = np.zeros((4, nM, nD))
-    tab['thr_dl'] = np.zeros((4, nD))
-    for k in KS:
+    tab['thr_both'] = np.zeros((NP, nM, nD))
+    tab['thr_both_adm'] = np.zeros((NP, nM, nD))
+    tab['thr_dl'] = np.zeros((NP, nD))
+    for p in KS:
         for di, dp in enumerate(DPS):
-            xd = xs_tab[f'DL|{k}|{dp}|all']['x_star']
-            tab['thr_dl'][k, di] = xd
+            xd, xdm = xs_tab[f'DL|{p}|{dp}|all']['x_star'], xs_tab[f'DL|{p}|{dp}|adm']['x_star']
+            tab['thr_dl'][p, di] = xd
             for mi, mx in enumerate(MIX_KEYS):
-                tab['thr_both'][k, mi, di] = min(xd, xs_tab[f'UL|{k}|all']['x_star'] / MIXES[mx])
+                tab['thr_both'][p, mi, di] = min(xd, xs_tab[f'UL|{p}|all']['x_star'] / MIXES[mx])
+                tab['thr_both_adm'][p, mi, di] = min(xdm, xs_tab[f'UL|{p}|adm']['x_star'] / MIXES[mx])
+    # amendment 1: fallback = maximum-capacity pattern per criterion, mix and DL offset
+    tab['maxcap'] = {'all_user': np.argmax(tab['thr_both'], axis=0), 'admitted': np.argmax(tab['thr_both_adm'], axis=0),
+                     'dl_only_all_user': np.broadcast_to(np.argmax(tab['thr_dl'], axis=0)[None, :], (nM, nD)).copy()}
     # energy tables per scenario
     en_mod = C.Energy(conf1)
     ulred = ul_reduction_w(conf1)
     energy = {}
     for sc in SCENARIOS:
-        hw, di = sc['hw'], DPS.index(sc['dp'])
+        hw = sc['hw']
         aux = en_mod.p_aux(hw, sc['S'])
         deep = en_mod.ladder(hw, sc['S'], sc['cat'], sc['set'])['deep']
-        Pw = np.zeros((4, nM, G, R))
-        for k in KS:
-            pat = np.array(PATTERNS[k])
-            on_cell = pat[cell_sec] == 1
-            dlr = DL[(k, sc['dp'])]
+        Pw = np.zeros((NP, nM, G, R))
+        for p in KS:
+            on_cell = np.array(PATTERNS[p])[cell_sec] == 1
+            dlr = DL[(p, sc['dp'])]
             for mi, mx in enumerate(MIX_KEYS):
-                ulr = UL[(k, mx)]
+                ulr = UL[(p, mx)]
                 p35 = en_mod.p35(sc['case35'], dlr['L0'])
                 if sc['ulsens']:
                     p35 = p35 - ulred * (1.0 - ulr['L0'])
                 p72 = np.where(on_cell[None, :], en_mod.p72(hw, dlr['L1'], ulr['L1']) + aux, deep['p_w'])
-                Pw[k, mi] = (p35 + p72).reshape(G, R, N_SECT).sum(axis=2)
+                Pw[p, mi] = (p35 + p72).reshape(G, R, N_SECT).sum(axis=2)
         energy[sc['name']] = {'Pw': Pw, 'p_act': en_mod.p_empty(hw) + aux, 'p_deep': deep['p_w'], 'e_add': deep['e_add_j'],
                               't_tr': en_mod.tr['transition_time_s'][sc['cat']]['deep'], 't_sc': T_SCELL}
 
@@ -745,28 +815,30 @@ def main():
     xi_all = np.concatenate([xi_runs[g] for g in GROWTH], axis=0)            # (len(GROWTH) * 25, 1008)
     run_g = np.repeat(np.array(GROWTH), len(dev_sq))
     run_sq = np.tile(dev_sq, len(GROWTH))
-    # tuning (primary scenario)
+    # tuning per mix and overhead scenario at the primary hardware (amendment 1)
     tuned, tuning_log = {}, {}
     for name in ('thr_ul', 'thr_dl', 'exh', 'mpc'):
         grid = TUNE[name]
         keys = list(grid)
         for mx in MIX_KEYS:
-            md = model_for(mx, PRIMARY)
-            cands = []
-            for vals in product(*(grid[k_] for k_ in keys)):
-                params = dict(zip(keys, vals))
-                o = simulate(make_controller(name, params, S_prof, qtab), xi_all, md, per_real=False)
-                share = float(o['viol_s'][TUNE_CRIT[name]].sum() / (xi_all.size * SLOT_S))
-                cands.append({'params': params, 'energy_kwh_day': float(o['E_J'].mean() / 7 / 3.6e6), 'viol_share': share})
-            ok = [c_ for c_ in cands if c_['viol_share'] <= BUDGET]
-            pick = min(ok, key=lambda c_: (c_['energy_kwh_day'], json.dumps(c_['params']))) if ok else min(cands, key=lambda c_: c_['viol_share'])
-            tuned[f'{name}|{mx}'] = dict(pick, budget_met=bool(ok))
-            tuning_log[f'{name}|{mx}'] = cands
+            for S_, scn in TUNE_SCEN.items():
+                md = model_for(mx, scn)
+                cands = []
+                for vals in product(*(grid[k_] for k_ in keys)):
+                    params = dict(zip(keys, vals))
+                    o = simulate(make_controller(name, params, S_prof, qtab), xi_all, md, per_real=False)
+                    share = float(o['viol_s'][TUNE_CRIT[name]].sum() / (xi_all.size * SLOT_S))
+                    cands.append({'params': params, 'energy_kwh_day': float(o['E_J'].mean() / 7 / 3.6e6), 'viol_share': share})
+                ok = [c_ for c_ in cands if c_['viol_share'] <= BUDGET]
+                pick = min(ok, key=lambda c_: (c_['energy_kwh_day'], json.dumps(c_['params']))) if ok else min(cands, key=lambda c_: c_['viol_share'])
+                tuned[f'{name}|{mx}|{S_}'] = dict(pick, budget_met=bool(ok))
+                tuning_log[f'{name}|{mx}|{S_}'] = cands
         print(f'  tuned {name} ({time.time() - t0:.0f} s)', flush=True)
     print(f'tuning done ({time.time() - t0:.0f} s)', flush=True)
 
-    def ctrl_for(name, mx):
-        return make_controller(name, tuned[f'{name}|{mx}']['params'] if f'{name}|{mx}' in tuned else {}, S_prof, qtab)
+    def ctrl_for(name, mx, S_):
+        key = f'{name}|{mx}|{S_}'
+        return make_controller(name, tuned[key]['params'] if key in tuned else {}, S_prof, qtab)
 
     # evaluation
     results, runs_out = {}, []
@@ -775,7 +847,7 @@ def main():
         for mx in MIX_KEYS:
             md = model_for(mx, sc['name'])
             for name in CONTROLLERS:
-                o = simulate(ctrl_for(name, mx), xi_all, md, per_real=True)
+                o = simulate(ctrl_for(name, mx, sc['S']), xi_all, md, per_real=True)
                 sims[(name, mx, sc['name'])] = o
     print(f'evaluation done ({time.time() - t0:.0f} s)', flush=True)
     for (name, mx, scn), o in sims.items():
@@ -801,7 +873,8 @@ def main():
                 'transitions_per_day': float((o['n_wake'][sel] + o['n_sleep'][sel]).mean() / 7),
                 'gap_s_per_day': float(o['gap_s'][sel].mean() / 7),
                 'J_per_Mbit': float(o['E_J'][sel].mean(axis=1).sum() / bits * 1e6) if bits > 0 else None,
-                'mean_k': float(o['k'][sel].mean())}
+                'mean_cells_on': float(N_ON[o['k'][sel].astype(np.int64)].mean()),
+                'pattern_share': {str(PATTERNS[p_]): float(np.mean(o['k'][sel] == p_)) for p_ in KS}}
             if scn == PRIMARY:
                 for j in np.flatnonzero(sel):
                     runs_out.append({'controller': name, 'mix': mx, 'g': g, 'square': int(run_sq[j]),
@@ -843,7 +916,7 @@ def main():
                 pert[cut:] = np.array([rng.randrange(G) for _ in range(base.shape[0] - cut)])
                 rows_.append(pert)
                 cuts_.append(cut)
-        o = simulate(ctrl_for(name, MIX_KEYS[1]), np.stack(rows_), md, per_real=False)
+        o = simulate(ctrl_for(name, MIX_KEYS[1], 'S0'), np.stack(rows_), md, per_real=False)
         for r0 in range(0, len(rows_), 6):
             for q_ in range(1, 6):
                 cut = cuts_[r0 + q_]
@@ -858,33 +931,27 @@ def main():
     for _ in range(200):
         tiny = Model.__new__(Model)
         tiny.xg = np.arange(5) * 1.0
-        tiny.Pm = rs.uniform(100, 900, (4, 5))
+        tiny.Pm = rs.uniform(100, 900, (NP, 5))
         tiny.p_act, tiny.p_deep, tiny.e_add = 170.0, 3.0, rs.uniform(0, 2000)
         tiny.t_tr, tiny.t_sc = 10.0, 0.105
         tiny.tw = tiny.t_tr + tiny.t_sc
-        comp = rs.random((4, 5)) < 0.6
+        comp = rs.random((NP, 5)) < 0.6
         tiny.comp = {'all_user': comp}
         tiny.anyc = {'all_user': comp.any(axis=0)}
-        tiny.lo = {'all_user': rs.integers(0, 4, 5)}
-        row = rs.integers(0, 5, 6)
-        cost = np.zeros((6, 1, 4, 4))
-        alw = np.zeros((6, 1, 4), dtype=bool)
-        for t in range(6):
-            cost[t], alw[t] = stage_cost(tiny, row[t:t + 1], 'all_user')
-        _, val = dp_plan(cost, alw, 3)
+        tiny.maxcap = {'all_user': int(rs.integers(0, NP))}
+        row = rs.integers(0, 5, BRUTE_T)
+        cost, alw = stage_cost(tiny, row[:, None], 'all_user')
+        _, val = dp_plan(cost, alw, FULL)
         bf = brute_force(tiny, row, 'all_user')
         f8['random_instances'] += 1
         f8['dp_vs_brute_max_rel'] = max(f8['dp_vs_brute_max_rel'], EM.rel_diff(float(val[0]), bf))
     md = model_for(MIX_KEYS[1], PRIMARY)
     for _ in range(50):
         j = rng.randrange(xi_all.shape[0])
-        t_ = rng.randrange(1, xi_all.shape[1] - 6)
-        row = xi_all[j, t_:t_ + 6]
-        cost = np.zeros((6, 1, 4, 4))
-        alw = np.zeros((6, 1, 4), dtype=bool)
-        for t in range(6):
-            cost[t], alw[t] = stage_cost(md, row[t:t + 1], 'all_user')
-        _, val = dp_plan(cost, alw, 3)
+        t_ = rng.randrange(1, xi_all.shape[1] - BRUTE_T)
+        row = xi_all[j, t_:t_ + BRUTE_T]
+        cost, alw = stage_cost(md, row[:, None], 'all_user')
+        _, val = dp_plan(cost, alw, FULL)
         f8['real_windows'] += 1
         f8['dp_vs_brute_max_rel'] = max(f8['dp_vs_brute_max_rel'], EM.rel_diff(float(val[0]), brute_force(md, row, 'all_user')))
     f8['passed'] = bool(f8['random_instances'] == 200 and f8['real_windows'] == 50 and f8['dp_vs_brute_max_rel'] <= 1e-12)
@@ -902,7 +969,7 @@ def main():
     md = model_for(MIX_KEYS[1], PRIMARY)
     row = xi_runs[2.0][:1]
     for name in CONTROLLERS:
-        ctl = ctrl_for(name, MIX_KEYS[1])
+        ctl = ctrl_for(name, MIX_KEYS[1], 'S0')
         t_r = time.perf_counter()
         ctl.reset(1, md, row if ctl.is_oracle else None)
         t_reset = time.perf_counter() - t_r
@@ -922,18 +989,22 @@ def main():
     for mi, mx in enumerate(MIX_KEYS):
         for di, dp in enumerate(DPS):
             th = tab['thr_both'][:, mi, di]
-            maxcap[f'{mx}|{dp}'] = {'x_star_both_all_by_k': th.tolist(), 'argmax_k': int(np.argmax(th)), 'all_on_is_max': bool(np.argmax(th) == 3)}
+            maxcap[f'{mx}|{dp}'] = {'x_star_both_all_by_pattern': {str(PATTERNS[p_]): float(th[p_]) for p_ in KS},
+                                    'max_pattern': str(PATTERNS[int(np.argmax(th))]), 'all_on_is_max': bool(int(np.argmax(th)) == FULL)}
     summary = {
         'n_realizations': R, 'calibration': {'T_bps_per_site': {str(e): v['T_bps'] for e, v in cal.items()}, 'x_medium_over_busy': x30},
         'labels': conf['labels'], 'classes': CLASS,
-        'x_star_per_pattern': xs_tab, 'max_capacity_pattern': maxcap,
+        'patterns': {str(p_): list(v) for p_, v in PATTERNS.items()}, 'x_star_per_pattern': xs_tab, 'max_capacity_pattern': maxcap,
+        'fallback_pattern': {c: {f'{mx}|{dp}': str(PATTERNS[int(tab['maxcap'][c][mi, di])]) for mi, mx in enumerate(MIX_KEYS)
+                                 for di, dp in enumerate(DPS)} for c in CRITS},
         'ul_reduction_w_per_cell_at_zero_ul_load': ulred,
         'traces': {'dev_squares': dev_sq.tolist(), 'test_squares': test_sq.tolist(), 'a_ref': aref, 'seasonal_profile': S_prof.tolist(),
                    'forecast_log_error_quantiles': {str(a): q for a, q in qtab.items()}, 'clipped_slots': clipped, 'candidates': sel_info['candidates']},
         'tuning': {'selected': tuned, 'log': tuning_log},
         'frozen_for_p3_4': {'params': {k: v['params'] for k, v in tuned.items()}, 'seasonal_profile': S_prof.tolist(),
                             'forecast_log_error_quantiles': {str(a): q for a, q in qtab.items()}, 'a_ref_test_squares': {str(s): aref[int(s)] for s in test_sq},
-                            'test_squares': test_sq.tolist(), 'T50_bps': T50, 'thresholds_x_star_dev': {'both': tab['thr_both'].tolist(), 'dl': tab['thr_dl'].tolist()}},
+                            'test_squares': test_sq.tolist(), 'T50_bps': T50, 'thresholds_x_star_dev': {'both': tab['thr_both'].tolist(), 'dl': tab['thr_dl'].tolist()},
+                            'fallback_pattern_index': {c: tab['maxcap'][c].tolist() for c in CRITS}, 'tuning_key': 'controller|mix|S'},
         'results_dev': results, 'decision_time': f10,
         'decision': conf['decision_rules']['all_gates_pass' if gates_ok else 'gate_fails'],
     }
@@ -950,7 +1021,8 @@ def main():
                 'python': platform.python_version(), 'numpy': np.__version__, 'scipy': scipy.__version__, 'pandas': TR.pd.__version__,
                 'config_sha256': sha256(args.config),
                 'input_sha256': {'p3_1/manifest.json': sha256(C.P31_DIR / 'manifest.json'), 'p3_2b/manifest.json': sha256(B.OUTDIR / 'manifest.json'),
-                                 'p3_2c/manifest.json': sha256(C.OUTDIR / 'manifest.json'), **{f'traces/{f}': h for f, h in tf.items()}},
+                                 'p3_2c/manifest.json': sha256(C.OUTDIR / 'manifest.json'), 'p3_3/run1/manifest.json': sha256(RUN1_DIR / 'manifest.json'),
+                                 **{f'traces/{f}': h for f, h in tf.items()}},
                 'outputs_sha256': {'summary.json': sha256(outdir / 'summary.json'), f'raw/table_isd{ISD}.npz': sha256(outdir / 'raw' / f'table_isd{ISD}.npz'),
                                    'raw/runs.json.gz': sha256(outdir / 'raw' / 'runs.json.gz')},
                 'all_checks_passed': gates_ok}

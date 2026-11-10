@@ -1,6 +1,6 @@
 {
  "experiment": "P3.3: band-activation controllers on development data (P3.0 revision 5, D27-D33): radio table of the four nested sector patterns, energy tables of 20 scenarios, Milan development traces, nine controllers tuned and frozen for P3.4",
- "status": "pre-registered 2026-11-10 (P3.0 revision 5); not yet run",
+ "status": "pre-registered 2026-11-10 (P3.0 revision 5); run 1 (commit b6cd066) passed F0-F10, three design errors found in verification; amendment 1 registered, run 2 pending",
  "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, Revision 5 and section P3.3",
  "inputs": {
   "p3_1": {
@@ -92,17 +92,37 @@
    0
   ],
   "2": [
-   1,
+   0,
    1,
    0
   ],
   "3": [
+   0,
+   0,
+   1
+  ],
+  "4": [
+   1,
+   1,
+   0
+  ],
+  "5": [
+   1,
+   0,
+   1
+  ],
+  "6": [
+   0,
+   1,
+   1
+  ],
+  "7": [
    1,
    1,
    1
   ]
  },
- "pattern_note": "nested canonical patterns of the three sector indices (D30); rotations (0,1,0), (0,0,1), (0,1,1), (1,0,1) reported as a diagnostic at x = 1 and 2",
+ "pattern_note": "amendment 1: all eight patterns of the three sector indices, each solved exactly (run 1 used the nested canonical chain (0,0,0), (1,0,0), (1,1,0), (1,1,1); its rotation diagnostic refuted the symmetry assumption)",
  "radio_table": {
   "population": "P3.2b ISD 200, C_deployment, 100 realizations (seed and streams of P3.2b; built by p3_2c_energy_ledger.build_population)",
   "grid": "x = 0, 0.025, ..., 5.0 (201 levels); DL per pattern at DL offsets -3 (primary), 0, -10 dB; UL per pattern for both mixes (y = rho x)",
@@ -143,11 +163,11 @@
   "aon": "k = 3 always (savings reference, D28)",
   "off": "k = 0 always (capacity cost only)",
   "tod": "k = 3 from 06:00 to 24:00, else 0",
-  "thr_ul": "target = smallest k with x_{t-1} (1 + m) <= x*_all,both(k) (else the maximum-capacity pattern); step up at once; step down to the maximum target of the streak after H consecutive slots with target < current",
+  "thr_ul": "amendment 1: target = the pattern with the fewest cells on whose threshold x*_all,both covers x_{t-1} (1 + m), ties to the higher threshold (none: the maximum-capacity pattern); switch at once if the current pattern does not cover it; otherwise move to fewer cells only after H consecutive slots in which a pattern with fewer cells covers it, taking the highest-capacity target of the streak",
   "thr_dl": "as thr_ul with x*_all,DL(k) (UL-agnostic)",
   "exh": "mpc with H = 1",
-  "mpc": "seasonal-persistence forecast x_hat(t+h) = x_{t-1} S_d(t+h) / S_d(t-1); upper bound x_hat exp(q_alpha,h) (ceil to the grid) defines the allowed set (compliant patterns, else the least-outage pattern) and the gap penalty; the point forecast (nearest) defines the energy; exact DP over H slots from the current pattern; the first action is applied",
-  "oracle": "exact DP over the realized week: allowed = compliant patterns where some pattern complies, else the least-outage pattern; cost = energy + 1e9 J/s x gap-violation seconds",
+  "mpc": "seasonal-persistence forecast x_hat(t+h) = x_{t-1} S_d(t+h) / S_d(t-1); upper bound x_hat exp(q_alpha,h) (ceil to the grid) defines the allowed set (compliant patterns, else the maximum-capacity pattern, amendment 1) and the gap penalty; the point forecast (nearest) defines the energy; exact DP over H slots from the current pattern; the first action is applied",
+  "oracle": "exact DP over the realized week: allowed = compliant patterns where some pattern complies, else the maximum-capacity pattern (amendment 1); cost = energy + 1e9 J/s x gap-violation seconds",
   "oracle_dl": "as oracle with DL-only compliance"
  },
  "oracle_gap_penalty_j_per_s": 1000000000.0,
@@ -163,7 +183,9 @@
      0.2,
      0.3,
      0.4,
-     0.5
+     0.5,
+     0.75,
+     1.0
     ],
     "H": [
      1,
@@ -181,7 +203,9 @@
      0.2,
      0.3,
      0.4,
-     0.5
+     0.5,
+     0.75,
+     1.0
     ],
     "H": [
      1,
@@ -219,7 +243,12 @@
    "exh": "all_user",
    "mpc": "all_user"
   },
-  "rule": "per controller and mix, on development squares x growth grid in the primary scenario: minimum mean energy subject to avoidable violation share <= budget (criterion above); if none meets it, the least violation (flagged); parameters frozen for every scenario and for P3.4"
+  "rule": "amendment 1: per controller, mix and overhead scenario (S0, S1, S2 at the primary hardware), on development squares x growth grid: minimum mean energy subject to avoidable violation share <= budget (criterion above); if none meets it, the least violation (flagged); the parameters of the matching S are used in every scenario and frozen for P3.4",
+  "tune_scenarios": {
+   "S0": "primary_S0",
+   "S1": "primary_S1",
+   "S2": "primary_S2"
+  }
  },
  "scenarios": [
   {
@@ -440,10 +469,11 @@
   "F5_traces": "every development file aligned to the local day (144 slots, no row outside, none misaligned); selection reproducible; selected squares complete; quantization error <= step/2; 25 + 25 disjoint squares",
   "F6_ledger": "100 random runs recomputed by an independent scalar loop: energy and bits <= 1e-9 relative, violation seconds <= 1e-6 s, transitions equal",
   "F7_causality": "every non-oracle controller: decisions up to slot t unchanged when the traffic of slots >= t is replaced (20 runs x 5 cuts each)",
-  "F8_dp_correctness": "oracle DP = brute force over 4^6 sequences on 200 random instances and 50 real 6-slot windows (<= 1e-12 relative)",
+  "F8_dp_correctness": "amendment 1: oracle DP = brute force over 8^4 sequences on 200 random instances and 50 real 4-slot windows (<= 1e-12 relative)",
   "F9_fairness": "one trace array for every controller (hash recorded); only the oracles receive the full trace",
   "F10_decision_time": "reset and per-decision wall time (median, 99th percentile) recorded for every controller, with the machine",
-  "pass_rule": "F0-F10"
+  "F11_run1_reuse": "amendment 1: run 1 evidence intact (manifest hash, git head, config hash, every output hash); every reused canonical-pattern array has the expected shape; the all-on DL state (-3 dB) and the all-on UL state (26/74) recomputed equal run 1 bitwise (10 arrays: L0, L1, all-user and admitted outage, served fraction)",
+  "pass_rule": "F0-F11"
  },
  "reported": "per controller x mix x g x scenario: energy per site-day (intervals over squares and over realizations), saving vs aon only where both meet the budget (D28), avoidable and unavoidable violation shares (three criteria), transitions, gap seconds, J per delivered Mbit, mean k; max-capacity pattern per mix and offset; tuning log; decision times",
  "decision_rules": {
@@ -458,15 +488,47 @@
   "A code-path smoke on 14 SYNTHETIC Milan-format files (60 squares, scratch folder, 416 s): every gate F0-F10 computable and passing; verdict forced FAIL by the smoke flag. It led to two changes before registration: the stage costs of mpc and oracle were vectorized and F7 batched (run time only; results identical, F8 checks the DP), and the F1 table-vs-P3.2c tolerance was split (load 1e-8, outage 1e-5) because one boundary user can flip between solver batches.",
   "One smoke run on the real files (--smoke-realizations 2, scratch folder, 523 s): every gate F0-F10 computable and passing (F1 code path only); verdict forced FAIL; it printed only gate lines and its output files were not opened."
  ],
+ "amendment_1": {
+  "date": "2026-11-10",
+  "run1": {
+   "folder": "results/phase3/p3_3_controllers/run1",
+   "git_head": "b6cd066db0600b2631dc7e622ecc808695ad7dd3",
+   "config_sha256": "61689625708fcc5e8d8eba88b2e8857a933ef105012d4148af229a079044be49",
+   "manifest_sha256": "33a6c7ea9c05f7f2fcaa25587fcca4d0d66a20d81dd3f6991e409d991e34360e",
+   "table_sha256": "ccab2d36fbe055efeeaa80df4b96723bf8c2c46e28d9e1d66dc0ed90092f8bb5"
+  },
+  "findings": [
+   "D30 symmetry assumption false: UL all-user outage at 26/74, x = 1: (1,0,0) 37.7 %, (0,1,0) 36.7 %, (0,0,1) 4.0 %; the canonical chain leaves the UL-weak sector index 2 off",
+   "least worst-direction outage fallback pathological near saturation (picks one sector on by 0.1 point), raising MPC violations with alpha (0.9: 1.4 %, 0.999: 13.9 %) and oracle DL-only violations (9.1 % at 26/74, g = 3.5)",
+   "tuning in S0 alone selects the margin grid edge (m = 0.5 at 10/90), too cautious under S1/S2"
+  ],
+  "changes": [
+   "all eight sector patterns; make-before-break transitions",
+   "fallback = maximum-capacity pattern",
+   "tuning per mix and S0/S1/S2; thr margin grid + 0.75, 1.0",
+   "threshold rule for non-nested patterns",
+   "F8 brute force over 8^4 sequences",
+   "canonical-pattern table and x* reused from run 1 (gate F11)"
+  ],
+  "pass_rule": "F0-F11",
+  "result_of_record": "run 2; run 1 kept as evidence",
+  "not_blind": "run 1 development results were seen before this amendment; P3.4 test data untouched",
+  "checks_before_run_2": [
+   "unit tests 13 (eight patterns, make-before-break transitions, maximum-capacity fallback); full suite passing",
+   "key and shape check of the reuse path: 46 run-1 arrays and 32 x* entries present, run-1 manifest, git head, config and table hashes match",
+   "one smoke run on the real files (2 realizations, scratch folder, 942 s): every gate F0-F11 computable and passing (F1 and F11 code path only; reuse needs 100 realizations); verdict forced FAIL; only gate lines printed; outputs not opened"
+  ]
+ },
  "outputs": {
   "folder": "results/phase3/p3_3_controllers",
   "files": [
    "summary.json",
    "validation.json",
    "manifest.json",
-   "run1_stdout.txt",
+   "run2_stdout.txt",
    "raw/table_isd200.npz (git-ignored)",
-   "raw/runs.json.gz (git-ignored)"
+   "raw/runs.json.gz (git-ignored)",
+   "run1/ (evidence)"
   ]
  }
 }

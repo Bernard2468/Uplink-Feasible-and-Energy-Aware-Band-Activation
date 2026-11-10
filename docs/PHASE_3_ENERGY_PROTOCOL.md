@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b run 1 passed its gates, amendment 1 (UL admission point) registered, run 2 pending.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c next.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -1180,6 +1180,171 @@ Recorded in the config (`amendment_1`).
   - The smoke flag forced the overall verdict to fail.
   - It printed no result values, and its output files were not opened.
 
+#### P3.2b run 2 (commit 60b358b): all gates B0–B9 PASSED; result of record (2026-11-10, 8399 s)
+
+Outputs are in `results/phase3/p3_2b_traffic_resources/`: summary,
+validation, manifest and `run2_stdout.txt`.
+- The raw arrays are git-ignored. Their hashes in the manifest
+  (isd200 ccc5e860…, isd500 8ddf7112…) match the files on disk.
+- The manifest's config hash (e4e23361…) is the committed config's.
+- Run 1 is kept in `run1/` as evidence.
+
+| Gate | Result |
+|---|---|
+| B0 | Constants equal the config. Run 1's evidence is intact. Both admission points equal the registered −0.6387 dB exactly |
+| B1 | 240 (ISD 200) and 144 (ISD 500) engine comparisons, all bit-identical |
+| B2 | Max 2.8e-14 dB over 1.49 M and 5.93 M user comparisons |
+| B3 | 138 fixed points converged (residual ≤ 2.3e-11, ≤ 20 iterations). Solutions from L = 0 and from L = 1 agree to 3.8e-11 over 18 360 loads |
+| B4 | Closure ≤ 2.2e-16; occupancy identity ≤ 2.0e-11; no load outside [0, 1] |
+| B5 | Calibration residuals ≤ 4.4e-12 |
+| B6 | 432 workload comparisons, 0 mismatches |
+| B7 | 0 violations of the six identities and monotonicity checks |
+| B8 | 10 primary-point instances (4 DL, 6 UL). Offered loads agree within 1.8e-14 relative; 0 outage mismatches. 11 693 UL users are checked, against 11 574 in run 1: the re-admitted users |
+| B9 | The DL view equals run 1's. 48 raw DL arrays, 0 mismatches. The UL not-admitted share moved by exactly run 1's "between" share (to 3.6e-16), that share is now 0, and the TR 36.942 low-end share is unchanged (4 cases) |
+
+**Wall time.** The run took 8399 s; run 1 took 5576 s. The slowdown was
+irregular: case B's UL "off" step took 1588 s here against about 50 s in
+run 1.
+- B1 and B9 are bitwise comparisons, and both passed. The slowdown
+  therefore changed no computed value.
+- It is attributed to the host (sleep or contention), not to the code.
+
+**Registered prediction verdicts** (ISD 200, C at 50 dBm). No verdict
+differs between the runs, so none is admission-sensitive.
+
+| Prediction | Run 1 | Run 2 (of record) | Verdict |
+|---|---|---|---|
+| P1: x*_UL < x*_DL, 3.5 GHz only, 10/90 | 3.059 against 1.445 (2.12×) | 2.848 against 1.445 (1.97×) | **Failed** in both runs: the DL binds |
+| P2: x*_DL ≥ 1.25 x*_both, all on with UL CA, 26/74 | 3.719 against 2.413 (1.54) | 3.719 against 2.335 (1.59) | **Held** in both runs |
+| P3: x*_both, UL CA ≥ 1.2 × DL-only SCell, 26/74 | 2.413 against 0.967 (2.49) | 2.335 against 0.901 (2.59) | **Held** in both runs |
+
+**Calibration** (identical to run 1 by B9). T_0.5 is the per-site traffic at
+which the busy-hour load is 0.5; x = 1 is that traffic.
+
+| ISD, case | T_0.3 (Mbit/s per site) | T_0.5 (Mbit/s per site) | x_30 = T_0.3 / T_0.5 |
+|---|---|---|---|
+| 200, A and B | 60.72 | 95.32 | 0.637 |
+| 200, C | 326.26 | 513.60 | 0.635 |
+| 500, C | 283.47 | 437.75 | 0.648 |
+
+The unscored expectation x_30 > 0.6 is met in every case.
+
+**DL sustainable traffic x*_DL** (identical to run 1 by B9). The bisection
+brackets are 0.0039 wide.
+
+| ISD, case | 3.5 GHz only | All on, 0 dB | −3 dB | −10 dB | On/off | DL traffic on 7.2 GHz at x = 1 |
+|---|---|---|---|---|---|---|
+| 200, A | 1.434 | 1.918 | — | — | 1.34× | 0.799 |
+| 200, B | 1.434 | 1.742 | — | — | 1.22× | 0.984 |
+| 200, C | 1.445 | 3.738 | 3.719 | 3.656 | 2.57× at −3 dB | 1.000 / 1.000 / 0.996 |
+| 500, C | 1.480 | 4.074 | 4.102 | 4.137 | 2.77× at −3 dB | 0.994 / 0.981 / 0.931 |
+
+In case C, the best-carrier rule moves almost all DL traffic to 7.2 GHz and
+leaves the 3.5 GHz DL nearly idle. This is a declared limit, and it makes
+x*_DL(on) conservative. At ISD 500, x*_DL rises as the 7.2 GHz power falls:
+the weaker 7.2 GHz carrier returns some users to 3.5 GHz, which balances
+the two carriers.
+
+**UL sustainable traffic y*** (units of T_0.5), run 2 with the change from
+run 1:
+
+| ISD, case | Off | On, UL CA | UL CA gain | Off, rescue | On, UL CA, rescue |
+|---|---|---|---|---|---|
+| 200, A | 0.4414 (−3.4%) | 0.6016 (−4.9%) | 1.36× (run 1 1.38×) | — | — |
+| 200, B | 0.4414 (−3.4%) | 0.7188 (−5.2%) | 1.63× (1.66×) | — | — |
+| 200, C | 0.3164 (−6.9%) | 0.8203 (−3.2%) | 2.59× (2.49×) | 0.2188 (same bracket) | 0.4063 (same bracket) |
+| 500, C | 0.1055 (−35.7%) | 0.1563 (−41.2%) | 1.48× (1.62×) | 0 (fails unloaded) | 0 (fails unloaded) |
+
+The DL-only SCell's UL equals the off state's UL bitwise (B7).
+
+**Sustainable traffic x*_both, case C at −3 dB** (binding direction in
+brackets; run 1 in square brackets where it differs):
+
+| State | ISD 200, 10/90 | ISD 200, 26/74 | ISD 500, 10/90 | ISD 500, 26/74 |
+|---|---|---|---|---|
+| 3.5 GHz only | 1.445 (DL) | 0.901 (UL) [0.967] | 0.949 (UL) [1.477, tied] | 0.300 (UL) [0.467] |
+| All on, UL CA | 3.719 (DL) | 2.335 (UL) [2.413] | 1.406 (UL) [2.391] | 0.445 (UL) [0.756] |
+| All on, DL-only SCell | 2.848 (UL) [3.059] | 0.901 (UL) [0.967] | 0.949 (UL) [1.477] | 0.300 (UL) [0.467] |
+| 3.5 GHz only, rescue | 1.445 (DL) | 0.623 (UL) | 0 | 0 |
+| All on, UL CA, rescue | 3.656 (UL) | 1.156 (UL) | 0 | 0 |
+
+These are the findings of record.
+- **Today's mix (10/90), ISD 200.** With 3.5 GHz only, the DL binds (P1
+  failed).
+  - Turning on 7.2 GHz with a DL-only SCell moves the binding to the UL. It
+    gives 1.97× the 3.5-GHz-only traffic.
+  - UL CA lets the 7.2 GHz DL capacity be used: 2.57×, which is 31% more
+    than the DL-only SCell.
+- **AI-era mix (26/74), ISD 200.** The UL binds in every state.
+  - A DL-only SCell adds no sustainable traffic (1.00×).
+  - UL CA gives 2.59×.
+  - A DL-only evaluation overstates the all-on network by 1.59×.
+  - The 3.5-GHz-only network sustains 0.901 of the calibrated busy hour.
+    At this mix its UL fails the QoS criterion at the traffic that loads the
+    DL to 0.5.
+- **ISD 500.** The UL binds in every state, at both mixes and in both runs.
+  - Run 1's tie at 10/90 (1.477 against 1.480) is now UL by 1.56×.
+  - Only the binding direction and the sign of the UL CA gain (1.48×) are
+    robust here. The magnitudes depend on admission (next paragraph).
+- **Rescue** (fluid PRB, case C). It lowers sustainable traffic at ISD 200
+  and is infeasible unloaded at ISD 500.
+  - Rescued users cannot reach R_UL even at zero load. At the lowest grid
+    point (off state) the outage is 1.8% at ISD 200 and 23.5% at ISD 500.
+  - At ISD 200 their outage uses part of the 5% budget before the load
+    does, and they are the costliest users per bit.
+  - The pooled admitted-user outage mixes coverage and capacity outage.
+    This is reported as a limitation. The rescue stays a sensitivity, not
+    the model.
+- **Hazard-15 labels** (3.5 GHz, full buffer).
+
+  | ISD, case | UL not admitted | of which in TR 36.942's range [−10 dB, snr_min) | DL not admitted |
+  |---|---|---|---|
+  | 200, A and B | 0.571% | 0.531% | 0 |
+  | 200, C | 2.197% | 1.888% | 0 |
+  | 500, C | 21.746% | 14.623% | 0.040% |
+
+  At ISD 500, x* is conditional on the 78.3% of users that the UL can
+  admit.
+
+**Admission sensitivity of the UL (the amendment's effect).** Amendment 1
+re-admitted the users between −0.64 and +0.36 dB, all of them on the MCS-0
+plateau. There are 0.144% (A, B), 0.391% (C, ISD 200) and 2.399% (C, ISD 500)
+of them. Every UL y* fell. The registered note had left the direction open.
+Two mechanisms explain the fall, and both are confirmed from the outputs.
+1. **Load.** The re-admitted users are the costliest per bit, so they raise
+   the 3.5 GHz UL load at equal y (below saturation):
+
+   | ISD | Off | UL CA |
+   |---|---|---|
+   | 200 | +6.4 to +7.5% | +20 to +23% |
+   | 500 | +22 to +25% | +35 to +39% |
+
+   Under UL CA the effect is larger because these users stay on 3.5 GHz.
+2. **Outage.** In case C at 100 MHz, the MCS-0 plateau's peak rate is
+   4.061 Mbit/s (SE 0.1965). R_UL is 3.429 Mbit/s, which is 84% of that
+   rate.
+   - A plateau user therefore meets R_UL only while its cell's load stays
+     below 0.156.
+   - At ISD 500 (off, y = 0.0556), the admitted-user outage rises from
+     0.01% (run 1) to 2.16%.
+
+At ISD 200 this moves y* by 3–7%, i.e. 4–10 bisection brackets, and no
+verdict changes. At ISD 500, one 1 dB grid step at the admission point moves
+y* by 36–41%. ISD 500 was registered as a qualified case, and its UL
+magnitudes are governed by the cell-edge plateau users. They are reported
+with the admitted share and with this sensitivity, and are not a headline
+number (open item 6).
+
+**Decision** (the registered rule; all gates passed). P3.2b, as run 2, is
+the traffic layer of P3.2c and P3.3. P3.2c's growth sweep spans g = 1 to at
+least the all-on UL-CA x*_both of the primary point, with the
+3.5-GHz-only x*_both marked:
+
+| Mix | Sweep to at least | 3.5-GHz-only x*_both marked |
+|---|---|---|
+| 10/90 (primary) | 3.719 | 1.445 |
+| 26/74 (stress) | 2.335 | 0.901 |
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the
@@ -1199,6 +1364,16 @@ Recorded in the config (`amendment_1`).
    215 W with no load). Before any energy comparison, P3.2 must
    pre-register a sensitivity that scales the 7.2 GHz load-independent
    power to the measured level, with its rule fixed in advance.
+6. **ISD 500 UL magnitudes depend on admission** (found in P3.2b run 2).
+   - In case C, R_UL is 84% of the MCS-0 plateau's peak rate.
+   - At ISD 500, one 1 dB step of the admission point (2.4% of users)
+     moves y* by 36–41%. The binding direction and the sign of the UL CA
+     gain do not move.
+   - **Recommendation for P3.2c's registration.** ISD 500 enters only as
+     a qualified, coverage-limited case, stated with its UL admitted share
+     (78.3%). It carries one pre-registered sensitivity on the edge-user
+     rule (R_UL or the outage percentile), with values fixed before the
+     run. ISD 200 carries the headline numbers.
 
 ## 5. Audit of P3.0 (ChatGPT, 2026-11-09) and response
 

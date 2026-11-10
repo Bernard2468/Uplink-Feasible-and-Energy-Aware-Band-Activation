@@ -1,0 +1,19 @@
+{
+  "generated_utc": "2026-11-10T11:11:00.004234+00:00",
+  "tool": "scripts/p3_2b_traffic_resources.py",
+  "git_head_at_run": "60b358b0977a97a0d099f000a68a68b2db49eb39",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "config_sha256": "e4e233610d43a5ca668a7467553c7dfaa00cdd3678d508ca93b33c8c3689d72d",
+  "input_sha256": {
+    "p3_2a_coupled_feasibility/manifest.json": "71dc8462352991b7daec7f57e3386fa66a5945c41f141e89b494cd9a44585f82",
+    "configs/p3/p3_2a_coupled_feasibility.json": "178357fb0b8d0c7fb64cb99cca7ed6ed9e50364a2446212900aaf0009d3a44a1",
+    "p3_2b_traffic_resources/run1/manifest.json": "135b8559c44792f365ef07245bc52b415f838d3485296f61e387928a6c8625c0"
+  },
+  "outputs_sha256": {
+    "summary.json": "726a8bca23c51fdf5a8e3af3aadaeb6b9fb260107b0e83f7ccc445a609258999",
+    "raw/loads_isd200.npz": "ccc5e860ff2c1d980108ed35bdfd374b5ded297463d6bd3654be14b6b4d813f3",
+    "raw/loads_isd500.npz": "8ddf7112b4d0af3d7f9fc20b765352a7c968012e63406ba0082d4aa601de94e1"
+  },
+  "all_checks_passed": true
+}

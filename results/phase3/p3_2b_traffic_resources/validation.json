@@ -1,0 +1,243 @@
+{
+  "B0_inputs": {
+    "input_sha256": {
+      "p3_2a_coupled_feasibility/manifest.json": "71dc8462352991b7daec7f57e3386fa66a5945c41f141e89b494cd9a44585f82",
+      "configs/p3/p3_2a_coupled_feasibility.json": "178357fb0b8d0c7fb64cb99cca7ed6ed9e50364a2446212900aaf0009d3a44a1",
+      "p3_2b_traffic_resources/run1/manifest.json": "135b8559c44792f365ef07245bc52b415f838d3485296f61e387928a6c8625c0"
+    },
+    "constants_match_config": true,
+    "run1_evidence_intact": true,
+    "passed": true,
+    "admission_points_match_config": true
+  },
+  "B1_engine_extension_bitwise": {
+    "isd200": {
+      "comparisons": 240,
+      "not_bitwise_equal": 0,
+      "passed": true
+    },
+    "isd500": {
+      "comparisons": 144,
+      "not_bitwise_equal": 0,
+      "passed": true
+    },
+    "passed": true
+  },
+  "B2_grouping": {
+    "isd200": {
+      "user_comparisons": 1493640,
+      "max_abs_diff_db": 2.842170943040401e-14,
+      "passed": true
+    },
+    "isd500": {
+      "user_comparisons": 5931576,
+      "max_abs_diff_db": 2.842170943040401e-14,
+      "passed": true
+    },
+    "passed": true
+  },
+  "B3_fixed_point": {
+    "isd200": {
+      "solves": 90,
+      "not_converged": 0,
+      "max_residual": 1.981192987443592e-11,
+      "max_iterations": 20,
+      "uniq_max_diff": 2.420974531958109e-11,
+      "uniq_compared": 12150,
+      "passed": true
+    },
+    "isd500": {
+      "solves": 48,
+      "not_converged": 0,
+      "max_residual": 2.229716411505933e-11,
+      "max_iterations": 19,
+      "uniq_max_diff": 3.7671310515463574e-11,
+      "uniq_compared": 6210,
+      "passed": true
+    },
+    "passed": true
+  },
+  "B4_closure": {
+    "isd200": {
+      "closure_max_rel": 1.81314960259167e-16,
+      "occupancy_identity_max_abs": 1.981248498594823e-11,
+      "load_range_bad": 0,
+      "passed": true
+    },
+    "isd500": {
+      "closure_max_rel": 2.1227826571796774e-16,
+      "occupancy_identity_max_abs": 1.2328693621554976e-11,
+      "load_range_bad": 0,
+      "passed": true
+    },
+    "passed": true
+  },
+  "B5_calibration": {
+    "isd200": {
+      "calibration": {
+        "A_equal_elements": {
+          "0.3": {
+            "T_bps": 60722393.093334995,
+            "residual": -4.3632319979280965e-12,
+            "steps": 2
+          },
+          "0.5": {
+            "T_bps": 95321299.82491028,
+            "residual": 0.0,
+            "steps": 4
+          }
+        },
+        "B_equal_aperture": {
+          "0.3": {
+            "T_bps": 60722393.093334995,
+            "residual": -4.3632319979280965e-12,
+            "steps": 2
+          },
+          "0.5": {
+            "T_bps": 95321299.82491028,
+            "residual": 0.0,
+            "steps": 4
+          }
+        },
+        "C_deployment": {
+          "0.3": {
+            "T_bps": 326264924.6911742,
+            "residual": 1.446620601086579e-13,
+            "steps": 4
+          },
+          "0.5": {
+            "T_bps": 513600820.29125595,
+            "residual": -8.326672684688674e-16,
+            "steps": 3
+          }
+        }
+      },
+      "passed": true
+    },
+    "isd500": {
+      "calibration": {
+        "C_deployment": {
+          "0.3": {
+            "T_bps": 283474098.20163417,
+            "residual": 0.0,
+            "steps": 4
+          },
+          "0.5": {
+            "T_bps": 437752527.808734,
+            "residual": 0.0,
+            "steps": 4
+          }
+        }
+      },
+      "passed": true
+    },
+    "passed": true
+  },
+  "B6_identical_workloads": {
+    "isd200": {
+      "comparisons": 288,
+      "mismatches": 0,
+      "passed": true
+    },
+    "isd500": {
+      "comparisons": 144,
+      "mismatches": 0,
+      "passed": true
+    },
+    "passed": true
+  },
+  "B7_identities_monotonicity": {
+    "isd200": {
+      "off_dl_dp_identity_bad": 0,
+      "scell_dl_identity_bad": 0,
+      "on35_le_off35_bad": 0,
+      "monotone_load_bad": 0,
+      "monotone_outage_bad": 0,
+      "zero_traffic_bad": 0,
+      "off_has_72_group": 0,
+      "passed": true
+    },
+    "isd500": {
+      "off_dl_dp_identity_bad": 0,
+      "scell_dl_identity_bad": 0,
+      "on35_le_off35_bad": 0,
+      "monotone_load_bad": 0,
+      "monotone_outage_bad": 0,
+      "zero_traffic_bad": 0,
+      "off_has_72_group": 0,
+      "passed": true
+    },
+    "passed": true
+  },
+  "B8_independent_reference": {
+    "isd200": {
+      "checks": {
+        "DL|off|x1.0": {
+          "max_rel_diff_offered_load": 1.7327528508972037e-14,
+          "outage_mismatches": 0,
+          "users_checked": 12447
+        },
+        "DL|off|x4.0": {
+          "max_rel_diff_offered_load": 1.5074245825282053e-14,
+          "outage_mismatches": 0,
+          "users_checked": 12447
+        },
+        "DL|on|x1.0": {
+          "max_rel_diff_offered_load": 1.664037481284154e-14,
+          "outage_mismatches": 0,
+          "users_checked": 12447
+        },
+        "DL|on|x4.0": {
+          "max_rel_diff_offered_load": 1.7957617288349288e-14,
+          "outage_mismatches": 0,
+          "users_checked": 12447
+        },
+        "UL|off|y0.1111": {
+          "max_rel_diff_offered_load": 3.556154381536088e-15,
+          "outage_mismatches": 0,
+          "users_checked": 11693
+        },
+        "UL|off|y1.4054": {
+          "max_rel_diff_offered_load": 3.3489598294941074e-15,
+          "outage_mismatches": 0,
+          "users_checked": 11693
+        },
+        "UL|on_ulca|y0.1111": {
+          "max_rel_diff_offered_load": 6.405843018979359e-15,
+          "outage_mismatches": 0,
+          "users_checked": 11694
+        },
+        "UL|on_ulca|y1.4054": {
+          "max_rel_diff_offered_load": 1.3756763640385994e-14,
+          "outage_mismatches": 0,
+          "users_checked": 11694
+        },
+        "UL|on_ulca_rescue|y0.1111": {
+          "max_rel_diff_offered_load": 9.165507026402056e-15,
+          "outage_mismatches": 0,
+          "users_checked": 12446
+        },
+        "UL|on_ulca_rescue|y1.4054": {
+          "max_rel_diff_offered_load": 1.3855885501960756e-14,
+          "outage_mismatches": 0,
+          "users_checked": 12446
+        }
+      },
+      "passed": true
+    },
+    "passed": true
+  },
+  "B9_amendment1_dl_unchanged": {
+    "dl_view_equal": true,
+    "raw_dl_arrays_compared": 48,
+    "raw_dl_mismatches": 0,
+    "ul_not_admitted_shift_max_abs": 3.608224830031759e-16,
+    "ul_between_share_max": 0.0,
+    "ul_low_end_changed": 0,
+    "cases_compared": 4,
+    "passed": true,
+    "reference": "run 1 (results/phase3/p3_2b_traffic_resources/run1)"
+  },
+  "smoke_run": false,
+  "all_checks_passed": true
+}

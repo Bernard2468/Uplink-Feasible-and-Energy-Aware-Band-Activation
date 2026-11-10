@@ -1,0 +1,20 @@
+{
+  "generated_utc": "2026-11-10T13:09:38.453089+00:00",
+  "tool": "scripts/p3_2c_energy_ledger.py",
+  "git_head_at_run": "d391b2fb6adebb88d0246442cd7c3a8621f08c0a",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "scipy": "1.17.1",
+  "config_sha256": "2110b88101d09697d7c9a8bc298bfa6726dd967d9779a5d75f9668cbfaffad0a",
+  "input_sha256": {
+    "p3_1_energy_models/manifest.json": "26548154a287f2eeff588452a9419d20cac9aff02bb5d7871a534ce13980eef3",
+    "p3_2a_coupled_feasibility/manifest.json": "71dc8462352991b7daec7f57e3386fa66a5945c41f141e89b494cd9a44585f82",
+    "p3_2b_traffic_resources/manifest.json": "90732da73f07b795df22275ad4cc80f4a9698c003ee3df58478e5495d40b46cb"
+  },
+  "outputs_sha256": {
+    "summary.json": "34dd741e6e3ba1540ade97fe263421520daf2c36c26c4a4acad14ec0d59a47e5",
+    "raw/levels_isd200.npz": "d00360dad9960d0094d6fd45e1fd6589ae5c613f7fd865175c1e47d1e4c55ed5",
+    "raw/energy_table.json.gz": "66842e9c437b7427e1c2f90affb016a5feee29f84233a55bd3d844c0bd829230"
+  },
+  "all_checks_passed": true
+}

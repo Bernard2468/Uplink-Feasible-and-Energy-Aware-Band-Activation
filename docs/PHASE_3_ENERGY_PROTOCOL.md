@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); revision 4 and P3.2c pre-registered, run 1 pending.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); P3.3 next.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -1612,6 +1612,191 @@ case, Cat 1, proactive wake.
   - It printed no result values, and its output files were not opened.
 - **A key-existence check of E2's P3.2b inputs:** 26 raw arrays and 8 x*
   entries, with the expected shapes. It computed no new result.
+
+#### P3.2c run 1 (commit d391b2f): all gates E0–E8 PASSED; result of record (2026-11-10, 996 s)
+
+Outputs are in `results/phase3/p3_2c_energy_ledger/`: summary, validation,
+manifest and `run1_stdout.txt`.
+- The raw arrays (`levels_isd200.npz`, `energy_table.json.gz`) are
+  git-ignored. Their hashes in the manifest match the files on disk.
+- The manifest's config hash (2110b881…) is the committed config's.
+
+| Gate | Result |
+|---|---|
+| E0 | 9 provenance checks and 10 constant checks pass |
+| E1 | 216 P3.1 values reproduced with max relative difference 0.0. S2 parity exact. S1 = 172.03 W at the primary point |
+| E2 | P3.2b run 2 reproduced bitwise: calibration, 26 raw load arrays (0 mismatches), 8 admitted x* |
+| E3 | 23 batched solves converged (residual ≤ 1.7e-11). Closure ≤ 2.1e-16; occupancy identity ≤ 1.7e-11. 246 workload comparisons, 0 mismatches. Loads monotone; zero traffic gives L = 0 |
+| E4 | out_all = n + (1 − n)·out_adm to 1.9e-13. Monotone. All-user x* ≤ admitted x* everywhere |
+| E5 | 15 180 scenarios. The day is covered exactly (0 s error). Ledger = `sequence_energy` to 5.3e-16. No short sleeps; one E_add per sleep; zero 7.2 GHz service outside on intervals |
+| E6 | `schedule()` takes no traffic input. 88 derivations, 0 violations |
+| E7 | 3960 comparisons: S0 < S1 < S2 strictly. The S1 increment matches the independent sum to 9.7e-14 |
+| E8 | 374 403 J and 374 451 J exact; short sleep rejected; reactive gap 0.155 s |
+
+**Checked after the run, outside the gates.** 96 daily site energies were
+recomputed from the raw per-cell loads and P3.1's functions, with the day
+timing written by hand and none of the ledger code. They agree to 2.4e-16.
+The E-P1/E-P2 ratios reproduce exactly.
+
+**Predictions** (registered; ISD 200, C, 50 dBm, M_RF 256, right case, Cat 1,
+proactive wake):
+
+| Prediction | Result | Verdict |
+|---|---|---|
+| E-P1: busy-hour site power, 7.2 GHz on / 3.5 GHz only, g = 1, 10/90, S0, in [0.90, 1.10] | 3036.1 W / 3015.9 W = **1.007** | **Held** |
+| E-P2: the same ratio under S2 ≥ 1.25 | 4657.9 W / 3045.4 W = **1.530** | **Held** |
+| E-P3: low-period sleep saving vs always-on, every all-user-feasible g, both mixes: S0 in [3%, 8%]; S2 ≥ 10% | S0 3.6–4.6%; S2 10.3–12.0% | **Held** |
+
+- **Why E-P1 is near neutral.** With 7.2 GHz on, the best-carrier rule
+  moves almost all DL traffic off the 3.5 GHz layer: its DL load falls from
+  0.500 to 0.0002. The 3.5 GHz PA saving offsets the 7.2 GHz cell, which
+  runs at DL load 0.220 and UL load 0.105.
+- **Decision rule triggered.** E-P1 and E-P2 both hold, so the busy-hour
+  energy case for 7.2 GHz is **overhead-dependent (H4)**. P3.3 reports
+  S0–S2 for every result.
+
+**Unscored expectations, all met.**
+- Transitions are at most 9.4e-5 of the 7.2 GHz layer's daily energy over
+  every non-bound scenario, including Set 3.
+- DL all-user x* equals admitted x*.
+- At 26/74 and g = 1, `35only` and every DL-only policy are
+  all-user-infeasible.
+
+**Overhead and sleep constants** (50 dBm):
+
+| Quantity | S0 | S1 | S2 |
+|---|---|---|---|
+| P_aux | 0 | 172.03 W | 540.62 W |
+| Deep sleep, Cat 1 / Cat 2 (Set 1) | 2.91 / 29.09 W | 6.04 / 60.37 W | 12.74 / 127.38 W |
+| E_add, Cat 1 / Cat 2 | 2.91 / 494.5 J | 6.04 / 1026.2 J | 12.74 / 2165.5 J |
+
+**Sustainable traffic, admitted (P3.2b) vs all-user (D21):**
+
+| State | Admitted | All-user |
+|---|---|---|
+| DL, 3.5 GHz only | 1.4453 | 1.4453 |
+| DL, 7.2 GHz selection, −3 dB | 3.7188 | 3.7188 |
+| UL y*, 3.5 GHz only | 0.3164 | 0.3008 |
+| UL y*, 7.2 GHz UL enabled | 0.8203 | 0.7734 |
+
+**Sustainable growth g* per policy** (50 dBm):
+
+| Policy | 10/90 all-user | 10/90 admitted | 26/74 all-user | 26/74 admitted | DL-only view |
+|---|---|---|---|---|---|
+| `35only` | 1.445 | 1.445 | 0.856 | 0.901 | 1.445 |
+| `aon_ulsel`, `sch_medbusy_ulsel` | 3.719 | 3.719 | 2.201 | 2.335 | 3.719 |
+| `aon_dlonly`, `sch_medbusy_dlonly` | 2.707 | 2.848 | 0.856 | 0.901 | 3.719 |
+| `sch_busy_ulsel` | 2.275 | 2.275 | 1.348 | 1.418 | 2.275 |
+| `sch_busy_dlonly` | 2.275 | 2.275 | 0.856 | 0.901 | 2.275 |
+
+The all-user criterion lowers the AI-era (26/74) limits by 5–6%. It also
+lowers the 10/90 DL-only-carrier limit from 2.848 to 2.707.
+
+**Daily site energy** (kWh, S0, 50 dBm). ✓ marks all-user-feasible, ✗
+infeasible; the best feasible policy is in bold.
+
+| Mix, g | `35only` | `aon_ulsel` | `sch_busy_ulsel` | `sch_medbusy_ulsel` | Best feasible |
+|---|---|---|---|---|---|
+| 10/90, 0.5 | 57.19 ✓ | 66.38 ✓ | 59.55 ✓ | 63.34 ✓ | **`35only`** |
+| 10/90, 1.0 | 63.67 ✓ | 69.15 ✓ | 63.84 ✓ | 66.11 ✓ | **`35only`** (0.2% below `sch_busy_dlonly`) |
+| 10/90, 1.5 | 70.96 ✗ | 71.93 ✓ | 68.41 ✓ | 68.90 ✓ | **`sch_busy_dlonly`** 68.37 |
+| 10/90, 2.0 | 76.87 ✗ | 74.74 ✓ | 73.26 ✓ | 71.70 ✓ | **`sch_medbusy_dlonly`** 71.60 |
+| 10/90, 3.0 | 82.48 ✗ | 80.41 ✓ | 81.99 ✗ | 77.37 ✓ | **`sch_medbusy_ulsel`** |
+| 10/90, 4.0 | ✗ | ✗ | ✗ | ✗ | none (g > 3.719) |
+| 26/74, 1.0 | 63.67 ✗ | 69.25 ✓ | 63.90 ✓ | 66.22 ✓ | **`sch_busy_ulsel`** |
+| 26/74, 2.0 | 76.87 ✗ | 74.96 ✓ | 73.38 ✗ | 71.92 ✓ | **`sch_medbusy_ulsel`** |
+| 26/74, ≥ 2.25 | ✗ | ✗ | ✗ | ✗ | none (g > 2.201) |
+
+**Saving of the best feasible schedule vs always-on** (`aon_ulsel`):
+
+| Mix | S0 | S1 | S2 |
+|---|---|---|---|
+| 10/90 | 13.8% (g 0.5), 7.9% (g 1), 3.6–5.0% (g 1.5–3.5) | 27.1%, 21.6%, 6.4–13.8% | 45.0%, 40.4%, 10.3–26.2% |
+| 26/74 | 13.9% (g 0.5), 7.7% (g 1), 4.1–4.2% (g 1.5–2) | 27.2%, 16.5%, 7.0–7.2% | 45.0%, 28.5%, 11.1–11.3% |
+
+**Findings of record.**
+- **Feasibility decides when 7.2 GHz is needed.**
+  - It must be on in the busy level beyond g = 1.445 (10/90) or g = 0.856
+    (26/74, all-user).
+  - It must also be on in the medium level beyond g = 2.275 (10/90) or
+    g = 1.348 (26/74).
+  - Nothing is feasible beyond g = 3.719 (10/90) or g = 2.201 (26/74).
+  - At 26/74 the 3.5 GHz layer alone already fails today's busy hour.
+- **Energy decides between the feasible schedules, and the answer depends
+  on the overhead.**
+  - Under S0, a loaded 7.2 GHz layer is near energy-neutral (E-P1). At high
+    load it lowers site energy: at 10/90, g = 2, always-on uses 74.74 kWh
+    against 76.87 kWh for 3.5 GHz only, which is infeasible there anyway.
+  - So under S0, waking 7.2 GHz for the medium level pays for itself at
+    10/90 from g ≈ 1.75: `sch_medbusy` beats `sch_busy`.
+  - Under S1 and S2, every on-hour costs energy. The best schedule keeps
+    7.2 GHz asleep in every level that feasibility allows. For example, at
+    10/90 under S1/S2 it is `35only` up to g = 1.25.
+- **The schedule choice at intermediate growth is hardware-dependent**
+  (post-hoc analysis of the registered sensitivity rows, not a registered
+  test). Under S0, in 0–7 of the 20 feasible (mix, g) points, the best
+  policy differs from the primary's. This happens at 43 or 53 dBm, at
+  M_RF 64/128/1024, with Cat 2, and in the 3.5 GHz left case (one point).
+  All such changes fall in g = 0.75–2.25. The feasible sets never change.
+  - This follows from E-P1: near energy-neutrality, small hardware changes
+    flip the choice.
+  - At low g (`35only`) and at high g (`sch_medbusy_ulsel`) the choice is
+    robust.
+- **UL enabled vs DL-only carrier is an energy tie.**
+  - Where both are feasible, the difference is ≤ 0.2%. The DL-only carrier
+    is slightly cheaper, because the 3.5 GHz model has no UL-load term:
+    moving UL traffic to 7.2 GHz adds 7.2 GHz power and saves none.
+  - This is a model asymmetry and is stated. The choice between them is set
+    by feasibility.
+- **UL-agnostic evaluation (precursor of H2; derived from the registered
+  outputs, scored in P3.3).** The minimum-energy schedule under the DL-only
+  view, against the UL-aware (all-user) optimum:
+  - At 26/74 it claims feasibility up to g = 3.719, where no UL-feasible
+    schedule exists beyond 2.201 (1.69×).
+  - Where both exist, it claims an extra saving of 0.2–1.0% (S0), 4.3–7.4%
+    (S1) and 14.5–16.9% (S2). For example, at S2, g = 1 it picks `35only` at
+    64.38 kWh against `sch_busy_ulsel` at 77.34 kWh. The saving is bought
+    with a UL violation.
+  - At 10/90 the DL-only view errs only beyond g = 2.707, by ≤ 0.22%.
+- **Transitions are negligible in energy, not in service.**
+  - Reactive and proactive wake, and SMTC 20 vs 160 ms, change daily energy
+    by < 1e-5 relative.
+  - A reactive wake leaves a 0.155 s gap (Cat 1) or 10.105 s gap (Cat 2) per
+    day, served by the 3.5 GHz layer alone. It is a QoS violation wherever
+    that state is infeasible, e.g. `sch_busy_ulsel` at 10/90, g = 2.
+- **Energy per delivered bit** falls with load. At 10/90, S0: 7.79 J/Mbit
+  (`35only`, g = 1); 4.39 J/Mbit (`sch_medbusy_ulsel`, g = 2); 3.16 J/Mbit
+  (g = 3).
+- **Sensitivities of absolute energy** (S0, max change over 330 rows):
+
+  | Sensitivity | Max change |
+  |---|---|
+  | 3.5 GHz "left" case | 21.7% (P_3.5(0) = 891.8 vs 712.2 W) |
+  | M_RF 1024 | 35.7% |
+  | M_RF 64 / 128 | 9.2% / 6.2% |
+  | Cat 2 deep sleep | 3.3% |
+  | Cat 2 + Set 3 | 6.3% |
+  | Set 3 | 0.16% |
+  | Reactive wake, SMTC 160 ms | < 1e-5 |
+
+**Limitations**, stated wherever these results are used:
+- The best-carrier rule leaves the 3.5 GHz DL nearly idle when 7.2 GHz is
+  on. A load-balancing association could change both energy and capacity.
+- The 3.5 GHz model has no UL-load term.
+- Homogeneous sectors (D15).
+- Time-of-day schedules only.
+- The ETSI step profile, with its order assumed.
+- The FR1 → 7.2 GHz extrapolations: the TR ladder and TS 38.133.
+- Flow-level traffic.
+- Confidence intervals are over realizations. Near-ties (< 0.2%) are not
+  resolved by paired tests here; P3.3 uses paired comparisons.
+
+**Decision** (registered rule; all gates passed):
+- P3.2c's energy mapping, state machine and ledger are P3.3's energy layer;
+- the all-user criterion is P3.3's primary service constraint;
+- P3.3's controllers are compared with the minimum-energy all-user-feasible
+  P3.2c schedule at each g;
+- S0–S2 are reported for every P3.3 result.
 
 ## 4. Open items
 

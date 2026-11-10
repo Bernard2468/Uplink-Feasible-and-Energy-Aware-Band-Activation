@@ -1,0 +1,105 @@
+{
+  "E0_provenance": {
+    "inputs": {
+      "p3_1_manifest": true,
+      "p3_1_config": true,
+      "p3_1_outputs": true,
+      "p3_2a_manifest": true,
+      "p3_2a_config": true,
+      "p3_2b_manifest": true,
+      "p3_2b_run_of_record": true,
+      "p3_2b_config": true,
+      "p3_2b_outputs": true
+    },
+    "constants": {
+      "levels": true,
+      "growth": true,
+      "mixes": true,
+      "epsilon": true,
+      "hardware": true,
+      "cases35": true,
+      "sleep": true,
+      "wake": true,
+      "policies": true,
+      "p3_2b_layer": true
+    },
+    "passed": true
+  },
+  "E1_power_reproduction": {
+    "compared": 216,
+    "max_rel_diff": 0.0,
+    "s2_parity_max_rel_diff": 0.0,
+    "s1_primary_w": 172.02662648258803,
+    "passed": true,
+    "s1_primary_vs_hand_estimate_w": [
+      172.02662648258803,
+      172.0
+    ]
+  },
+  "E2_p32b_reproduction": {
+    "calibration_equal": true,
+    "raw_arrays_compared": 26,
+    "raw_mismatches": 0,
+    "x_star_compared": 8,
+    "x_star_mismatches": 0,
+    "reference": "P3.2b run 2 (results/phase3/p3_2b_traffic_resources), ISD 200, C_deployment",
+    "passed": true
+  },
+  "E3_new_levels": {
+    "solves": 23,
+    "not_converged": 0,
+    "max_residual": 1.6437295968785293e-11,
+    "closure_max_rel": 2.0106346484889606e-16,
+    "occupancy_identity_max_abs": 1.615874101190684e-11,
+    "load_range_bad": 0,
+    "workload_mismatches": 0,
+    "workload_comparisons": 246,
+    "monotone_load_bad": 0,
+    "zero_traffic_bad": 0,
+    "passed": true
+  },
+  "E4_all_user": {
+    "identity_max_abs": 1.829647544582258e-13,
+    "monotone_all_bad": 0,
+    "all_above_admitted": 0,
+    "passed": true
+  },
+  "E5_ledger": {
+    "scenarios": 15180,
+    "coverage_max_abs_s": 0.0,
+    "sequence_max_rel": 5.200362819136259e-16,
+    "short_sleep": 0,
+    "e_add_count_bad": 0,
+    "service_72_outside_on": 0.0,
+    "passed": true
+  },
+  "E6_causality": {
+    "schedule_parameters": [
+      "policy",
+      "wake",
+      "t_tr",
+      "t_scell",
+      "levels",
+      "policies"
+    ],
+    "no_traffic_input": true,
+    "derivations": 88,
+    "violations": 0,
+    "passed": true
+  },
+  "E7_overhead": {
+    "compared": 3960,
+    "order_bad": 0,
+    "increment_max_rel": 9.692725988665341e-14,
+    "passed": true
+  },
+  "E8_toy_fixtures": {
+    "no_activation_j": 374403.0,
+    "activation_1s_j": 374451.0,
+    "short_sleep_rejected": true,
+    "reactive_gap_s": 0.15499999999974534,
+    "passed": true
+  },
+  "smoke_run": false,
+  "all_checks_passed": true
+}

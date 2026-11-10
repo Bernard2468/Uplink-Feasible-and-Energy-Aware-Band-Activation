@@ -1,0 +1,30 @@
+E0 PASS; E1 PASS
+ISD 200: victims [935, 5756], case C_deployment
+ISD 200: realization 10/100, 7 s
+ISD 200: realization 20/100, 15 s
+ISD 200: realization 30/100, 22 s
+ISD 200: realization 40/100, 30 s
+ISD 200: realization 50/100, 37 s
+ISD 200: realization 60/100, 47 s
+ISD 200: realization 70/100, 54 s
+ISD 200: realization 80/100, 61 s
+ISD 200: realization 90/100, 68 s
+ISD 200: realization 100/100, 74 s
+E2 PASS (358 s)
+levels solved (429 s); E3 PASS
+ledger: 15180 scenarios (7 s); E5 PASS
+E4_all_user PASS
+E6_causality PASS
+E7_overhead PASS
+E8_toy_fixtures PASS
+E0_provenance PASS
+E1_power_reproduction PASS
+E2_p32b_reproduction PASS
+E3_new_levels PASS
+E4_all_user PASS
+E5_ledger PASS
+E6_causality PASS
+E7_overhead PASS
+E8_toy_fixtures PASS
+predictions {"E_P1_offload_near_neutral_S0": {"ratio": 1.0066951246753226, "held": true}, "E_P2_overhead_decides": {"ratio_S2": 1.5295094037954182, "held": true}, "E_P3_low_period_sleep": {"savings": {"S0": [{"mix": "ericsson_typical", "g": 0.5, "saving": 0.045735127684266796}, {"mix": "ericsson_typical", "g": 0.75, "saving": 0.04480278741737176}, {"mix": "ericsson_typical", "g": 1.0, "saving": 0.04390457864466457}, {"mix": "ericsson_typical", "g": 1.25, "saving": 0.04303872911877049}, {"mix": "ericsson_typical", "g": 1.5, "saving": 0.04220359339349278}, {"mix": "ericsson_typical", "g": 1.75, "saving": 0.04139751674744441}, {"mix": "ericsson_typical", "g": 2.0, "saving": 0.040618996653757566}, {"mix": "ericsson_typical", "g": 2.25, "saving": 0.03986665865573391}, {"mix": "ericsson_typical", "g": 2.5, "saving": 0.039139230466359365}, {"mix": "ericsson_typical", "g": 2.75, "saving": 0.03843550986161659}, {"mix": "ericsson_typical", "g": 3.0, "saving": 0.03775431242766836}, {"mix": "ericsson_typical", "g": 3.25, "saving": 0.037094541844818196}, {"mix": "ericsson_typical", "g": 3.5, "saving": 0.036455200664119336}, {"mix": "genai_2025", "g": 0.5, "saving": 0.045698010279841106}, {"mix": "genai_2025", "g": 0.75, "saving": 0.044749281557549425}, {"mix": "genai_2025", "g": 1.0, "saving": 0.04383597039509024}, {"mix": "genai_2025", "g": 1.25, "saving": 0.04295619740882328}, {"mix": "genai_2025", "g": 1.5, "saving": 0.04210822112160195}, {"mix": "genai_2025", "g": 1.75, "saving": 0.04129029887645963}, {"mix": "genai_2025", "g": 2.0, "saving": 0.040500849977805564}], "S2": [{"mix": "ericsson_typical", "g": 0.5, "saving": 0.11955961870534015}, {"mix": "ericsson_typical", "g": 0.75, "saving": 0.11801158575231974}, {"mix": "ericsson_typical", "g": 1.0, "saving": 0.1164978277885188}, {"mix": "ericsson_typical", "g": 1.25, "saving": 0.11501733659500846}, {"mix": "ericsson_typical", "g": 1.5, "saving": 0.11356915370388487}, {"mix": "ericsson_typical", "g": 1.75, "saving": 0.11215214629902792}, {"mix": "ericsson_typical", "g": 2.0, "saving": 0.11076529731110085}, {"mix": "ericsson_typical", "g": 2.25, "saving": 0.10940768108014343}, {"mix": "ericsson_typical", "g": 2.5, "saving": 0.10807843197098099}, {"mix": "ericsson_typical", "g": 2.75, "saving": 0.10677669757337593}, {"mix": "ericsson_typical", "g": 3.0, "saving": 0.10550154944746637}, {"mix": "ericsson_typical", "g": 3.25, "saving": 0.10425212031415088}, {"mix": "ericsson_typical", "g": 3.5, "saving": 0.10302763571458118}, {"mix": "genai_2025", "g": 0.5, "saving": 0.11949843599985022}, {"mix": "genai_2025", "g": 0.75, "saving": 0.11792203249836364}, {"mix": "genai_2025", "g": 1.0, "saving": 0.1163812841973656}, {"mix": "genai_2025", "g": 1.25, "saving": 0.11487511146144036}, {"mix": "genai_2025", "g": 1.5, "saving": 0.11340249027709837}, {"mix": "genai_2025", "g": 1.75, "saving": 0.11196222420422408}, {"mix": "genai_2025", "g": 2.0, "saving": 0.11055323919912663}]}, "held": true}, "basis": "ISD 200, C, 50 dBm, M_RF 256, 3.5 GHz right, cat1, set1, proactive wake, SMTC 20 ms"}
+P3.2c GATES PASSED 996 s

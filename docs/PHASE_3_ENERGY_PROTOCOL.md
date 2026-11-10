@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c next.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); revision 4 and P3.2c pre-registered, run 1 pending.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -644,14 +644,168 @@ These decisions were fixed before any P3.2b output on the real layout.
 - **Reported separately:** the share of users in that band and in TR 36.942's
   low end.
 
+### Revision 4 (2026-11-10, after P3.2b, before P3.2c)
+
+These decisions were fixed before any P3.2c output. They answer the ChatGPT
+audit of P3.2b and its P3.2c review (§7).
+
+**D20: presentation labels: carrier selection, not carrier aggregation.**
+- **What the code does.** `assign()` gives each user one carrier per
+  direction, chosen statically by full-buffer peak rate (D19). No user
+  transmits on both carriers at once. There is no UE power split, and no
+  CA signalling or capability limit.
+- **Labels used in tables, figures and text from now on:**
+
+  | Code name | Label |
+  |---|---|
+  | `on` (DL) | 7.2 GHz DL carrier selection |
+  | `on_ulca` (UL) | 7.2 GHz UL enabled (UL carrier selection) |
+  | `on_scell_dl` (UL) | DL-only 7.2 GHz carrier (UL stays on 3.5 GHz) |
+
+- **The code names are kept** so that every run reproduces.
+- **P3.2b's text keeps its wording as the record.** Its "UL CA gain" reads as
+  the gain from enabling 7.2 GHz UL carrier selection.
+- **Per-UE simultaneous UL CA is not modelled.** It needs per-UE
+  multi-carrier scheduling, UE power sharing and capability limits. Whether
+  it would raise or lower the gain is not claimed.
+
+**D21: two service criteria; the all-user one is primary for energy.**
+- **(a) Admitted-user** pooled outage ≤ 5% (D17, as registered). It is kept
+  to reproduce P3.2b and to compare with it.
+- **(b) All-user** outage ≤ 5% (new). A user that cannot be admitted counts
+  as in outage, and its offered demand stays in the ledger as unservable.
+  - Exactly, out_all = n + (1 − n)·out_adm, where n is the not-admitted
+    share. So (b) is out_adm ≤ (0.05 − n)/(1 − n).
+  - Example: case C at ISD 200, UL with 3.5 GHz only. n = 2.197%, so the
+    admitted users keep a 2.866% budget.
+- **(b) is primary for every energy comparison from P3.2c on.** An energy
+  saving is reported only between policies that both meet the same
+  criterion in every level of the day. Otherwise the comparison is
+  reported as a service–energy trade-off.
+- **Neither criterion is "M.2410 compliance".**
+  - The target rate comes from M.2410's 5th-percentile SE (D17).
+  - The evaluation is this model's own: flow-level, with static association.
+    It is not the M.2412 full-buffer method, which samples all user
+    locations.
+
+**D22: ISD 500 leaves the energy stages.**
+- **Why.** Under (b), ISD 500 fails at any traffic: 21.7% of users cannot be
+  admitted in the UL, with or without 7.2 GHz.
+- **Consequence.** P3.2c and P3.3 run at ISD 200 only.
+- **How ISD 500 is reported.** As a coverage boundary (an H4 regime), from
+  P3.2b's outputs, with open item 6.
+- This removes about three quarters of the compute.
+
+**D23: wake delay = TR transition time + SCell activation delay.** This
+replaces D7's max with a sum: UE SCell activation needs the SCell's SSBs,
+which a sleeping cell sends only once its wake-up is complete.
+- **Source:** TS 38.133 V19.6.0 (38133-j60, SHA-256 a4203e77…) cl. 8.3.2.
+  - A 7.2 GHz cell after deep sleep is an *unknown* SCell. Activation is
+    inter-band.
+  - FR1 rule: T_activation = T_FirstSSB_MAX + T_SMTC_MAX + 2·T_rs + T_Δ + 5 ms.
+  - With SMTC period P, T_FirstSSB_MAX ≤ P and T_SMTC_MAX = T_rs = P.
+    T_Δ = 0, because the SSB is not 12 PRB wide. So T_activation ≤ 4P + 5 ms.
+  - The CSI report is due by T_HARQ + T_activation + T_CSI_reporting. The
+    spec gives these two terms no number; one SMTC period P is allowed for
+    them together (an assumption).
+  - Hence **T_SCell = 5P + 5 ms**.
+
+  | Use | SMTC period P | T_SCell |
+  |---|---|---|
+  | Primary | 20 ms (the SSB period a UE assumes for initial access) | 105 ms |
+  | Sensitivity | 160 ms (the longest SMTC period) | 805 ms |
+
+- **Label:** 7.2 GHz lies above FR1 (7.125 GHz), and TS 38.133 defines no
+  FR3 requirement. The FR1 rule is used as an extrapolation, like D4's TR
+  ladder.
+- **This closes open item 3.**
+
+**D24: P3.2c scope.**
+- **Network.** ISD 200, case C. The 7.2 GHz hardware matches the radio's DL
+  power (D10):
+
+  | DL offset | Hardware | Role |
+  |---|---|---|
+  | −3 dB | 50 dBm, SiGe | Primary |
+  | 0 dB | 53 dBm, assumed PA, η 0.15 | Sensitivity |
+  | −10 dB | 43 dBm, SiGe | Sensitivity |
+
+  - M_RF = 256. The M_RF = 64 / 128 / 1024 rows are energy only and
+    labelled "service architecture not matched" (D3).
+  - The 3.5 GHz layer is the measurement-anchored model, "with µDTX / AFE
+    idle" (right); "without" (left) is a sensitivity.
+- **Day.** The ETSI ES 202 706-1 Table 3 durations, in a fixed order:
+
+  | Level | Hours | Traffic |
+  |---|---|---|
+  | Low | 00–06 | Zero (SSB/RMSI only, D18) |
+  | Medium | 06–16 | x = g·x_30 |
+  | Busy | 16–24 | x = g |
+
+  - The order is an assumption. Any contiguous order gives the schedules
+    below one wake and one sleep per day.
+- **Growth** g ∈ {0.5, 0.75, …, 4.0} (15 values). This covers the P3.2b
+  decision rule's span (g = 1 to ≥ 3.719).
+- **Mixes:** 10/90 (primary) and 26/74 (stress).
+- **Policies** (time-of-day schedules, not controllers). Controllers are
+  P3.3's.
+
+  | Policy | 7.2 GHz state |
+  |---|---|
+  | `35only` | 3.5 GHz only; 7.2 GHz in deep sleep all day, with no transitions |
+  | `aon_ulsel`, `aon_dlonly` | On all day, with UL enabled or DL only |
+  | `sch_busy_*` | On in the busy level, asleep otherwise |
+  | `sch_medbusy_*` | On in medium and busy, asleep in low |
+  | `bound_*` | Each schedule with zero transition time, zero E_add and zero T_SCell; labelled "optimistic bound", never a deployable result |
+
+- **Sleep.** A sleeping 7.2 GHz cell uses deep sleep, the minimum-energy
+  state for multi-hour sleeps (P3.1 break-even ≤ 10 s). Both TR categories
+  (Set 1) are reported; Set 3 is a sensitivity.
+- **Wake** (D4, D23).
+  - **Proactive (primary).** The schedule issues the wake request
+    T_TR + T_SCell before the level boundary. It is a time-of-day rule and
+    uses no traffic information.
+  - **Reactive (sensitivity).** The request is issued at the boundary.
+    Until the SCell is active, the level's traffic is carried by the
+    3.5-GHz-only state. Those seconds are reported, and flagged as a
+    violation where that state fails the criterion.
+  - The 7.2 GHz cell serves nothing while asleep, waking or activating.
+    While activating it draws P_empty.
+
+**D25: energy mapping.**
+- **Per cell, per level.**
+  - The 3.5 GHz power is the 1.3 model at its DL occupancy L_3.5,DL. The
+    1.3 model has no UL-load term.
+  - The 7.2 GHz power is the FR3 model at (L_7.2,DL, L_7.2,UL). L_7.2,UL = 0
+    for a DL-only carrier.
+  - The loads are P3.2b's realized occupancies (D7) for the state the policy
+    is in.
+- **Overhead S0–S2** (D11), per hardware point:
+  - S1 = 17 W·(N_PA·P_max / 1 W)^0.25 / 0.81 + 90 W / 0.855;
+  - S2 = P_3.5(0) − P_empty,7.2.
+  - P_aux is added in every in-frame state, and the sleep anchor becomes
+    P_µ + P_aux.
+- **Site sums.** Site power is the sum over the three sectors' cells (D1).
+- **Uncertainty.** Confidence intervals are over the 100 realizations,
+  which are the clusters. The three sectors of a realization are
+  correlated.
+- **Energy per bit.** Daily site energy divided by the bits delivered (DL +
+  UL).
+
+**D26: stage plan.**
+- P3.4's held-out evaluation is merged into P3.3. Its held-out seeds are
+  registered in P3.3's pre-registration, so the two need one measured run.
+- Gates passed by P3.2a/P3.2b are not repeated. P3.2c inherits them through
+  one bitwise reproduction gate (E2).
+
 ## 3. Stages and gates
 
 | Stage | Content | Gate (to be pre-registered) |
 |---|---|---|
 | P3.1 | Hardware energy models of both layers; state ladder | Source versions and hashes recorded; 1.3 Table II recomputed from 1.4 (both static-term forms reported); 1.2's totals (740 / 1658 / 300 / 1044 W, PA 262 W) reproduced, or, where an input is not stated in the source, labelled "not independently reproducible" under a rule fixed before the run (no input tuned to force agreement); TR tables transcribed and checked against the .docx; D10 feasibility; D4 state consistency (powers ≥ 0, ordered deep < light < micro, legal transitions, D ≥ T, energy in J); unit tests on small worked examples |
 | P3.2 | Split into P3.2a (coupled radio engine), P3.2b (traffic and resources), P3.2c (time-dependent energy); see D12 | P3.2a: gates Q0–Q7. P3.2b: gates B0–B8 (closure, calibration, identical workloads, fixed-point uniqueness, independent reference). P3.2c: state-machine and energy-ledger gates, causality, no service while asleep or waking, P_aux S0–S2 |
-| P3.3 | Controllers and baselines | Causality checks; DP = brute force on small instances; Δ ≥ transition times; wake delay enforced |
-| P3.4 | Evaluation | Paired seeds, confidence intervals, held-out seeds/geometry/load/hardware; H1–H4 scored as pre-registered |
+| P3.3 | Controllers and baselines, with P3.4's held-out evaluation (D26) | Causality checks; DP = brute force on small instances; Δ ≥ transition times; wake delay enforced; paired seeds, confidence intervals, held-out seeds/load/hardware; H1–H4 scored as pre-registered |
+| P3.4 | Merged into P3.3 (D26) | — |
 
 ### P3.1 source-reproduced hardware energy models (PRE-REGISTERED 2026-11-09)
 
@@ -1345,6 +1499,120 @@ least the all-on UL-CA x*_both of the primary point, with the
 | 10/90 (primary) | 3.719 | 1.445 |
 | 26/74 (stress) | 2.335 | 0.901 |
 
+### P3.2c time-dependent energy and service ledger (PRE-REGISTERED 2026-11-10)
+
+Config `configs/p3/p3_2c_energy_ledger.json`, code
+`scripts/p3_2c_energy_ledger.py`, tests `tests/test_p3_2c_energy_ledger.py`.
+It imports the P3.2b layer and the P3.1 energy models unchanged, and
+implements D20–D25.
+
+**What it computes.**
+1. **The radio states.** It rebuilds the P3.2b population (ISD 200, case C,
+   100 realizations) and solves every state at every traffic level of the
+   day. The states are:
+   - DL: 3.5 GHz only, and with 7.2 GHz carrier selection at each of the
+     three DL offsets;
+   - UL: 3.5 GHz only, and with 7.2 GHz UL enabled, for both mixes.
+2. **Per level and state**, per cell: the loads, the admitted-user and
+   all-user outage, and the offered, served, unserved and unservable
+   traffic.
+3. **Sustainable traffic x*** under both criteria, per state, by bisection
+   as in P3.2b. The criteria are admitted-user (registered, P3.2b) and
+   all-user (new).
+4. **Per policy**, its sustainable growth g*:
+   - g* = min(x*_both of the busy-level state, x*_both of the medium-level
+     state / x_30);
+   - computed under three criteria: all-user, admitted-user, and a DL-only
+     all-user view (the UL-agnostic evaluation).
+5. **The daily energy ledger** per site, per policy × mix × g × hardware ×
+   S0/S1/S2 × TR category × wake mode:
+   - 3.5 GHz and 7.2 GHz energy;
+   - transitions and E_add;
+   - activation intervals;
+   - reactive-gap seconds;
+   - delivered bits, and J per bit.
+
+   Sensitivities (primary hardware, S0, Cat 1, proactive wake unless
+   stated):
+   - M_RF 64 / 128 / 1024;
+   - the 3.5 GHz "left" case;
+   - Set 3 ratios;
+   - SMTC 160 ms (both categories and wake modes).
+
+**Gates** (pass rule: E0–E8):
+
+| Gate | Check |
+|---|---|
+| E0 | P3.1, P3.2a and P3.2b manifests passed, and their configs and outputs match their hashes. P3.2b's result of record is run 2, with its manifest hash in the config. Code constants equal the config (day, grid, mixes, ε, hardware map, S1 rule, T_SCell rule) |
+| E1 | Power functions reproduce P3.1's tabulated values to ≤ 1e-12 relative: 3.5 GHz (both cases, six loads); 7.2 GHz (three hardware points, eight load pairs, P_µ, P_empty, both ladders' p, T and E_add for Cat 1/2 × Set 1/3). S2's 7.2 GHz no-load power equals P_3.5(0) to ≤ 1e-12 |
+| E2 | Reproduction of P3.2b run 2 (ISD 200, C), bitwise: the calibration (T_0.3, T_0.5); every raw load array on P3.2b's grids (DL off/on at three offsets; UL off, UL enabled, DL-only); and the admitted-user x* of every state |
+| E3 | On the new levels: every fixed point converged (residual ≤ 1e-9); closure ≤ 1e-12; occupancy identity ≤ 1e-9; 0 ≤ L ≤ 1; offered per-user workload bitwise identical across states; loads non-decreasing in traffic |
+| E4 | All-user consistency: out_all = n + (1 − n)·out_adm to ≤ 1e-12 at every level and state; all-user x* ≤ admitted x*; out_all non-decreasing in traffic |
+| E5 | Ledger, for every policy and scenario: the 7.2 GHz cell's intervals cover 86 400 s exactly once (≤ 1e-9 s); the energy equals an independent recomputation with P3.1's `sequence_energy` (≤ 1e-12 relative); every sleep ≥ its T; one E_add per sleep period; zero 7.2 GHz service in sleep, wake and activation intervals |
+| E6 | Causality: every decision is a function of the time of day. With the traffic after each boundary replaced, every decision before it is unchanged. Reactive requests never precede the traffic change |
+| E7 | Overhead: E(S0) < E(S1) < E(S2) for every policy with a 7.2 GHz cell. E(S1) − E(S0) equals an independent sum of the P_aux increments over in-frame, sleep and E_add terms (≤ 1e-9 relative) |
+| E8 | In-run toy fixtures with hand-computed answers: a two-level toy day (joules); a sleep shorter than T is rejected; a reactive gap of exactly T_TR + T_SCell |
+
+**Predictions.** All at ISD 200, case C, 50 dBm, M_RF 256, the 3.5 GHz right
+case, Cat 1, proactive wake.
+- **E-P1 (offload is near energy-neutral in the busy hour, S0).** At g = 1
+  and 10/90:
+
+  0.90 ≤ P̄_site,busy(`aon_ulsel`) / P̄_site,busy(`35only`) ≤ 1.10
+
+  P̄ is the mean over realizations of the site power in the busy level.
+  For `35only` it includes the 7.2 GHz deep-sleep power.
+- **E-P2 (overhead decides it).** The same ratio under S2 is ≥ 1.25.
+- **E-P3 (value of sleeping in the low period).** Measured as
+  1 − E(`sch_medbusy_ulsel`) / E(`aon_ulsel`), at every g of the grid where
+  both are all-user-feasible, for both mixes:
+  - between 0.03 and 0.08 under S0;
+  - ≥ 0.10 under S2.
+
+**Expectations, not scored.**
+- Transitions (E_add and activation intervals) are below 0.1% of the
+  7.2 GHz layer's daily energy for every schedule, scenario, category and
+  wake mode.
+- DL all-user x* equals admitted x*, because no DL user is unadmitted at
+  ISD 200.
+- At 26/74 and g = 1, `35only` and every DL-only policy are
+  all-user-infeasible. This follows from P3.2b's x*_UL(off) = 0.901; it is
+  a consequence, not a test.
+
+**Decision rule.** If all gates pass:
+- P3.2c's energy mapping, state machine and ledger are P3.3's energy layer;
+- the all-user criterion is P3.3's primary service constraint;
+- P3.3's controllers are compared with the best P3.2c schedule (the
+  minimum-energy all-user-feasible schedule at each g) as the non-adaptive
+  reference;
+- if E-P1 and E-P2 both hold, the busy-hour energy case for 7.2 GHz is
+  reported as overhead-dependent (H4), and P3.3 reports S0–S2 for every
+  result.
+
+**Declared before registration.**
+- Every P3.1 and P3.2b output (both runs) and TS 38.133 cl. 8.3.2 had been
+  read.
+- Hand estimates made while designing the predictions, from P3.1's tables
+  and an assumed busy-hour 7.2 GHz DL load of about 0.15 (no P3.2c output
+  was computed):
+
+  | Quantity | Estimate |
+  |---|---|
+  | E-P1 ratio | ≈ 0.97 |
+  | S2 ratio | ≈ 1.5 |
+  | Saving from sleeping in the low period, S0 | ≈ 4.5% |
+  | Saving from sleeping in the low period, S2 | ≈ 12% |
+  | S1 at the primary point | 172.0 W |
+
+- **Tests:** 14, on hand-checkable fixtures. The full suite passes.
+- **One smoke run** (2 realizations, scratch folder, 26 s).
+  - Every gate E0–E8 was computable and passed. In smoke mode E2 is code
+    path only, because no 2-realization reference exists.
+  - The smoke flag forced the overall verdict to fail.
+  - It printed no result values, and its output files were not opened.
+- **A key-existence check of E2's P3.2b inputs:** 26 raw arrays and 8 x*
+  entries, with the expected shapes. It computed no new result.
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the
@@ -1356,7 +1624,8 @@ least the all-on UL-CA x*_both of the primary point, with the
    profile source. *Closed by D18 (2026-11-10):* the ETSI ES 202 706-1 load
    levels and durations, and the Ericsson UL/DL volume ratios (10/90 primary,
    26/74 stress).
-3. **P3.3, secondary-cell activation delay** from TS 38.133.
+3. **P3.3, secondary-cell activation delay** from TS 38.133. *Closed by D23
+   (2026-11-10):* the FR1 rule of cl. 8.3.2, extrapolated to 7.2 GHz.
 4. **Radio–hardware architecture caveat** (D2, D3): stated in the paper,
    with E1.4 S4 as its radio-side size.
 5. **Model-class asymmetry** (found in P3.1 run 2). The 3.5 GHz model is
@@ -1374,6 +1643,9 @@ least the all-on UL-CA x*_both of the primary point, with the
      (78.3%). It carries one pre-registered sensitivity on the edge-user
      rule (R_UL or the outage percentile), with values fixed before the
      run. ISD 200 carries the headline numbers.
+   - *Resolved by D22 (2026-11-10):* under the all-user criterion ISD 500
+     fails at any traffic. It leaves the energy stages and is reported as a
+     coverage boundary.
 
 ## 5. Audit of P3.0 (ChatGPT, 2026-11-09) and response
 
@@ -1413,3 +1685,22 @@ unverified date and the D7 misreading above. This table is the record.
 | P_site = P_3.5 + P_7.2 + P_shared, with no double counting | Agreed | D1: shared site terms are omitted and stated; each model's η counts once |
 | IEEE TCOM date 13 May 2026 | Recorded, not verified here | §1.3 |
 | Addition of mine: cluster scoring needs a truncation test | — | D14, decided by P3.2a's rule |
+
+## 7. Audit of P3.2b and review of the P3.2c design (ChatGPT, 2026-11-10) and response
+
+| Point | Verdict | Action |
+|---|---|---|
+| `on_ulca` assigns one UL carrier per user; it is not per-UE UL CA | **Correct** (`assign()`, line 218) | D20. The same holds for the DL `on` state, which the review did not mention |
+| Admitted-user outage is not the M.2412 all-location measure; report all-user outage too | **Correct** | D21. All-user ≤ 5% is primary for energy. P3.2b already recorded the all-user outage per grid point, but no criterion used it |
+| ISD 200: admitted budget (0.05 − 0.0219694)/(1 − 0.0219694) = 0.02866; ISD 500 cannot meet 5% all-user | **Correct** (arithmetic checked) | D21, D22 |
+| Do not overwrite P3.2b's registered metric or verdicts | Agreed | P3.2b's section is the record; D20 and D21 apply prospectively |
+| S2 must use P_empty, not P_micro; recompute the sleep anchors for each scenario | Agreed (already D11) | E1 checks that S2's no-load power equals P_3.5(0) |
+| Include UE SCell activation; do not assume zero without a source | Agreed | D23, from TS 38.133 cl. 8.3.2 (FR1 rule, extrapolated) |
+| Recompute association, interference and outage for the actual activation pattern; never reuse all-on loads | Agreed (already D8) | Each state is solved by the P3.2b engine; E2 checks the reproduction bitwise |
+| The engine is homogeneous by sector index, not 57 independent controllers | **Correct** (D15's stated limit) | Kept as a stated limit. Heterogeneity is a P3.3 design question |
+| Gates C0–C12 | Adopted in substance as E0–E8 | C5 (coupling) was passed by P3.2a's Q gates and is inherited through E2. C6's queues do not exist in a flow-level model, so conservation is E3's closure. C8 (causality) is trivial for time-of-day schedules: it is E6 here and substantive in P3.3. C12's clustered intervals are over realizations (D25) |
+| Baselines: 3.5 only, always on, fixed schedules, an optimistic no-transition bound | Agreed | D24 |
+| Energy saving only where both policies meet the same service constraint | Agreed (already the research design's rule) | D21 |
+| Separate geometry randomness from traffic randomness | Agreed | P3.2c has no traffic randomness (flow-level means, ETSI step profile). It applies in P3.3 |
+| "Joules per correctly delivered bit" | Partly adopted | J per delivered bit is reported, with each policy's feasibility flags beside it; a bit delivered to a user below R is still delivered |
+| Git: the archive does not prove the remote state | Agreed | The user pushes; `git log origin/main..main` lists what is unpushed |

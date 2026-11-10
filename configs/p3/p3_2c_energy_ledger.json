@@ -1,0 +1,117 @@
+{
+  "experiment": "P3.2c: time-dependent energy and service ledger. Daily site energy and service of the 3.5/7.2 GHz network over the ETSI day, for time-of-day activation schedules, on the unchanged P3.2b traffic layer (run 2, result of record) and the unchanged P3.1 energy models; P3.0 revision 4 (D20-D26)",
+  "status": "pre-registered 2026-11-10 (P3.0 revision 4); not yet run",
+  "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, Revision 4 and section P3.2c",
+  "inputs": {
+    "p3_1": {"manifest": "results/phase3/p3_1_energy_models/manifest.json", "manifest_sha256": "26548154a287f2eeff588452a9419d20cac9aff02bb5d7871a534ce13980eef3",
+             "config": "configs/p3/p3_1_energy_models.json", "config_sha256": "85f786360194850152221bcfbdd9452e6c5fe2c604b0b9f784a5455f92e409a5"},
+    "p3_2a": {"manifest": "results/phase3/p3_2a_coupled_feasibility/manifest.json", "manifest_sha256": "71dc8462352991b7daec7f57e3386fa66a5945c41f141e89b494cd9a44585f82",
+              "config": "configs/p3/p3_2a_coupled_feasibility.json", "config_sha256": "178357fb0b8d0c7fb64cb99cca7ed6ed9e50364a2446212900aaf0009d3a44a1"},
+    "p3_2b": {"run_of_record": "run 2 (commit 60b358b, results committed in 3af70ab)",
+              "manifest": "results/phase3/p3_2b_traffic_resources/manifest.json", "manifest_sha256": "90732da73f07b795df22275ad4cc80f4a9698c003ee3df58478e5495d40b46cb",
+              "git_head": "60b358b0977a97a0d099f000a68a68b2db49eb39",
+              "config": "configs/p3/p3_2b_traffic_resources.json", "config_sha256": "e4e233610d43a5ca668a7467553c7dfaa00cdd3678d508ca93b33c8c3689d72d"}
+  },
+  "settings": {"isd": 200, "case": "C_deployment", "seed_and_realizations": "those of P3.2b (seed 20261110, 100 realizations)"},
+  "service": {
+    "epsilon": 0.05,
+    "criteria": {
+      "all_user": "primary (D21): outage share over all users, a not-admitted user counted in outage; DL and UL each <= epsilon in every level with traffic",
+      "admitted": "registered P3.2b criterion (D17): pooled outage of admitted users; DL and UL each <= epsilon in every level with traffic",
+      "dl_only_all_user": "the UL-agnostic evaluation: the all-user DL criterion alone"
+    },
+    "identity": "out_all = n + (1 - n) out_adm, n = not-admitted share"
+  },
+  "day": {
+    "levels": [{"name": "low", "start_s": 0.0, "end_s": 21600.0, "traffic": "zero"},
+               {"name": "medium", "start_s": 21600.0, "end_s": 57600.0, "traffic": "x = g x_30"},
+               {"name": "busy", "start_s": 57600.0, "end_s": 86400.0, "traffic": "x = g"}],
+    "source": "ETSI ES 202 706-1 V1.7.1 clause 7 Table 3 default durations 6 / 10 / 8 h (low = SSB + RMSI only, D18); the chronological order is an assumption",
+    "growth_grid": [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0],
+    "mixes": {"ericsson_typical": {"ul_dl": 0.1111111111111111, "role": "primary 10/90"},
+              "genai_2025": {"ul_dl": 0.35135135135135137, "role": "stress 26/74"}}
+  },
+  "hardware": {
+    "map_dl_offset_to_p3_1_point": {"-3.0": "50dBm_SiGe_SiGe_MRF256", "0.0": "53dBm_assumedPA_eta0.15_MRF256", "-10.0": "43dBm_SiGe_SiGe_MRF256"},
+    "primary_dl_offset": -3.0,
+    "m_rf_energy_only": ["50dBm_SiGe_SiGe_MRF64", "50dBm_SiGe_SiGe_MRF128", "50dBm_SiGe_SiGe_MRF1024"],
+    "m_rf_label": "service architecture not matched (D3): radio of M_RF 256",
+    "fr3_static_form": "golard (P3.1 amendment 1, published version)",
+    "layer_3p5": {"case_primary": "right", "case_sensitivity": "left", "load": "3.5 GHz DL realized occupancy (time-domain load N_a/N); no UL-load term"},
+    "layer_7p2_loads": "(L_7.2,DL, L_7.2,UL) realized occupancies; L_7.2,UL = 0 for a DL-only carrier"
+  },
+  "overhead": {
+    "S0": "P_aux = 0 (published FR3 model)",
+    "S1": {"rule": "P_misc / eta_afe + P_link / eta_dbb with Golard's AAU misc AFE P_misc = p_misc_ref (N_PA P_max / P*)^alpha12 and link-layer baseband P_link = p_link_ref / N_C^alpha3, N_C = 1; Golard values from the P3.1 config (golard_table2); eta = eta_supply x eta_cool",
+           "expected_primary_w": 172.0},
+    "S2": {"rule": "P_aux = P_3.5(load 0, case right) - P_empty,7.2 of the hardware point (no-load parity with the measured 3.5 GHz radio)"},
+    "state_rule": "P_aux in every in-frame state and in activation intervals; sleep anchor P_mu + P_aux; light/deep powers and E_add by the TR ratios of the adjusted anchor (D11)"
+  },
+  "sleep": {"state": "deep", "categories": ["cat1", "cat2"], "set_primary": "set1", "set_sensitivity": "set3",
+            "35only": "7.2 GHz held in deep sleep all day: deep-sleep power, no transition, no E_add"},
+  "wake": {
+    "modes": ["proactive", "reactive"], "primary": "proactive",
+    "proactive": "the schedule issues the wake request T_TR + T_SCell before the level boundary (a time-of-day rule; no traffic information)",
+    "reactive": "the request is issued at the level boundary; until the SCell is active the level's traffic is carried by the 3.5-GHz-only state (gap seconds reported, violations flagged per criterion)",
+    "availability": "a sleeping cell is unavailable for the full T_TR after the request (D4 primary)",
+    "activation_interval": "after T_TR the 7.2 GHz cell is on and empty (P_empty + P_aux) for T_SCell, serving nothing",
+    "scell_activation": {
+      "source": "3GPP TS 38.133 V19.6.0 (38133-j60.zip, SHA-256 a4203e77fe0d44d7375f06a751da64915b36176d3562f22c8684e7fbec8e2e9c), clause 8.3.2",
+      "rule": "unknown FR1 SCell, inter-band: T_activation = T_FirstSSB_MAX + T_SMTC_MAX + 2 T_rs + T_delta + 5 ms <= 4 P + 5 ms (SMTC period P; T_delta = 0); T_HARQ + T_CSI_reporting allowed one period P (assumption): T_SCell = 5 P + 5 ms",
+      "smtc_period_ms": {"primary": 20.0, "sensitivity": 160.0},
+      "t_scell_s": {"primary": 0.105, "sensitivity": 0.805},
+      "label": "FR1 requirement applied to 7.2 GHz (above 7.125 GHz; no FR3 requirement exists): extrapolation"
+    }
+  },
+  "policies": {
+    "35only":             {"on_levels": [],                          "ul": null,          "bound": false},
+    "aon_ulsel":          {"on_levels": ["low", "medium", "busy"],   "ul": "on_ulca",     "bound": false},
+    "aon_dlonly":         {"on_levels": ["low", "medium", "busy"],   "ul": "on_scell_dl", "bound": false},
+    "sch_busy_ulsel":     {"on_levels": ["busy"],                    "ul": "on_ulca",     "bound": false},
+    "sch_busy_dlonly":    {"on_levels": ["busy"],                    "ul": "on_scell_dl", "bound": false},
+    "sch_medbusy_ulsel":  {"on_levels": ["medium", "busy"],          "ul": "on_ulca",     "bound": false},
+    "sch_medbusy_dlonly": {"on_levels": ["medium", "busy"],          "ul": "on_scell_dl", "bound": false},
+    "bound_sch_busy_ulsel":     {"on_levels": ["busy"],           "ul": "on_ulca",     "bound": true},
+    "bound_sch_busy_dlonly":    {"on_levels": ["busy"],           "ul": "on_scell_dl", "bound": true},
+    "bound_sch_medbusy_ulsel":  {"on_levels": ["medium", "busy"], "ul": "on_ulca",     "bound": true},
+    "bound_sch_medbusy_dlonly": {"on_levels": ["medium", "busy"], "ul": "on_scell_dl", "bound": true}
+  },
+  "policy_labels": {"ulsel": "7.2 GHz UL enabled (UL carrier selection, D20)", "dlonly": "DL-only 7.2 GHz carrier (UL on 3.5 GHz)",
+                    "bound": "optimistic bound: zero transition time, zero E_add, zero T_SCell; never a deployable result"},
+  "sustainable_growth": "g* of a policy = min over levels with traffic of x*_both(state of the level) / f, f = 1 (busy) or x_30 (medium); x*_both = min(x*_DL, x*_UL(y) / rho); per criterion; DL-only view uses x*_DL alone",
+  "outputs": {"folder": "results/phase3/p3_2c_energy_ledger", "files": ["summary.json", "validation.json", "manifest.json", "run1_stdout.txt", "raw/levels_isd200.npz (git-ignored)", "raw/energy_table.json.gz (git-ignored)"],
+              "uncertainty": "95 % t-intervals over the 100 realizations (clusters; D25)"},
+  "gates": {
+    "E0_provenance": "P3.1, P3.2a, P3.2b manifests all_checks_passed and equal to the hashes above; P3.2b and P3.1 configs equal their manifest hashes; P3.2b and P3.1 outputs equal their manifest hashes; code constants equal this config",
+    "E1_power_reproduction": "3.5 GHz (both cases, six loads), 7.2 GHz (the three hardware points and the three M_RF energy-only points: eight load pairs, P_mu, P_empty, ladders cat1/cat2 x set1/set3: p, T, E_add) equal P3.1's summary to <= 1e-12 relative; S2's 7.2 GHz no-load power equals P_3.5(0) to <= 1e-12 relative",
+    "E2_p32b_reproduction": "bitwise equal to P3.2b run 2 for ISD 200, C: calibration T_0.3 and T_0.5; every raw L and rho array on P3.2b's grids (DL off/on at 0, -3, -10 dB; UL off, on_ulca, on_scell_dl); every admitted-user x* (DL off/on at three offsets, UL off and on_ulca)",
+    "E3_new_levels": "fixed points converged (residual <= 1e-9); closure <= 1e-12 relative; occupancy identity <= 1e-9; 0 <= L <= 1; offered per-user workload bitwise identical across states; loads non-decreasing in traffic; zero traffic gives L = 0",
+    "E4_all_user": "|out_all - (n + (1 - n) out_adm)| <= 1e-12 at every level and state; all-user x* <= admitted x*; out_all non-decreasing in traffic",
+    "E5_ledger": "per policy and scenario: 7.2 GHz intervals cover 86400 s once (<= 1e-9 s); energy equals P3.1 sequence_energy on the cell-mean powers (<= 1e-12 relative); every sleep >= its T; one E_add per sleep period; zero 7.2 GHz service outside on intervals",
+    "E6_causality": "decisions depend on the time of day only: with the traffic after each boundary doubled, every decision before it is unchanged; reactive requests never precede the traffic change",
+    "E7_overhead": "E(S0) < E(S1) < E(S2) for every policy with a 7.2 GHz cell; E(S1) - E(S0) equals an independent sum of P_aux increments (<= 1e-9 relative)",
+    "E8_toy_fixtures": "two-level toy day 374403 J (no activation) and 374451 J (1 s activation at 50 W); a sleep shorter than T rejected; reactive gap exactly T_TR + T_SCell",
+    "pass_rule": "E0-E8"
+  },
+  "predictions": {
+    "E_P1_offload_near_neutral_S0": "ISD 200, C, 50 dBm, M_RF 256, 3.5 GHz right, cat1, proactive: at g = 1 and 10/90, 0.90 <= mean busy-level site power(aon_ulsel) / mean busy-level site power(35only) <= 1.10 (35only includes the 7.2 GHz deep-sleep power)",
+    "E_P2_overhead_decides": "the same ratio under S2 >= 1.25",
+    "E_P3_low_period_sleep": "1 - E(sch_medbusy_ulsel) / E(aon_ulsel) (daily site energy) at every g of the grid where both are all-user-feasible, both mixes: in [0.03, 0.08] under S0 and >= 0.10 under S2"
+  },
+  "expectations_not_scored": {
+    "transitions_negligible": "E_add plus activation-interval energy < 0.1 % of the 7.2 GHz layer's daily energy for every schedule, scenario, category and wake mode",
+    "dl_all_user_equals_admitted": "no DL user is unadmitted at ISD 200, so the DL all-user x* equals the admitted x*",
+    "ai_era_today": "at 26/74 and g = 1, 35only and every DL-only policy are all-user-infeasible (from P3.2b x*_UL(off) = 0.901; a consequence, not a test)"
+  },
+  "decision_rules": {
+    "all_gates_pass": "P3.2c's energy mapping, state machine and ledger are the energy layer of P3.3; the all-user criterion is P3.3's primary service constraint; P3.3's controllers are compared with the minimum-energy all-user-feasible P3.2c schedule at each g; if E-P1 and E-P2 both hold, the busy-hour energy case of 7.2 GHz is reported as overhead-dependent (H4) and P3.3 reports S0-S2 for every result",
+    "gate_fails": "stop; keep the evidence; amendment before any rerun"
+  },
+  "declared_before_registration": [
+    "Every P3.1 and P3.2b output (both P3.2b runs) and TS 38.133 clause 8.3.2 were read before registration.",
+    "Hand estimates while designing the predictions, from P3.1's tables and an assumed busy-hour 7.2 GHz DL load of about 0.15 (no P3.2c output computed): E-P1 ratio about 0.97, S2 ratio about 1.5, low-period sleep saving about 4.5 % (S0) and 12 % (S2); S1 at the primary point 172.0 W.",
+    "Unit tests: 14 (hand-checkable fixtures); full suite passing.",
+    "One smoke run (--smoke-realizations 2, scratch folder, 26 s): every gate E0-E8 computable and passing (E2 code path only: no 2-realization reference); overall verdict forced FAIL by the smoke flag; no result values printed; output files not opened.",
+    "A key-existence check of E2's P3.2b inputs (26 raw arrays of shapes (9, 300) and (18, 300), 8 x* entries); no new result computed."
+  ]
+}

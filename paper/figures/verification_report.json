@@ -1,0 +1,460 @@
+{
+ "all_checks_passed": true,
+ "n_checks": 90,
+ "n_plotted_values": 1080,
+ "n_source_rows": 579,
+ "figure_manifest_sha256": "a61d6a8af61561a23689aa1979922a881f6f49a45f43fa9e72f57491787340b9",
+ "verifier_sha256": "afb9497d9305444ad73d8177bb05e61dbb80973babb0afc23045ccb735ce63e4",
+ "checks": [
+  {
+   "check": "input: P3.4 summary.json matches its manifest",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input: P3.3 manifest matches the P3.4 manifest",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input: P3.3 summary.json matches its manifest",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input: P3.4 config matches the P3.4 manifest",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig4_activation_w5.pdf",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig4_activation_w5.png",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: source_data/fig4_activation_w5.csv",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig5_heldout_savings_w6.pdf",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig5_heldout_savings_w6.png",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: source_data/fig5_heldout_savings_w6.csv",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig6_dl_only_w7.pdf",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig6_dl_only_w7.png",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: source_data/fig6_dl_only_w7.csv",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig7_capacity_boundary_w3w8.pdf",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig7_capacity_boundary_w3w8.png",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: source_data/fig7_capacity_boundary_w3w8.csv",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig8_comparison_robustness_w9.pdf",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: fig8_comparison_robustness_w9.png",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: source_data/fig8_comparison_robustness_w9.csv",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: captions.md",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: caption_facts.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash: plotted_values.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "figure manifest records the same input hashes",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "figure script hash recorded",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "inputs unchanged during plotting; rendering byte-identical",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "layout: no text overlaps, nothing outside the figure, no text inside another panel",
+   "passed": true,
+   "detail": "{\"fig4_activation_w5\": [], \"fig5_heldout_savings_w6\": [], \"fig6_dl_only_w7\": [], \"fig7_capacity_boundary_w3w8\": [], \"fig8_comparison_robustness_w9\": []}"
+  },
+  {
+   "check": "layout: every text >= 7 pt at printed size",
+   "passed": true,
+   "detail": "{\"fig4_activation_w5\": 7.5, \"fig5_heldout_savings_w6\": 7.5, \"fig6_dl_only_w7\": 7.0, \"fig7_capacity_boundary_w3w8\": 7.5, \"fig8_comparison_robustness_w9\": 7.0}"
+  },
+  {
+   "check": "heatmap colours: every cell on the correct side of the budget colour; neutral at 1%",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "stored savings equal 1 - E/E_aon in every cell",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Fig. 6(a): S1 and S2 identical at g = 1.0",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Fig. 6(a): S1 and S2 identical at g = 1.5",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Fig. 6(a): S1 and S2 identical at g = 2.0",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|1.0|primary_S0 oracle",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|1.0|primary_S0 oracle_budget",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|1.0|primary_S0 oracle_test",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|2.0|primary_S0 oracle",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|2.0|primary_S0 oracle_budget",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|2.0|primary_S0 oracle_test",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|1.0|primary_S0 oracle",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|1.0|primary_S0 oracle_budget",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|1.0|primary_S0 oracle_test",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|2.0|primary_S0 oracle",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|2.0|primary_S0 oracle_budget",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|2.0|primary_S0 oracle_test",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|1.0|primary_S2 oracle",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|1.0|primary_S2 oracle_budget",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|1.0|primary_S2 oracle_test",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|2.0|primary_S2 oracle",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|2.0|primary_S2 oracle_budget",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: ericsson_typical|2.0|primary_S2 oracle_test",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|1.0|primary_S2 oracle",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|1.0|primary_S2 oracle_budget",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|1.0|primary_S2 oracle_test",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|2.0|primary_S2 oracle",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|2.0|primary_S2 oracle_budget",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "paired gap equals energy recomputation: genai_2025|2.0|primary_S2 oracle_test",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "every expected artist is plotted, and nothing else is tagged",
+   "passed": true,
+   "detail": "missing [] extra []"
+  },
+  {
+   "check": "plotted values equal the independent recomputation (1080 values)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "controller colours identical across figures",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "source-data rows equal their source keys (579 rows)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "H2 difference equals recomputation: g 1.0 S0",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "H2 difference equals recomputation: g 1.0 S1",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "H2 difference equals recomputation: g 1.0 S2",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "H2 difference equals recomputation: g 1.5 S0",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "H2 difference equals recomputation: g 1.5 S1",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "H2 difference equals recomputation: g 1.5 S2",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "H2 difference equals recomputation: g 2.0 S0",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "H2 difference equals recomputation: g 2.0 S1",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "H2 difference equals recomputation: g 2.0 S2",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption facts equal the independent recomputation",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "every caption fact appears in captions.md, no unfilled placeholder",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: 25 test squares",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: 100 radio realizations, 100-199 (stored half-open as [100, 200))",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: 2,000 resamples",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: test week 18-24 November 2013",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: T_0.5 = 513.6 Mbit/s",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: all 42 primary mpc cells meet the budget",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: 196 scenario cells",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: Q3 limits 1 and 5 points",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: H2 registered at 26/74, g in {1, 1.5, 2}, S0-S2",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig4_activation_w5.pdf: no Type 3 fonts, TrueType embedded, STIX only",
+   "passed": true,
+   "detail": "FGUUXQ+STIXGeneral-Italic, UMGIJC+STIXGeneral-Regular"
+  },
+  {
+   "check": "fig4_activation_w5.png: 7.16 in at 600 dpi",
+   "passed": true,
+   "detail": "4296 x 1620 px"
+  },
+  {
+   "check": "fig5_heldout_savings_w6.pdf: no Type 3 fonts, TrueType embedded, STIX only",
+   "passed": true,
+   "detail": "FGUUXQ+STIXGeneral-Italic, FMWZHG+STIXGeneral-Regular"
+  },
+  {
+   "check": "fig5_heldout_savings_w6.png: 7.16 in at 600 dpi",
+   "passed": true,
+   "detail": "4296 x 2940 px"
+  },
+  {
+   "check": "fig6_dl_only_w7.pdf: no Type 3 fonts, TrueType embedded, STIX only",
+   "passed": true,
+   "detail": "FGUUXQ+STIXGeneral-Italic, FPPVAS+STIXGeneral-Regular"
+  },
+  {
+   "check": "fig6_dl_only_w7.png: 7.16 in at 600 dpi",
+   "passed": true,
+   "detail": "4296 x 1950 px"
+  },
+  {
+   "check": "fig7_capacity_boundary_w3w8.pdf: no Type 3 fonts, TrueType embedded, STIX only",
+   "passed": true,
+   "detail": "DMAHJQ+STIXGeneral-Regular, DQJGIF+STIXGeneral-Regular, GQKTNY+STIXGeneral-Italic"
+  },
+  {
+   "check": "fig7_capacity_boundary_w3w8.png: 7.16 in at 600 dpi",
+   "passed": true,
+   "detail": "4296 x 1860 px"
+  },
+  {
+   "check": "fig8_comparison_robustness_w9.pdf: no Type 3 fonts, TrueType embedded, STIX only",
+   "passed": true,
+   "detail": "BWTJAQ+STIXGeneral-Italic, ENLYMW+STIXGeneral-Regular"
+  },
+  {
+   "check": "fig8_comparison_robustness_w9.png: 7.16 in at 600 dpi",
+   "passed": true,
+   "detail": "4296 x 3780 px"
+  }
+ ]
+}

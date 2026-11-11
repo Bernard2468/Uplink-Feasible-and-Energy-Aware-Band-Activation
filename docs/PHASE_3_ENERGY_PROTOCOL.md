@@ -2919,3 +2919,59 @@ submission. The figure stage starts from the frozen outputs.
 - **Records.** A manifest holds the input, output and script hashes,
   software and font versions, and the git head. Rendering is checked for
   byte-identical output.
+
+### 10.6 Figures 4–8 from the frozen outputs (2026-11-11): 90 of 90 checks passed
+
+**Files** (`paper/figures/`, generated at commit 62edb2b):
+- the five figures as PDF and 600 dpi PNG, 7.16 in wide;
+- `captions.md`;
+- `source_data/*.csv` (579 rows, each with its source key);
+- `plotted_values.json`;
+- `caption_facts.json`;
+- `manifest.json` (SHA-256 a61d6a8a…);
+- `verification_report.json` / `.txt`.
+
+**Reproduce:**
+`python -I scripts/figures/frozen_figures.py .`, then
+`python -I scripts/figures/verify_frozen_figures.py .`. A rebuild in a
+fresh process is byte-identical.
+
+**Verification:**
+- **Independent recomputation.** The verifier recomputes the following from
+  the frozen summaries and matches them exactly: all 1,080 values read back
+  from the rendered artists, all 579 source-data rows, every caption number
+  and nine caption constants. Examples of the constants are 25 squares,
+  realizations 100–199, 2,000 resamples and T_0.5 = 513.6 Mbit/s.
+- **Other checks.**
+  - The tagged artists are exactly the expected set.
+  - Each controller has one colour across figures.
+  - The PDFs embed only STIX TrueType fonts, with no Type 3.
+  - Every text is ≥ 7 pt, with no overlap and no text inside another
+    panel.
+  - The inputs are unchanged.
+- **Mutation test** (scratch copy). Six planted errors were all caught by
+  their own content checks: a value off by 0.01 point, a missing artist, a
+  dropped hatch, a wrong colour, a wrong caption number and a wrong CSV
+  value.
+
+**Found while building, and recorded here:**
+1. **Identical decisions across energy scenarios.** At 26/74, `mpc` takes
+   identical decisions under S0, S1 and S2: equal pattern shares,
+   transitions, gap seconds and violations at every g. At 10/90, S1 = S2.
+   - Only the energy accounting differs, so the savings differ.
+   - The figures draw one line per group of identical decisions, and the
+     captions state the groups.
+2. **The first heatmap render had a wrong colour scale.** Its anchors did not
+   match the 1% midpoint, so compliant cells at 0.5–0.95% showed red.
+   - The numbers were right, so the value checks could not catch it; it was
+     found by inspecting the render.
+   - The scale is now centred on the budget, and a build-time check requires
+     every cell to fall on the correct side of the budget colour.
+3. **Omissions from two panels.** Figure 8(a) omits `oracle_test`,
+   `oracle_dl` and 3.5-GHz-only operation, and Figure 6(b) omits `oracle_dl`.
+   This keeps identity distinguishable with the eight validated colours.
+   - Their values are in the P3.4 summary, and `oracle_test` appears in
+     Figure 8(b).
+
+**Remaining figure work:** Figures 1–3 from the E1c.2/E1c.3, P3.1, P3.2b
+and P3.2c outputs, under the same rules.

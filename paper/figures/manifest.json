@@ -1,0 +1,99 @@
+{
+  "tool": "scripts/figures/frozen_figures.py",
+  "script_sha256": "a939b8f0b815d9e93be5762bb06d6927930c23534a6cf702d53a0ff4c99e68c6",
+  "git_head_at_run": "62edb2b46c4560cc0054ed23350bb4314bf6f593",
+  "python": "3.12.16",
+  "numpy": "1.26.4",
+  "matplotlib": "3.11.2",
+  "font": {
+    "family": "STIXGeneral",
+    "file": "STIXGeneral.ttf",
+    "sha256": "167378031e2dddc6216d67819c9260e9a06ffc4c478e4e23cb98a6fd44b183c2",
+    "pdf_fonttype": 42
+  },
+  "width_in": 7.16,
+  "decision_groups": {
+    "ericsson_typical": [
+      [
+        "S0"
+      ],
+      [
+        "S1",
+        "S2"
+      ]
+    ],
+    "genai_2025": [
+      [
+        "S0",
+        "S1",
+        "S2"
+      ]
+    ]
+  },
+  "input_sha256": {
+    "results/phase3/p3_4_heldout/summary.json": "6f1ca625b28904718c47fb51984174b1d37ae1c67adaa8e96a1806dbab6d1c1b",
+    "results/phase3/p3_3_controllers/manifest.json": "366abe5ecd50e7fc8428512b3f195bb12c23bd51b62218675efc0d0f134c6a28",
+    "results/phase3/p3_3_controllers/summary.json": "388b9ff8fb75e53c962ec4dabc5900820314b0d8b842a3748ac38fbbe0a1a6c8",
+    "configs/p3/p3_4_heldout.json": "1d229f0280a7d3816bf39face24b8eaa1ecabff5ce73099c22809e1ebbedbcab",
+    "results/phase3/p3_4_heldout/manifest.json": "770ff14367eda233710f3d2756daed3aa2ceba2adf0604664da8ec54581d4bde"
+  },
+  "inputs_unchanged_after_plotting": true,
+  "deterministic_rendering": true,
+  "outputs_sha256": {
+    "fig4_activation_w5.pdf": "7d7b80f00d9d819b4097391029f5bece0c7f308aee095958cdaaaa37356ee978",
+    "fig4_activation_w5.png": "e06b97ae95abdc4c3748b1df0516cbb3b36f1f0b21fe051e767121daeb5ef52e",
+    "source_data/fig4_activation_w5.csv": "f2ee6550de210f0f8756b88050ae96807fb607bfc7b3543249d18fccf9f7789b",
+    "fig5_heldout_savings_w6.pdf": "b4ea4423e09195b510724ccce045b44ae89c3a76454b7b8a9872b5a3e9e28d75",
+    "fig5_heldout_savings_w6.png": "a76036aa319d6ccd85e21badfa73f9db4177f1ff246acb38d8010ca7abb54b7e",
+    "source_data/fig5_heldout_savings_w6.csv": "8956fed558dc0e7e04e83a57fbdb5208946e2575220c8bf252d0d2a4c287d8d5",
+    "fig6_dl_only_w7.pdf": "ca9547fbfce3b35e7585a81cd5e52db68b915d3e4223706c919ec40c1bec2fa3",
+    "fig6_dl_only_w7.png": "c799984f468f3681adc4d3bc28ae28cf9f4fdde33160a7283fee7330168817dd",
+    "source_data/fig6_dl_only_w7.csv": "a197ecae3b02ca31d26904e66dc07ddfa843bbdbb45c017483928cb0f4369aa9",
+    "fig7_capacity_boundary_w3w8.pdf": "504c95f30b490d4a2bea23b3de942468085af78d4b307d3cb1891eded1f16ffe",
+    "fig7_capacity_boundary_w3w8.png": "11156d39590082680106a70d6edf8221fc4f0b98f703d610098554308c48cda8",
+    "source_data/fig7_capacity_boundary_w3w8.csv": "04df4777e7f0820cbeaf077f377cb81e00eacc79aaf1e6423c3f141ecb295ac7",
+    "fig8_comparison_robustness_w9.pdf": "5d9fdfb666af69a6d038dd9fa9d6d4a353727868f86fade975c63614068f2b84",
+    "fig8_comparison_robustness_w9.png": "c834fa361f517808e67126cbc452c46f6deaee0de317ed1da56f101a6f08c04a",
+    "source_data/fig8_comparison_robustness_w9.csv": "6c90d646d746a2df51eb5754771d2efa7bf70255ab69a0a70f5fc6094c5c8382",
+    "captions.md": "ea56b7ca4d78f70f0edc5ff7d70133e2578e42af4ee2a37df04caa245c0c495b",
+    "caption_facts.json": "60fbcdfa4d31f4f821ded86429a9757dd93c6f215e13d3318e34af7a10496b1d",
+    "plotted_values.json": "42985954e848e3445561773665ff24e405a57d987e177213aab95c22b32f9fc2"
+  },
+  "layout_checks": {
+    "fig4_activation_w5": {
+      "min_font_pt": 7.5,
+      "n_texts": 50,
+      "problems": []
+    },
+    "fig5_heldout_savings_w6": {
+      "min_font_pt": 7.5,
+      "n_texts": 78,
+      "problems": []
+    },
+    "fig6_dl_only_w7": {
+      "min_font_pt": 7.0,
+      "n_texts": 46,
+      "problems": []
+    },
+    "fig7_capacity_boundary_w3w8": {
+      "min_font_pt": 7.5,
+      "n_texts": 48,
+      "problems": []
+    },
+    "fig8_comparison_robustness_w9": {
+      "min_font_pt": 7.0,
+      "n_texts": 100,
+      "problems": []
+    }
+  },
+  "encoding_checks": {
+    "fig8_comparison_robustness_w9": {
+      "heatmap_cells_on_wrong_side_of_budget_colour": [],
+      "heatmap_colour_at_budget": "#f0edea",
+      "neutral_anchor": "#f0efec",
+      "max_channel_error_at_budget": 0.006382160707420259,
+      "heatmap_norm": "TwoSlopeNorm(0, 1, 8)"
+    }
+  },
+  "all_layout_checks_passed": true
+}

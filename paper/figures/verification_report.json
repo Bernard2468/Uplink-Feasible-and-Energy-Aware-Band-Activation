@@ -4,7 +4,7 @@
  "n_plotted_values": 1080,
  "n_source_rows": 579,
  "figure_manifest_sha256": "a61d6a8af61561a23689aa1979922a881f6f49a45f43fa9e72f57491787340b9",
- "verifier_sha256": "afb9497d9305444ad73d8177bb05e61dbb80973babb0afc23045ccb735ce63e4",
+ "verifier_sha256": "00b306536f745a840eb40c3d30b547d56f6c89d267b84062b03129a2f5c7b683",
  "checks": [
   {
    "check": "input: P3.4 summary.json matches its manifest",

@@ -1,11 +1,11 @@
 {
   "tool": "scripts/figures/model_figures.py",
-  "script_sha256": "7ee23e5006a6178e92d1441c0e64c1ed7c4bfa153d1b6172798d0d4a171c4153",
+  "script_sha256": "5bb88af5d59d67bd313b8b89b66b1a090e2f627b88b420f48436c97baf04b1fe",
   "shared_style_module": {
     "path": "scripts/figures/frozen_figures.py",
     "sha256": "a939b8f0b815d9e93be5762bb06d6927930c23534a6cf702d53a0ff4c99e68c6"
   },
-  "git_head_at_run": "a88db7dab6eb58ebf7c2ff3299f0ae3d3962d26e",
+  "git_head_at_run": "008870b23db4d028521747e5bb34a0c713a78a42",
   "python": "3.12.16",
   "numpy": "1.26.4",
   "matplotlib": "3.11.2",
@@ -15,7 +15,11 @@
     "sha256": "167378031e2dddc6216d67819c9260e9a06ffc4c478e4e23cb98a6fd44b183c2",
     "pdf_fonttype": 42
   },
-  "width_in": 7.16,
+  "width_in": {
+    "fig1_network_layout_w1": 3.5,
+    "fig2_interference_feasibility_w2": 3.5,
+    "fig3_power_energy_w4": 7.16
+  },
   "input_sha256": {
     "results/phase2/e1c3_directional/summary.json": "8c880e5f7911f7f4e4df2e9e75507ebfce60f9d380c1ffebff4f767c9b80b5c3",
     "results/phase2/e1c3_directional/raw/counts_isd200.npz": "16d11155185251befa8b4fa12b0b489d5c5c489c442c9ce9b1151757f5d787b2",
@@ -45,28 +49,28 @@
   "inputs_unchanged_after_plotting": true,
   "deterministic_rendering": true,
   "outputs_sha256": {
-    "fig1_architecture_w1.pdf": "82d58bde1b6a4373258498faa8fb3dd4bec39cf2d70dc589eaf1a7a273523dd9",
-    "fig1_architecture_w1.png": "3b78453bdf5b581d1bca5dd9c44e4dbb59ee4f2a73372d6c7d70697af180530b",
-    "source_data/fig1_architecture_w1.csv": "3f1535d33b7e8c508a634ee964cd2ba859cc3eec3e4a313b0133f5813bd8909a",
-    "fig2_interference_feasibility_w2.pdf": "0ebd3ac1fbfe7134a2251f8811b7fd55b41b90c18d1d34649f722282dc462aed",
-    "fig2_interference_feasibility_w2.png": "912fe76adf26a3aa959ed390901c84fce8683876a0a15d00240b084d7d73aab8",
-    "source_data/fig2_interference_feasibility_w2.csv": "d64173d440ea019f7eb4a524b90568a5ecdcf7067eb625615f2fdaad2b73e749",
+    "fig1_network_layout_w1.pdf": "ee2ee89cc5df2a6d009da84ae56bec7f182abb335b98af7abc5392fc69aaadb3",
+    "fig1_network_layout_w1.png": "4f79610fd538054153fb2607b6b61d0dc504336bad142068c42c3ac8a2a63d05",
+    "source_data/fig1_network_layout_w1.csv": "87d43cef025e7e3d0aa4cd03e189047a8b56f257e3eab499e9ed901c1c60cf12",
+    "fig2_interference_feasibility_w2.pdf": "1a7af33cc700fcf0fc8502e53f3b949d2f83b9b3eb40fbb292a4aa4bd0221892",
+    "fig2_interference_feasibility_w2.png": "ac9b6f503473e662543ddb5f030bec2ebb83ab83a27e00c665d96756ae00cf1e",
+    "source_data/fig2_interference_feasibility_w2.csv": "4a21b27f27ae29aab84d5a6a6510af1f955f14a5a779bdad4671df47aa5447f0",
     "fig3_power_energy_w4.pdf": "649fa424ac2ae0660f69aa871d68c528f91c89a32c8bdbd7aef47bd55e1a31f3",
     "fig3_power_energy_w4.png": "5744e3c02ede46f9608752c3311e73e1513ff4a87c35f0e84a0ddefc7f46834b",
     "source_data/fig3_power_energy_w4.csv": "90f8a4c9d25452083df0438bba38107ea8df6ec657cf150ef3485a1c8b762c05",
-    "captions_fig1-3.md": "c567f52a7a2b16b315094a7bcb6a40eb82b9dfb1929b7022aa2bf19ec323cb61",
-    "caption_facts_fig1-3.json": "5204c6ebf2f36a995261166ff5db2bd3dff11c00b7d2e2f652c202634a841ed9",
-    "plotted_values_fig1-3.json": "8366e4a96b17534662f806bf8329f9db7be09db8c5f3202cc9acc8e69105f972"
+    "captions_fig1-3.md": "5fa4bcb6ca5c31669af6c6bb879a9b037463038192162a7820354487c5ae3538",
+    "caption_facts_fig1-3.json": "aa71b3e7dfde68394d2ff2035bce00b868d0690aaf78db12feb2eec3ccfa4db6",
+    "plotted_values_fig1-3.json": "5d770582c81fbf6edab21e1c6fe8aa3dc17afd888fe35b8cfa827b3cc3f64ff2"
   },
   "layout_checks": {
-    "fig1_architecture_w1": {
+    "fig1_network_layout_w1": {
       "min_font_pt": 7.0,
-      "n_texts": 40,
+      "n_texts": 25,
       "problems": []
     },
     "fig2_interference_feasibility_w2": {
-      "min_font_pt": 7.5,
-      "n_texts": 46,
+      "min_font_pt": 7.0,
+      "n_texts": 29,
       "problems": []
     },
     "fig3_power_energy_w4": {
@@ -110,10 +114,6 @@
         "non_victims_strictly_inside": 0
       },
       "passed": true
-    },
-    "fig1_boxes": {
-      "n_boxes": 9,
-      "text_outside_box": []
     }
   },
   "all_layout_checks_passed": true

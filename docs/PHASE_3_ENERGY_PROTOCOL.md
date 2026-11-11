@@ -3141,3 +3141,29 @@ The scripts change accordingly (`model_figures.py`,
 - every share is consistent with its recorded percentiles relative to the
   threshold;
 - the captions of Figures 1 and 2 carry no panel labels.
+
+**Result** (generated at commit 008870b; `manifest_fig1-3.json` SHA-256
+867e762f…):
+- **Checks:** 193 of 193 pass. 1,141 plotted values, 176 source-data rows
+  and every caption number are recomputed independently.
+- **Rebuild:** byte-identical. Figure 3 is byte-identical to its 10.8
+  version.
+- **Mutation test:** 12 of 12 planted errors caught by their own content
+  checks. The three new ones are:
+  - a share moved to the wrong row;
+  - a share changed from 0.962 to 0.972;
+  - an "(a)" label added back to the Figure 2 caption.
+- **The 10.8 count (279) is superseded.** The figure stage now stands at
+  Figures 1–8, 283 of 283 checks (90 + 193).
+
+**Regression found and fixed.** From 6b1e075 on,
+`verify_frozen_figures.py` (Figures 4–8) crashed.
+- **Cause:** it read every CSV in `source_data/`, including the Figure 1–3
+  files added in 10.8. I had not re-run it after adding them.
+- **Fix:** it now reads only the source-data files that its own manifest
+  lists.
+- **Re-run:** the same 90 checks pass on the same 1,080 values and 579 rows.
+  Only the verifier hash in its report changed, and Figures 4–8 and their
+  manifest are untouched.
+- **Lesson:** after adding files to a shared output folder, re-run every
+  verifier that reads that folder.

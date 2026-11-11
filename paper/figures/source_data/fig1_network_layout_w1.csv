@@ -1,0 +1,43 @@
+figure,panel,series,quantity,unit,value,lo,hi,controller,mix,scenario,g,source
+fig1_network_layout_w1,,scene raster,cells (not sampled / outdoor / building),count,20567/30888/29574,,,,,,,"E1.1 site_tx0_mask.npz x,y (outdoor); E1c site_tx0_indoor.npz x,y (building); 4 m lattice"
+fig1_network_layout_w1,,"nominal cell (0,0)",lattice point,m,"8.5,21.0",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=0, j=0"
+fig1_network_layout_w1,,"nominal cell (-1,0)",lattice point,m,"-191.5,21.0",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=-1, j=0"
+fig1_network_layout_w1,,"nominal cell (-1,1)",lattice point,m,"-91.5,194.20508075688772",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=-1, j=1"
+fig1_network_layout_w1,,"nominal cell (0,-1)",lattice point,m,"-91.5,-152.20508075688772",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=0, j=-1"
+fig1_network_layout_w1,,"nominal cell (0,1)",lattice point,m,"108.5,194.20508075688772",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=0, j=1"
+fig1_network_layout_w1,,"nominal cell (1,-1)",lattice point,m,"108.5,-152.20508075688772",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=1, j=-1"
+fig1_network_layout_w1,,"nominal cell (1,0)",lattice point,m,"208.5,21.0",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=1, j=0"
+fig1_network_layout_w1,,"nominal cell (-2,0)",lattice point,m,"-391.5,21.0",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=-2, j=0"
+fig1_network_layout_w1,,"nominal cell (-2,1)",lattice point,m,"-291.5,194.20508075688772",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=-2, j=1"
+fig1_network_layout_w1,,"nominal cell (-2,2)",lattice point,m,"-191.5,367.41016151377545",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=-2, j=2"
+fig1_network_layout_w1,,"nominal cell (-1,-1)",lattice point,m,"-291.5,-152.20508075688772",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=-1, j=-1"
+fig1_network_layout_w1,,"nominal cell (-1,2)",lattice point,m,"8.5,367.41016151377545",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=-1, j=2"
+fig1_network_layout_w1,,"nominal cell (0,-2)",lattice point,m,"-191.5,-325.41016151377545",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=0, j=-2"
+fig1_network_layout_w1,,"nominal cell (0,2)",lattice point,m,"208.5,367.41016151377545",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=0, j=2"
+fig1_network_layout_w1,,"nominal cell (1,-2)",lattice point,m,"8.5,-325.41016151377545",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=1, j=-2"
+fig1_network_layout_w1,,"nominal cell (1,1)",lattice point,m,"308.5,194.20508075688772",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=1, j=1"
+fig1_network_layout_w1,,"nominal cell (2,-2)",lattice point,m,"208.5,-325.41016151377545",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=2, j=-2"
+fig1_network_layout_w1,,"nominal cell (2,-1)",lattice point,m,"308.5,-152.20508075688772",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=2, j=-1"
+fig1_network_layout_w1,,"nominal cell (2,0)",lattice point,m,"408.5,21.0",,,,,,,"E1c.2 lattice: site_x[0], site_y[0] + i (ISD, 0) + j (ISD/2, ISD sqrt3/2); i=2, j=0"
+fig1_network_layout_w1,,sector 1 (index 0),boresight bearing,deg,30.0,,,,,,,configs/e1/e1_4_antennas_o2i.json cases.A_equal_elements.sector_bearings_deg[0]
+fig1_network_layout_w1,,sector 2 (index 1),boresight bearing,deg,150.0,,,,,,,configs/e1/e1_4_antennas_o2i.json cases.A_equal_elements.sector_bearings_deg[1]
+fig1_network_layout_w1,,sector 3 (index 2),boresight bearing,deg,270.0,,,,,,,configs/e1/e1_4_antennas_o2i.json cases.A_equal_elements.sector_bearings_deg[2]
+fig1_network_layout_w1,,"site 1 (rooftop, ring 1)","position x, y; height",m,"-191.5,21.0; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[1]
+fig1_network_layout_w1,,"site 2 (rooftop, ring 1)","position x, y; height",m,"-91.5,194.20508075688772; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[2]
+fig1_network_layout_w1,,"site 3 (rooftop, ring 1)","position x, y; height",m,"-95.5,-150.20508075688772; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[3]
+fig1_network_layout_w1,,"site 4 (rooftop, ring 1)","position x, y; height",m,"108.5,194.20508075688772; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[4]
+fig1_network_layout_w1,,"site 5 (rooftop, ring 1)","position x, y; height",m,"116.5,-152.20508075688772; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[5]
+fig1_network_layout_w1,,"site 6 (rooftop, ring 1)","position x, y; height",m,"208.5,21.0; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[6]
+fig1_network_layout_w1,,"site 7 (rooftop, ring 2)","position x, y; height",m,"-391.5,21.0; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[7]
+fig1_network_layout_w1,,"site 8 (rooftop, ring 2)","position x, y; height",m,"-291.5,194.20508075688772; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[8]
+fig1_network_layout_w1,,"site 9 (rooftop, ring 2)","position x, y; height",m,"-201.5,345.41016151377545; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[9]
+fig1_network_layout_w1,,"site 10 (rooftop, ring 2)","position x, y; height",m,"-291.5,-152.20508075688772; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[10]
+fig1_network_layout_w1,,"site 11 (rooftop, ring 2)","position x, y; height",m,"6.5,357.41016151377545; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[11]
+fig1_network_layout_w1,,"site 13 (rooftop, ring 2)","position x, y; height",m,"208.5,363.41016151377545; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[13]
+fig1_network_layout_w1,,"site 14 (rooftop, ring 2)","position x, y; height",m,"6.5,-311.41016151377545; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[14]
+fig1_network_layout_w1,,"site 15 (rooftop, ring 2)","position x, y; height",m,"308.5,194.20508075688772; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[15]
+fig1_network_layout_w1,,"site 16 (rooftop, ring 2)","position x, y; height",m,"208.5,-325.41016151377545; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[16]
+fig1_network_layout_w1,,"site 17 (rooftop, ring 2)","position x, y; height",m,"308.5,-150.20508075688772; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[17]
+fig1_network_layout_w1,,"site 18 (rooftop, ring 2)","position x, y; height",m,"408.5,21.0; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[18]
+fig1_network_layout_w1,,"site 12 (mast, ring 2)","position x, y; height",m,"-191.5,-325.41016151377545; 25.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[12]
+fig1_network_layout_w1,,"site 0 (site0, ring 0)","position x, y; height",m,"8.5,21.0; 27.0",,,,,,,E1c.2 e1c2_sites_isd200.npz site_x/site_y/site_h/site_kind[0]

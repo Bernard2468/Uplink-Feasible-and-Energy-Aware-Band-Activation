@@ -323,7 +323,8 @@ def resolve(src):
 
 
 csv_bad, nrows = [], 0
-for fp in sorted((FIG / 'source_data').glob('*.csv')):
+# only this figure set's source data (its manifest lists them); source_data/ also holds Figures 1-3 (§10.9)
+for fp in sorted(FIG / k for k in MF['outputs_sha256'] if k.startswith('source_data/')):
     with open(fp, encoding='utf-8', newline='') as f:
         for row in csv.DictReader(f):
             nrows += 1

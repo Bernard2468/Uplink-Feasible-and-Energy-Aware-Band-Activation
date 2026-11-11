@@ -1,3 +1,4 @@
+PASS  the three figures, and only they, are in the figure files
 PASS  input matches its recording manifest: results/phase2/e1c3_directional/summary.json
 PASS  input matches its recording manifest: results/phase2/e1c3_directional/raw/counts_isd200.npz
 PASS  input matches its recording manifest: results/phase2/e1c2_geometry/e1c2_sites_isd200.npz
@@ -14,152 +15,80 @@ PASS  input matches its recording manifest: results/phase2/e1c2_interference/sum
 PASS  E1.5.4 summary equals its committed blob (no manifest hashes it)
 PASS  figure manifest input hashes equal the files now
 PASS  figure manifest records every anchored input
-PASS  case A label: 8x16 arrays at both carriers, 20 MHz (E1.4 config)
-PASS  case C is the case of Phase 3 (P3.2c summary)
+PASS  caption: case A = 8x16 arrays at both carriers, 20 MHz (E1.4 config)
 PASS  P3.2c: one energy row per (policy, scenario, g) in the primary setting
-PASS  fig1_architecture_w1: tagged artists are exactly the expected set
-PASS  fig1_architecture_w1: f1a|hex|0,0
-PASS  fig1_architecture_w1: f1a|hex|-1,0
-PASS  fig1_architecture_w1: f1a|hex|-1,1
-PASS  fig1_architecture_w1: f1a|hex|0,-1
-PASS  fig1_architecture_w1: f1a|hex|0,1
-PASS  fig1_architecture_w1: f1a|hex|1,-1
-PASS  fig1_architecture_w1: f1a|hex|1,0
-PASS  fig1_architecture_w1: f1a|hex|-2,0
-PASS  fig1_architecture_w1: f1a|hex|-2,1
-PASS  fig1_architecture_w1: f1a|hex|-2,2
-PASS  fig1_architecture_w1: f1a|hex|-1,-1
-PASS  fig1_architecture_w1: f1a|hex|-1,2
-PASS  fig1_architecture_w1: f1a|hex|0,-2
-PASS  fig1_architecture_w1: f1a|hex|0,2
-PASS  fig1_architecture_w1: f1a|hex|1,-2
-PASS  fig1_architecture_w1: f1a|hex|1,1
-PASS  fig1_architecture_w1: f1a|hex|2,-2
-PASS  fig1_architecture_w1: f1a|hex|2,-1
-PASS  fig1_architecture_w1: f1a|hex|2,0
-PASS  fig1_architecture_w1: f1a|sites|rooftop
-PASS  fig1_architecture_w1: f1a|sites|mast
-PASS  fig1_architecture_w1: f1a|sites|site0
-PASS  fig1_architecture_w1: f1a|seclabel|0
-PASS  fig1_architecture_w1: f1a|seclabel|1
-PASS  fig1_architecture_w1: f1a|seclabel|2
-PASS  fig1_architecture_w1: f1a|sectors
-PASS  fig1_architecture_w1: f1a|scalebar
-PASS  fig1_architecture_w1: f1b|box|C1
-PASS  fig1_architecture_w1: f1b|box|C2
-PASS  fig1_architecture_w1: f1b|box|C3
-PASS  fig1_architecture_w1: f1b|box|C4
-PASS  fig1_architecture_w1: f1b|box|B1
-PASS  fig1_architecture_w1: f1b|box|B2
-PASS  fig1_architecture_w1: f1b|box|B3
-PASS  fig1_architecture_w1: f1b|box|N1
-PASS  fig1_architecture_w1: f1b|box|N2
-PASS  fig1_architecture_w1: f1b|container|Online
-PASS  fig1_architecture_w1: f1b|container|Offline
-PASS  fig1_architecture_w1: f1b|container|network
-PASS  fig1_architecture_w1: f1b|feedback
-PASS  fig1_architecture_w1: f1b|feedback_label
+PASS  fig1_network_layout_w1: tagged artists are exactly the expected set
+PASS  fig1_network_layout_w1: f1|hex|0,0
+PASS  fig1_network_layout_w1: f1|hex|-1,0
+PASS  fig1_network_layout_w1: f1|hex|-1,1
+PASS  fig1_network_layout_w1: f1|hex|0,-1
+PASS  fig1_network_layout_w1: f1|hex|0,1
+PASS  fig1_network_layout_w1: f1|hex|1,-1
+PASS  fig1_network_layout_w1: f1|hex|1,0
+PASS  fig1_network_layout_w1: f1|hex|-2,0
+PASS  fig1_network_layout_w1: f1|hex|-2,1
+PASS  fig1_network_layout_w1: f1|hex|-2,2
+PASS  fig1_network_layout_w1: f1|hex|-1,-1
+PASS  fig1_network_layout_w1: f1|hex|-1,2
+PASS  fig1_network_layout_w1: f1|hex|0,-2
+PASS  fig1_network_layout_w1: f1|hex|0,2
+PASS  fig1_network_layout_w1: f1|hex|1,-2
+PASS  fig1_network_layout_w1: f1|hex|1,1
+PASS  fig1_network_layout_w1: f1|hex|2,-2
+PASS  fig1_network_layout_w1: f1|hex|2,-1
+PASS  fig1_network_layout_w1: f1|hex|2,0
+PASS  fig1_network_layout_w1: f1|sites|rooftop
+PASS  fig1_network_layout_w1: f1|sites|mast
+PASS  fig1_network_layout_w1: f1|sites|site0
+PASS  fig1_network_layout_w1: f1|seclabel|0
+PASS  fig1_network_layout_w1: f1|seclabel|1
+PASS  fig1_network_layout_w1: f1|seclabel|2
+PASS  fig1_network_layout_w1: f1|sectors
+PASS  fig1_network_layout_w1: f1|scalebar
 PASS  fig2_interference_feasibility_w2: tagged artists are exactly the expected set
-PASS  fig2_interference_feasibility_w2: f2a|DL|noise_multi|range
-PASS  fig2_interference_feasibility_w2: f2a|DL|noise_multi|ends
-PASS  fig2_interference_feasibility_w2: f2a|DL|noise_multi|p5
-PASS  fig2_interference_feasibility_w2: f2a|DL|noise_multi|p50
-PASS  fig2_interference_feasibility_w2: f2a|DL|primary|range
-PASS  fig2_interference_feasibility_w2: f2a|DL|primary|ends
-PASS  fig2_interference_feasibility_w2: f2a|DL|primary|p5
-PASS  fig2_interference_feasibility_w2: f2a|DL|primary|p50
-PASS  fig2_interference_feasibility_w2: f2a|DL|sd|range
-PASS  fig2_interference_feasibility_w2: f2a|DL|sd|ends
-PASS  fig2_interference_feasibility_w2: f2a|DL|sd|p5
-PASS  fig2_interference_feasibility_w2: f2a|DL|sd|p50
-PASS  fig2_interference_feasibility_w2: f2a|DL|geo|range
-PASS  fig2_interference_feasibility_w2: f2a|DL|geo|ends
-PASS  fig2_interference_feasibility_w2: f2a|DL|geo|p5
-PASS  fig2_interference_feasibility_w2: f2a|DL|geo|p50
-PASS  fig2_interference_feasibility_w2: f2a|DL|threshold
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|noise_multi|range
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|noise_multi|ends
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|noise_multi|p5
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|noise_multi|p50
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|primary|range
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|primary|ends
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|primary|p5
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|primary|p50
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|sd|range
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|sd|ends
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|sd|p5
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|sd|p50
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|geo|range
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|geo|ends
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|geo|p5
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|geo|p50
-PASS  fig2_interference_feasibility_w2: f2a|UL_F2|threshold
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|noise_multi
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|noise_multi|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|primary
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|primary|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|sd
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|sd|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|geo
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|geo|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|noise_multi
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|noise_multi|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|primary
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|primary|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|sd
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|sd|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|geo
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|geo|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|noise_multi
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|noise_multi|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|primary
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|primary|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|sd
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|sd|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|geo
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|geo|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|noise_multi
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|noise_multi|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|primary
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|primary|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|sd
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|sd|se
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|geo
-PASS  fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|geo|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|noise_multi
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|noise_multi|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|primary
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|primary|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|sd
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|sd|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|geo
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|geo|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|noise_multi
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|noise_multi|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|primary
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|primary|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|sd
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|sd|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|geo
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|geo|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|noise_multi
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|noise_multi|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|primary
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|primary|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|sd
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|sd|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|geo
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|geo|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|noise_multi
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|noise_multi|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|primary
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|primary|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|sd
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|sd|se
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|geo
-PASS  fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|geo|se
-PASS  fig2_interference_feasibility_w2: f2b|case|A_equal_elements
-PASS  fig2_interference_feasibility_w2: f2b|case|C_deployment
+PASS  fig2_interference_feasibility_w2: f2|DL|noise_multi|range
+PASS  fig2_interference_feasibility_w2: f2|DL|noise_multi|ends
+PASS  fig2_interference_feasibility_w2: f2|DL|noise_multi|p5
+PASS  fig2_interference_feasibility_w2: f2|DL|noise_multi|p50
+PASS  fig2_interference_feasibility_w2: f2|DL|noise_multi|share
+PASS  fig2_interference_feasibility_w2: f2|DL|primary|range
+PASS  fig2_interference_feasibility_w2: f2|DL|primary|ends
+PASS  fig2_interference_feasibility_w2: f2|DL|primary|p5
+PASS  fig2_interference_feasibility_w2: f2|DL|primary|p50
+PASS  fig2_interference_feasibility_w2: f2|DL|primary|share
+PASS  fig2_interference_feasibility_w2: f2|DL|sd|range
+PASS  fig2_interference_feasibility_w2: f2|DL|sd|ends
+PASS  fig2_interference_feasibility_w2: f2|DL|sd|p5
+PASS  fig2_interference_feasibility_w2: f2|DL|sd|p50
+PASS  fig2_interference_feasibility_w2: f2|DL|sd|share
+PASS  fig2_interference_feasibility_w2: f2|DL|geo|range
+PASS  fig2_interference_feasibility_w2: f2|DL|geo|ends
+PASS  fig2_interference_feasibility_w2: f2|DL|geo|p5
+PASS  fig2_interference_feasibility_w2: f2|DL|geo|p50
+PASS  fig2_interference_feasibility_w2: f2|DL|geo|share
+PASS  fig2_interference_feasibility_w2: f2|DL|threshold
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|noise_multi|range
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|noise_multi|ends
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|noise_multi|p5
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|noise_multi|p50
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|noise_multi|share
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|primary|range
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|primary|ends
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|primary|p5
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|primary|p50
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|primary|share
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|sd|range
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|sd|ends
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|sd|p5
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|sd|p50
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|sd|share
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|geo|range
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|geo|ends
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|geo|p5
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|geo|p50
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|geo|share
+PASS  fig2_interference_feasibility_w2: f2|UL_F2|threshold
+PASS  fig2_interference_feasibility_w2: f2|share_header
 PASS  fig3_power_energy_w4: tagged artists are exactly the expected set
 PASS  fig3_power_energy_w4: f3a|35|right
 PASS  fig3_power_energy_w4: f3a|35|left
@@ -187,11 +116,11 @@ PASS  fig3_power_energy_w4: f3b|gstar|35only
 PASS  fig3_power_energy_w4: f3b|gstar_label|35only
 PASS  fig3_power_energy_w4: f3b|gstar|aon_ulsel
 PASS  fig3_power_energy_w4: f3b|gstar_label|aon_ulsel
-PASS  fig2 (a) DL: every percentile marker sits on its model's labelled row, in the panel labelled 'DL, 7.2 GHz'
-PASS  fig2 (a) UL_F2: every percentile marker sits on its model's labelled row, in the panel labelled 'UL, 7.2 GHz'
-PASS  fig2 (b): every marker sits on its link's labelled row, case A rows above case C rows
-PASS  fig1_architecture_w1: every tagged artist lies in its own panel
-PASS  fig3_power_energy_w4: every tagged artist lies in its own panel
+PASS  fig2: exactly two panels, DL above UL (no further panels)
+PASS  fig2 DL, 7.2 GHz: every percentile marker and F2 share sits on its model's labelled row, shares right of the plot
+PASS  fig2 UL, 7.2 GHz: every percentile marker and F2 share sits on its model's labelled row, shares right of the plot
+PASS  fig1: one panel holding every tagged artist
+PASS  fig3: every tagged artist lies in its own panel (a, b)
 PASS  site 0 is the lattice origin and the E1.1 gNB (8.5, 21, 27 m)
 PASS  every rooftop site within 0.2 ISD of its lattice point, masts on it
 PASS  rings 0-2 with 1 + 6 + 12 sites
@@ -200,30 +129,13 @@ PASS  sector bearings identical in E1.4 cases A, B, C (the cases E1c.2/E1c.3 use
 PASS  bold hexagon: each vertex equidistant from site 0 and exactly two neighbours (the Voronoi cell)
 PASS  scored users = the sampled points nearest to site 0 (ties to site 0), as recorded by E1c.3
 PASS  every scored user inside or on the bold hexagon
-PASS  build check agrees: victims 935 / 5756 inside or on the cell, no non-victim strictly inside
+PASS  build check agrees: every victim inside or on the cell, no non-victim strictly inside
 PASS  map raster recomputed from the E1.1 mask and E1c indoor samples equals the drawn image
 PASS  map outdoor cells = E1.1 open outdoor points (30,888); scene = munich
-PASS  p3_3_controllers.py equals its blob at the P3.4 run commit (e55fd3a)
-PASS  Figure 1(b) claim in the frozen code: measured traffic of the previous slot
-PASS  Figure 1(b) claim in the frozen code: forecast horizons h = 0..H-1
-PASS  Figure 1(b) claim in the frozen code: upper bound x e^q
-PASS  Figure 1(b) claim in the frozen code: feasible set at the upper bound, energy at the point forecast
-PASS  Figure 1(b) claim in the frozen code: dynamic program, first action applied
-PASS  Figure 1(b) claim in the frozen code: all-user criterion by default
-PASS  Figure 1(b) claim in the frozen code: fallback = maximum-capacity pattern
-PASS  Figure 1(b) claim in the frozen code: wake-gap penalty in the cost
-PASS  maximum-capacity fallback is all on (1, 1, 1) for the all-user criterion, every mix and offset
-PASS  MPC horizon H is one value in every frozen cell
-PASS  slot 600 s, epsilon 0.05, eight patterns
 PASS  F2 thresholds: E1.5.4 record = frozen E1c thresholds() (within 1e-9 dB)
-PASS  E1c.3 averaged model reproduces E1c.2 exactly: A_equal_elements DL_3.5GHz
-PASS  E1c.3 averaged model reproduces E1c.2 exactly: A_equal_elements DL_7.2GHz
-PASS  E1c.3 averaged model reproduces E1c.2 exactly: A_equal_elements UL_3.5GHz
-PASS  E1c.3 averaged model reproduces E1c.2 exactly: A_equal_elements UL_7.2GHz
-PASS  E1c.3 averaged model reproduces E1c.2 exactly: C_deployment DL_3.5GHz
-PASS  E1c.3 averaged model reproduces E1c.2 exactly: C_deployment DL_7.2GHz
-PASS  E1c.3 averaged model reproduces E1c.2 exactly: C_deployment UL_3.5GHz
-PASS  E1c.3 averaged model reproduces E1c.2 exactly: C_deployment UL_7.2GHz
+PASS  every F2 share is consistent with its recorded percentiles relative to the threshold
+PASS  E1c.3 averaged model reproduces E1c.2 exactly: DL_7.2GHz
+PASS  E1c.3 averaged model reproduces E1c.2 exactly: UL_7.2GHz
 PASS  P3.1 3.5 GHz powers affine in L (both cases; max deviation < 1e-9 W)
 PASS  P3.1 7.2 GHz powers are not exactly affine (off a straight line by > 1e-9 W), and the caption says so: no "both models are affine", the 1 mW bound stated
 PASS  P3.1 config matches the P3.1 manifest
@@ -244,22 +156,21 @@ PASS  always on fails the all-user criterion exactly above its g*
 PASS  always-on S1/S2 increments constant over g and equal to 3 cells x P_aux x 24 h
 PASS  caption facts equal the independent recomputation
 PASS  every caption fact appears in captions_fig1-3.md, no unfilled placeholder
+PASS  captions of Figures 1 and 2 have no panel labels (single-panel figures)
 PASS  3.5-GHz-only energy constant above the cheaper range (caption "stays at")
 PASS  caption constant: M.2412 mix 20% in car, 80% indoor
-PASS  caption constant: ISD 200 victims and realizations from E1c.3
+PASS  caption constant: E1c.3: 100 realizations
 PASS  caption constant: F2 = 2.25 / 1.5 bit/s/Hz at 10 users per cell (M.2410 0.225 / 0.15 per user)
-PASS  caption constant: case C at 53 dBm in E1c.3; Phase 3 primary 50 dBm (-3 dB)
-PASS  caption constant: case C 100/200 MHz, 16x32 at 7.2 GHz
 PASS  caption constant: M_RF = 256 and 1024 PAs at 50 dBm
 PASS  caption constant: ETSI day: medium level g x_30 with x_30 from P3.2c
-PASS  fig1_architecture_w1: all 42 source-data rows equal the value at their source key
-PASS  fig2_interference_feasibility_w2: all 66 source-data rows equal the value at their source key
+PASS  fig1_network_layout_w1: all 42 source-data rows equal the value at their source key
+PASS  fig2_interference_feasibility_w2: all 42 source-data rows equal the value at their source key
 PASS  fig3_power_energy_w4: all 92 source-data rows equal the value at their source key
 PASS  S0-S2 colours in Figure 3 equal those of Figure 5
-PASS  Figure 2: one colour per interference model across both panels, four distinct colours
-PASS  output hash matches figure manifest: fig1_architecture_w1.pdf
-PASS  output hash matches figure manifest: fig1_architecture_w1.png
-PASS  output hash matches figure manifest: source_data/fig1_architecture_w1.csv
+PASS  Figure 2: one colour per interference model in both rows groups, four distinct colours
+PASS  output hash matches figure manifest: fig1_network_layout_w1.pdf
+PASS  output hash matches figure manifest: fig1_network_layout_w1.png
+PASS  output hash matches figure manifest: source_data/fig1_network_layout_w1.csv
 PASS  output hash matches figure manifest: fig2_interference_feasibility_w2.pdf
 PASS  output hash matches figure manifest: fig2_interference_feasibility_w2.png
 PASS  output hash matches figure manifest: source_data/fig2_interference_feasibility_w2.csv
@@ -271,11 +182,14 @@ PASS  output hash matches figure manifest: caption_facts_fig1-3.json
 PASS  output hash matches figure manifest: plotted_values_fig1-3.json
 PASS  figure manifest: layout and build checks passed
 PASS  figure manifest: shared style module unchanged since Figures 4-8
-PASS  fig1_architecture_w1.pdf: no Type 3 fonts, TrueType embedded, STIX only
-PASS  fig1_architecture_w1.png: 7.16 in at 600 dpi
+PASS  fig1_network_layout_w1: width 3.5 in (IEEE single column)
+PASS  fig1_network_layout_w1.pdf: no Type 3 fonts, TrueType embedded, STIX only
+PASS  fig1_network_layout_w1.png: 3.5 in at 600 dpi
+PASS  fig2_interference_feasibility_w2: width 3.5 in (IEEE single column)
 PASS  fig2_interference_feasibility_w2.pdf: no Type 3 fonts, TrueType embedded, STIX only
-PASS  fig2_interference_feasibility_w2.png: 7.16 in at 600 dpi
+PASS  fig2_interference_feasibility_w2.png: 3.5 in at 600 dpi
+PASS  fig3_power_energy_w4: width 7.16 in (IEEE double column)
 PASS  fig3_power_energy_w4.pdf: no Type 3 fonts, TrueType embedded, STIX only
 PASS  fig3_power_energy_w4.png: 7.16 in at 600 dpi
 
-ALL CHECKS PASSED: 279 / 279; 1224 plotted values and 200 source-data rows recomputed independently
+ALL CHECKS PASSED: 193 / 193; 1141 plotted values and 176 source-data rows recomputed independently

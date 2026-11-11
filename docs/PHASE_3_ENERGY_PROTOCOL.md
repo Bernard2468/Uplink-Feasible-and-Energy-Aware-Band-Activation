@@ -2890,6 +2890,14 @@ submission. The figure stage starts from the frozen outputs.
   frame. Panel (b)'s boundary is computed in the typical-site frame, so the
   two frames are not mixed in one figure. The network-frame three-way
   comparison goes to Figure 2.
+  - **Correction (2026-11-11, recorded before Figures 1–3 were built; see
+    10.7, row 1).** The bullet above is wrong about the cause. P3.2b is
+    already in the typical-site frame: D15 was fixed before P3.2b, and
+    `scripts/p3_2b_traffic_resources.py` implements it. The difference
+    between 2.33 and 2.20 is the service criterion, not the frame. 2.3347
+    is the admitted-user x* (D17, P3.2b) and 2.2013 the all-user x* (D21),
+    both for all-on at 26/74 in the same P3.2c record. Figure 7 and the
+    controllers use the all-user criterion, so Figure 7 is unaffected.
 - **First stage: Figures 4–8**, from the frozen P3.3 and P3.4 outputs only.
   Figures 1–3 follow from the earlier validated outputs.
 
@@ -2975,3 +2983,27 @@ fresh process is byte-identical.
 
 **Remaining figure work:** Figures 1–3 from the E1c.2/E1c.3, P3.1, P3.2b
 and P3.2c outputs, under the same rules.
+
+### 10.7 Figures 1–3: decisions recorded before the build (2026-11-11)
+
+ChatGPT's GO for Figures 1–3 (2026-11-11) asks for:
+- **Figure 1:** the actual Munich-positioned 19-site geometry and the
+  controller architecture (E1c site coordinates; the frozen
+  implementation);
+- **Figure 2:** directional versus averaged interference, and the resulting
+  UL/DL feasibility (E1c.2, E1c.3);
+- **Figure 3:** base-station power, and daily energy across S0–S2 (P3.1,
+  P3.2c).
+
+The following were checked and fixed before any Figure 1–3 code was
+written.
+
+| # | Point | Decision |
+|---|---|---|
+| 1 | §10.4 attributes 2.33 vs 2.20 to the frame | **My error**, corrected under §10.4. The gap is the criterion: admitted-user vs all-user. P3.2b is already in the typical-site frame |
+| 2 | §10.4 puts P3.2b's three-way capacity comparison in Figure 2 | That placement rested on row 1's error. Under the primary all-user criterion (P3.2c `g_star`, 50 dBm), at 10/90 and 26/74: 3.5 GHz only 1.445 / 0.856; DL-only 7.2 GHz carrier 2.707 / 0.856; UL enabled 3.719 / 2.201. The first and third are already Figure 7(a)'s (0,0,0) and (1,1,1) bars. **Figure 2 follows the GO table** and shows E1c.2/E1c.3 only. The DL-only-carrier result goes in the text: 2.707 at 10/90; at 26/74, no gain over 3.5 GHz only |
+| 3 | SINR distributions (working Figure 2(c)) | E1c.3 recorded only the 1st, 5th, 50th and 95th percentiles per setting (`quantiles_db_1_5_50_95`). The 0.05 dB histograms behind them were not saved, and the raw files hold per-victim feasibility counts, not SINR. **Figure 2(a) plots the four recorded percentiles; no distribution is drawn between them** |
+| 4 | F2 threshold line in Figure 2(a) | E1c.2/E1c.3 apply `e1c_area_maps.thresholds()` to E1.5.3a's C-AMC T2 curve. For F2 the threshold depends on neither case nor carrier. The plotted values are E1.5.4's recorded analytic thresholds (12.92 dB DL, 8.66 dB UL). The verifier must reproduce them with the frozen E1c function |
+| 5 | Traffic in Figure 3(b) | P3.2c's ledger uses the ETSI ES 202 706-1 three-level day, not the Milan traces of Figures 4–8: low 00–06 h (zero traffic), medium 06–16 h (g·x_30), busy 16–24 h (g). The caption says so |
+| 6 | Curves in Figure 3(a) | The P3.1 powers recorded at the tabulated occupancies appear affine in occupancy, so straight lines through the recorded points would be exact. The verifier must confirm affinity before the lines are accepted |
+| 7 | Map in Figure 1(a) | Drawn from recorded geometry only: the E1c.2 site file (ISD 200), the E1.1 outdoor mask and the E1c indoor samples. The two sample sets lie on one 4 m lattice and do not overlap; buildings are the indoor points. No scene mesh is read |

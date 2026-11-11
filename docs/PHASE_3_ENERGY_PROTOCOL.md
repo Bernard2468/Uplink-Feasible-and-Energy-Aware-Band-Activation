@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; next: the publication-readiness audit.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; publication-readiness audit recorded (§10); figure stage in progress.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -2706,6 +2706,7 @@ held-out result of record. Next is the publication-readiness audit.
      read. Unread Milan weeks remain (25 Nov – 22 Dec 2013; the dataset
      runs from 1 Nov 2013 to 1 Jan 2014) and could serve as a fresh
      held-out set.
+   - *Decided 2026-11-11 (§10.3): option (a).*
 
 ## 5. Audit of P3.0 (ChatGPT, 2026-11-09) and response
 
@@ -2796,3 +2797,125 @@ unverified date and the D7 misreading above. This table is the record.
 | Preserve failures; do not tune on held-out outcomes | Adopted (already the practice) | Decision rule |
 | Milan 2013 data are temporal-demand robustness, not 2026 6G traffic; seven days are not seasonal | **Correct** | Stated as limitations |
 | The upload had results only, not the source; claims verified against summaries | Noted | The source, configs and tests are in the repository; every gate in P3.4 re-executes the frozen code |
+
+## 10. Audit of P3.4 and publication-readiness review (ChatGPT, 2026-11-11) and response
+
+The review came as three messages, all on 2026-11-11:
+1. an audit of P3.4 with a publication-readiness verdict;
+2. a nine-figure plan;
+3. after my response, its acceptance of the corrections, an eight-figure
+   structure and the figure production rules.
+
+Every claim was checked against the frozen outputs with read-only scripts.
+The P3.4 outputs (`summary.json`, `raw/runs.json.gz`) were matched to their
+manifest hashes, and the P3.3 summary, the configs and this protocol were
+also used. One correction I made in my response was itself wrong. ChatGPT
+accepted it, and 10.2 records it and its correction.
+
+**Verdict adopted:** P3.4 stays frozen as Phase 3's confirmatory result. The
+evidence supports drafting the manuscript, not yet an unconditional
+submission. The figure stage starts from the frozen outputs.
+
+### 10.1 Claims confirmed
+
+| Claim | Check |
+|---|---|
+| 11 of 11 gates G0–G10; output hashes | `validation.json`; SHA-256 of all three outputs against `manifest.json` |
+| 11,550 per-square records | `raw/runs.json.gz`: 11 controllers × 2 mixes × 7 g × 3 primary scenarios × 25 squares |
+| 10.38% at 10/90, g = 1, S0, recomputed from per-square energies | 1 − ΣE_mpc / ΣE_aon = 0.10379 |
+| H2 differences 2.44–46.12 points (26/74) | `paired` and `results_test`; the nine registered cells |
+| H4 unavoidable shares at 26/74: 0.46%, 7.53%, 22.77%, 34.97% (g = 2.0, 2.5, 3.0, 3.5) | `aon` rows; the share is identical for every controller and scenario |
+| mpc meets the budget in 191 of 196 cells; the five failures are 1.31, 5.27, 7.87, 7.44 and 6.08% | All five are at 10/90, `mrf1024_S0`, g = 1.5–3.5 (the audit omitted the mix) |
+| At 26/74, g = 2, S2: 0.683% avoidable, 0.456% unavoidable, 1.139% total | `total_failure_share_all_user` is a stored field; the P3.4 record already gives it |
+| mpc does not always beat `exh` on energy (29.58 vs 30.11% at 10/90, g = 2, S2; 18.92 vs 19.34% at 26/74) | Both meet the budget there (`exh` 0.961% and 0.841%) |
+| Median online decision 0.296 ms; offline test table 10,448 s | `decision`, `test_table_seconds` |
+| E1c.3, ISD 200, case A: 7.2 GHz DL feasibility 0.995 (averaged interference) vs 0.962 (directional) | `PHASE_2_RADIO_PROTOCOL.md`, E1c.3 results table |
+| Source freeze not reconstructable from the results-only upload | Checked in the repository instead: the four scripts and the config at run time are byte-identical to the registration commit e55fd3a |
+| Already in the record before this audit | All-user total failure (§9); carrier selection, not carrier aggregation (D20); Milan activity is not 6G throughput (§9); no retuning on the test week (open item 7) |
+
+### 10.2 Incorrect statements and corrected interpretations
+
+| # | Statement (source) | Corrected interpretation |
+|---|---|---|
+| 1 | "19-site Munich network geometry" (ChatGPT figure plan) | **Substantially correct.** See row 2 |
+| 2 | "Phase 3's 19 sites are a synthetic hexagonal layout; Munich is only the single-site ray-tracing scene" (**my** response; ChatGPT accepted it) | **Wrong.** E1c.2 (Phase 2) anchors the M.2412 hexagonal lattice (ISD 200 m, rings 0–2, no wrap-around) at the Munich-scene gNB, which is site 0 at 27 m. In-scene lattice points snap to the nearest roof (≥ 6 m) within 0.2·ISD: at ISD 200, 17 rooftop sites and 1 mast. Each link's LOS/NLOS state, facade and indoor depth come from the Munich scene geometry. Path loss is TR 38.901 UMa (a geometry-conditioned hybrid, `E1_PARAMETERS.md`). Ray tracing is used only in the single-site E1a checks. The controller works in D15's typical-site frame, with sector-index patterns applied to every site. Figure 1(a) therefore shows the scene-anchored 19-site layout from `results/phase2/e1c2_geometry/` |
+| 3 | Subtitle "A Site-Specific Optimization Framework", presented as the original title (ChatGPT) | Not in any repository title, and **dropped**. The reason is not the one in my response: the layout *is* scene-anchored (row 2). But path loss is statistical, and the controller optimizes one homogeneous typical-site pattern, not specific sites. "Site-specific" would imply site-specific channels and site-level optimization. Title: "Uplink-Feasible and Energy-Aware Band Activation for Co-Sited 3.5/7 GHz 6G Networks" |
+| 4 | "2.0× today's reference demand" (ChatGPT) | g scales each square's trace: x_t = g·a_t/a_ref. a_ref is the square's busiest development-week hour (maximum 6-slot mean). x = 1 is T_0.5, the offered DL traffic per site at which the 3.5-GHz-only network's mean 3.5 GHz DL occupancy is 0.5, the ETSI ES 202 706-1 busy-hour level (D18). Development T_0.5 = 513.6 Mbit/s per site (ISD 200, case C), frozen. It is a calibrated busy-hour load scale applied to 2013 activity, not "today's demand" |
+| 5 | "Fewer than 1% of operating periods experience any service failure" would be the reader's misreading; the audit called the total a "total service failure" (ChatGPT) | The metric is a share of **time**. A 10-minute slot fails when more than 5% of all users are in DL or UL outage (ε = 0.05, D21), and wake-gap seconds are added. The avoidable share counts slots that some pattern could serve. The unavoidable share counts slots no pattern can serve. Total = avoidable + unavoidable. Users in outage within passing slots are not counted. The paper wording is "share of 10-minute intervals in which more than 5% of users are in outage", never "service failure rate" alone |
+| 6 | "L2S, IEEE TVT 2026" as closest prior art (ChatGPT; second time, see §8) | Not found by two searches on 2026-11-11 (none in §8 either). **Excluded** until a DOI or IEEE Xplore record is given. The other three cited works were verified on 2026-11-09 (1.2, 1.6) |
+| 7 | Figure font Garamond (ChatGPT) | Times-compatible: STIX General, which ships with matplotlib 3.11.2 and is designed to match Times. TrueType (Type 42) embedding in PDF, and IEEE column widths (3.5 in single, 7.16 in double) |
+| 8 | Figure 7(a) "uplink service violations" (ChatGPT) | H2's metric is the all-user (DL + UL) avoidable violation share. The UL-agnostic controller is also shown as its own DL-only check sees it. No UL-only violation share is stored, so none is plotted |
+| 9 | Figure 9(a) as an energy–service "Pareto" comparison (ChatGPT) | A scatter of frozen operating points. A Pareto frontier needs a parameter sweep and a nondominance analysis. P3.3's tuning log has a sweep on development data, averaged over g, but it is not a test-data frontier and is not presented as one |
+| 10 | "54 additional compliant cells" as a strength (my count; not a claim of the audit) | True but threshold-driven: in those 54 cells `exh` violates 1.02–1.23% and mpc 0.79–0.96%. Where both meet the budget (137 cells), `exh` saves 0.07 point more on average (at most 0.57). No cell has `exh` meeting the budget while mpc does not. The defensible statement is "energy within 0.57 point of `exh`, with a slightly lower violation share" |
+
+### 10.3 Decisions
+
+- **Open item 7: option (a).** The five failures stay in every table and
+  figure, marked as failures, and no saving is claimed in those cells.
+  Per-hardware retuning, if wanted later, needs its own registered stage and
+  a fresh, unread Milan week.
+- **No superiority claim** over `exh` or `thr_ul` (10.2, row 10; §9 A).
+- **Contributions** (what the evidence supports):
+  - UL-blind activation can look compliant to itself while failing the
+    all-user target (H2);
+  - interference coupling and hardware architecture change the activation
+    decisions;
+  - an online controller comes close to a perfect-foresight reference inside
+    a stated feasibility boundary (Q3, H4).
+- **Not claimed as novel:** base-station sleeping, FR3 energy modelling, DP
+  or MPC.
+- **Limitations stated:** the hardware-specific tuning; eight sector-index
+  patterns, not 57 independent sectors; Milan 2013 activity as demand
+  shape; one test week; the model-based (not measured) 7.2 GHz hardware;
+  S1/S2 as assumed overhead.
+
+### 10.4 Figure plan (final, eight figures)
+
+| Final | Title | Panels | Working ID | Source |
+|---|---|---|---|---|
+| 1 | Dual-band network architecture and proposed control framework | 1 × 2 | 1 | E1c.2 geometry (Munich-anchored layout); controller structure |
+| 2 | Directional interference and UL/DL radio feasibility | 1 × 2 | 2 (c, d) | E1c.2/E1c.3; P3.2b network-frame capacities (3.5 GHz only, DL-only 7.2 GHz carrier, UL enabled) |
+| 3 | Base-station power consumption and hardware-overhead sensitivity | 1 × 2 | 4 | P3.1, P3.2c |
+| 4 | Adaptive activation patterns and switching behaviour | 1 × 2 | 5 | P3.4 `pattern_share`, `mean_cells_on`, `transitions_per_day` |
+| 5 | Held-out energy savings and service reliability | 2 × 2 | 6 | P3.4 |
+| 6 | Consequences of downlink-only energy optimization | 1 × 2 | 7 | P3.4 |
+| 7 | Sustainable traffic capacity and network infeasibility boundary | 1 × 2 | 3 + 8 | P3.3 typical-site capacity table (all eight patterns); P3.4 and P3.3 unavoidable shares |
+| 8 | Controller comparison, oracle gap and hardware robustness | 2 × 2 | 9 | P3.4 `results_test` and `paired` |
+
+- **Supplement:** the beamforming deficits (LOS vs NLOS; codebook vs
+  DirectPath), propagation and link-mapping validation, energy-model
+  reproduction, timing, and the other sensitivities.
+- **Figure 7(a) uses the controllers' own frame.** The typical-site table
+  (D15) gives 2.20 for all-on at 26/74, against 2.33 in P3.2b's network
+  frame. Panel (b)'s boundary is computed in the typical-site frame, so the
+  two frames are not mixed in one figure. The network-frame three-way
+  comparison goes to Figure 2.
+- **First stage: Figures 4–8**, from the frozen P3.3 and P3.4 outputs only.
+  Figures 1–3 follow from the earlier validated outputs.
+
+### 10.5 Figure production rules (adopted)
+
+- Generated only from recorded results. Plotting is read-only: inputs are
+  hash-checked against their manifests before and after.
+- Vector PDF and 600 dpi PNG at final printed size, IEEE column widths.
+- STIX General (Times-compatible) with TrueType embedding. Every text
+  ≥ 7 pt at printed size, checked in code.
+- **Fixed encodings.** Each controller has one colour and one marker across
+  all figures, and identity never relies on colour alone. The palette was
+  validated for colour-vision deficiency. Mixes are encoded by marker fill
+  and line style. Scenarios S0–S2 use one ordinal ramp.
+- Panel descriptions (a)–(d) sit under each panel. The full caption sits
+  under the figure.
+- The 1% line is labelled "1% avoidable-violation budget". Unavoidable and
+  total shares stay distinct.
+- Failed configurations are shown and marked, never dropped.
+- Confidence intervals are drawn where stored: the 95% pigeonhole intervals
+  of savings and of paired gaps.
+- No per-slot record exists, so no time-series is reconstructed. A timeline,
+  if wanted, would be a separate development-data visualization.
+- **Automated verification.** Every plotted value is read back from the
+  rendered artists and compared with values recomputed independently from
+  the frozen summaries. Caption numbers are checked the same way.
+- **Records.** A manifest holds the input, output and script hashes,
+  software and font versions, and the git head. Rendering is checked for
+  byte-identical output.

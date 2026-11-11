@@ -1,0 +1,325 @@
+{
+ "experiment": "P3.4: held-out test of the frozen P3.3 controllers (P3.0 revision 5, D33): test squares x test week x radio realizations 100-199; decisions on the frozen development model, outcomes on the test tables; nothing tuned",
+ "status": "pre-registered 2026-11-11; not yet run; no test-week trace content and no realization 100-199 has been read",
+ "protocol": "docs/PHASE_3_ENERGY_PROTOCOL.md, section P3.4",
+ "inputs": {
+  "p3_3": {
+   "run_of_record": "run 2 (commit f3093a3, results af645f4)",
+   "git_head": "f3093a3ae848edd13ba6e5944d1ee21a6c33caa8",
+   "manifest_sha256": "366abe5ecd50e7fc8428512b3f195bb12c23bd51b62218675efc0d0f134c6a28",
+   "config_sha256": "0937434c52548b90e766bdf4ae13d8cf29c50cf2039131e2f72b49e87fc9fdac"
+  }
+ },
+ "frozen": {
+  "params": {
+   "thr_ul|ericsson_typical|S0": {
+    "m": 0.75,
+    "H": 1
+   },
+   "thr_ul|ericsson_typical|S1": {
+    "m": 0.2,
+    "H": 1
+   },
+   "thr_ul|ericsson_typical|S2": {
+    "m": 0.2,
+    "H": 1
+   },
+   "thr_ul|genai_2025|S0": {
+    "m": 0.2,
+    "H": 1
+   },
+   "thr_ul|genai_2025|S1": {
+    "m": 0.2,
+    "H": 1
+   },
+   "thr_ul|genai_2025|S2": {
+    "m": 0.2,
+    "H": 1
+   },
+   "thr_dl|ericsson_typical|S0": {
+    "m": 0.75,
+    "H": 1
+   },
+   "thr_dl|ericsson_typical|S1": {
+    "m": 0.2,
+    "H": 1
+   },
+   "thr_dl|ericsson_typical|S2": {
+    "m": 0.2,
+    "H": 1
+   },
+   "thr_dl|genai_2025|S0": {
+    "m": 0.75,
+    "H": 1
+   },
+   "thr_dl|genai_2025|S1": {
+    "m": 0.2,
+    "H": 1
+   },
+   "thr_dl|genai_2025|S2": {
+    "m": 0.2,
+    "H": 1
+   },
+   "exh|ericsson_typical|S0": {
+    "alpha": 0.5
+   },
+   "exh|ericsson_typical|S1": {
+    "alpha": 0.9
+   },
+   "exh|ericsson_typical|S2": {
+    "alpha": 0.9
+   },
+   "exh|genai_2025|S0": {
+    "alpha": 0.9
+   },
+   "exh|genai_2025|S1": {
+    "alpha": 0.9
+   },
+   "exh|genai_2025|S2": {
+    "alpha": 0.9
+   },
+   "mpc|ericsson_typical|S0": {
+    "alpha": 0.5,
+    "H": 3
+   },
+   "mpc|ericsson_typical|S1": {
+    "alpha": 0.9,
+    "H": 3
+   },
+   "mpc|ericsson_typical|S2": {
+    "alpha": 0.9,
+    "H": 3
+   },
+   "mpc|genai_2025|S0": {
+    "alpha": 0.9,
+    "H": 3
+   },
+   "mpc|genai_2025|S1": {
+    "alpha": 0.9,
+    "H": 3
+   },
+   "mpc|genai_2025|S2": {
+    "alpha": 0.9,
+    "H": 3
+   }
+  },
+  "test_squares": [
+   4457,
+   4459,
+   4754,
+   4761,
+   4854,
+   4855,
+   4856,
+   4857,
+   4956,
+   4961,
+   5158,
+   5255,
+   5256,
+   5258,
+   5262,
+   5461,
+   5658,
+   5659,
+   5758,
+   5967,
+   6058,
+   6065,
+   6072,
+   6169,
+   6260
+  ],
+  "note": "all other frozen items (seasonal profile, forecast quantiles, development x* thresholds, maximum-capacity fallbacks, test squares a_ref, development T_0.5, development radio and energy tables) are read from P3.3 run 2 outputs, whose hashes are checked by gate G0"
+ },
+ "traces": {
+  "files": {
+   "sms-call-internet-mi-2013-11-04.txt": "288b8d6b57abdc2b08d94d01646e91bde311b4bf4fe9dc8fbb52cfc5f273e320",
+   "sms-call-internet-mi-2013-11-05.txt": "b7d661374710d6c8dcf8a220b7ecbd4ece68b07aedf93d75fe477b59aa0843bf",
+   "sms-call-internet-mi-2013-11-06.txt": "8975004bc46643dc2f15e9a510471fdcf16c676ee8af217772cd65250bb254c9",
+   "sms-call-internet-mi-2013-11-07.txt": "68825035291791d32da776bb06d75f721173b5a03beab79b730961fe40d80959",
+   "sms-call-internet-mi-2013-11-08.txt": "748da75c30e19ab02f8fb19ba1a410020ce4446cfa1a19945fd0638c5ff9fdc6",
+   "sms-call-internet-mi-2013-11-09.txt": "2b7b17d94aa0dbb08eda59bcfecd670fe8ce236b39c8bc6d9cbe6319cb208319",
+   "sms-call-internet-mi-2013-11-10.txt": "87ddc593a211b89d74640788ca9c6c18685a1a95cd13d9926c5e312155ed4fc5",
+   "sms-call-internet-mi-2013-11-18.txt": "5c1a7687dca1e64e70bcfea88d1f06adf5d846aad47b21f822999955f334bd19",
+   "sms-call-internet-mi-2013-11-19.txt": "5e6682d76699e8a11ba336ddb979ef22818bcd78ff4b3847de8af353661f43fa",
+   "sms-call-internet-mi-2013-11-20.txt": "34ad6e301d6bfb4eaa09428b634565918c56c2d77fdfe4991bf791c60324f73d",
+   "sms-call-internet-mi-2013-11-21.txt": "069c8771eab66f24093519a8935197859362500cb8ece422ce6a52c23f5e5f27",
+   "sms-call-internet-mi-2013-11-22.txt": "8c409b4b1b2a9772b692db69ac2d55ea9b6fe797e590f76133295dcb7cf0104f",
+   "sms-call-internet-mi-2013-11-23.txt": "d3b8a541e5599ed9a3ad2fcdc999f5fa5afcc5b9cba1847084de657de4df74f5",
+   "sms-call-internet-mi-2013-11-24.txt": "249a1b2ca66f9cbd0c0676ff1fff4adcaa7a1bacc9e0047a8b48350fd735bb8a"
+  },
+  "test_dates": [
+   "2013-11-18",
+   "2013-11-19",
+   "2013-11-20",
+   "2013-11-21",
+   "2013-11-22",
+   "2013-11-23",
+   "2013-11-24"
+  ],
+  "rule": "test squares x test week, x = g a / a_ref with the frozen development-week a_ref, quantized as in P3.3; slots without recorded activity count as zero traffic and are reported; no square is excluded"
+ },
+ "radio": {
+  "r_start": 100,
+  "r_stop": 200,
+  "dl_offset_db": -3.0,
+  "population": "p3_2c_energy_ledger.build_population with the realization index of every random stream offset by 100 (same seed and streams); checked by gate G1"
+ },
+ "scenarios": [
+  "primary_S0",
+  "primary_S1",
+  "primary_S2",
+  "cat2_S0",
+  "cat2_S1",
+  "cat2_S2",
+  "ulsens_S0",
+  "ulsens_S1",
+  "ulsens_S2",
+  "left_S0",
+  "set3_S0",
+  "mrf64_S0",
+  "mrf128_S0",
+  "mrf1024_S0"
+ ],
+ "scope_note": "the 14 energy scenarios on the primary 50 dBm radio; the 53 and 43 dBm radio sensitivities (development only) are not re-tested",
+ "controllers": [
+  "aon",
+  "off",
+  "tod",
+  "thr_ul",
+  "thr_dl",
+  "exh",
+  "mpc",
+  "oracle",
+  "oracle_dl",
+  "oracle_budget",
+  "oracle_test"
+ ],
+ "labels": {
+  "aon": "all 7.2 GHz cells on, UL enabled (savings reference, D28)",
+  "mpc": "proposed online controller",
+  "exh": "online exhaustive per-slot optimizer (MPC with H = 1)",
+  "oracle": "perfect traffic foresight on the frozen development model, zero avoidable violations (stricter than the 1 % budget)",
+  "oracle_budget": "perfect traffic foresight on the frozen development model, the same 1 % avoidable-violation allowance per run as the online controllers (Lagrangian, certified upper and lower bounds)",
+  "oracle_test": "perfect traffic foresight AND the test radio table (full-information reference)",
+  "on/on_ulca": "carrier selection (D20)"
+ },
+ "holdout": {
+  "temporal": "the traffic of 18-24 November 2013 is excluded from tuning and from every frozen item",
+  "radio": "realizations 100-199 are excluded from development; the controllers decide on the development model and are scored on the test table",
+  "spatial": "the test squares are excluded from controller tuning, the forecast fit and the thresholds; their selection used their development-week mean activity and their normalization a_ref is their own development-week busiest hour (historical site information, disclosed); a strict spatial test with normalization learned only from development squares is not part of P3.4"
+ },
+ "oracle_budget": {
+  "log10_lambda_range": [
+   -3.0,
+   9.0
+  ],
+  "iterations": 50,
+  "rule": "per run: minimum energy subject to avoidable all-user violation <= 1 % of the run time on the decision model; DP of energy + lambda x violation seconds, bisection on log10 lambda; upper bound = best plan within the budget, lower bound = max over evaluated lambda of (DP value - lambda x budget); if the budget cannot be met at the largest lambda the zero-violation oracle plan is used and counted"
+ },
+ "statistics": {
+  "reps": 2000,
+  "seed": 20261112,
+  "method": "paired comparisons on the same squares, week and realizations; energy ratios and gaps: pigeonhole bootstrap resampling test squares and radio realizations independently (crossed design); violation-share differences: bootstrap over test squares (compliance tables are pooled over realizations); 10-minute slots and realizations are never treated as independent weeks"
+ },
+ "predictions": {
+  "H1": {
+   "cells": [
+    "ericsson_typical|1.0|S0",
+    "ericsson_typical|1.0|S2",
+    "ericsson_typical|2.0|S0",
+    "ericsson_typical|2.0|S2",
+    "genai_2025|1.0|S0",
+    "genai_2025|1.0|S2",
+    "genai_2025|2.0|S0",
+    "genai_2025|2.0|S2"
+   ],
+   "min_saving": {
+    "S0": 0.03,
+    "S2": 0.1
+   },
+   "rule": "mpc at 50 dBm, primary S0 and S2, both mixes, g in {1, 2}: saving vs aon (pooled mean energy over test squares and realizations) >= 3 % (S0) / 10 % (S2), the 95 % pigeonhole interval of the saving above 0, and mpc avoidable all-user violation share (pooled over the test squares) <= 1 %; held iff all 8 cells pass"
+  },
+  "H2": {
+   "cells": [
+    "genai_2025|1.0|S0",
+    "genai_2025|1.0|S1",
+    "genai_2025|1.0|S2",
+    "genai_2025|1.5|S0",
+    "genai_2025|1.5|S1",
+    "genai_2025|1.5|S2",
+    "genai_2025|2.0|S0",
+    "genai_2025|2.0|S1",
+    "genai_2025|2.0|S2"
+   ],
+   "min_difference": 0.01,
+   "rule": "at 26/74, g in {1, 1.5, 2}, S0-S2: avoidable all-user violation share of thr_dl (UL-agnostic) minus thr_ul (UL-aware) >= 1 percentage point and its 95 % square-bootstrap interval above 0; held iff all 9 cells pass"
+  },
+  "H4": {
+   "rule": "unavoidable all-user share (no pattern complies; table and traffic only): at 26/74 <= 1 % at g = 2.0 and >= 1 % at g = 2.5 (the feasibility boundary lies in (2.0, 2.5]); at 10/90 <= 1 % at g = 3.0; held iff all three"
+  },
+  "Q3": {
+   "cells": [
+    "ericsson_typical|1.0|S0",
+    "ericsson_typical|1.0|S2",
+    "ericsson_typical|2.0|S0",
+    "ericsson_typical|2.0|S2",
+    "genai_2025|1.0|S0",
+    "genai_2025|1.0|S2",
+    "genai_2025|2.0|S0",
+    "genai_2025|2.0|S2"
+   ],
+   "max_gap": {
+    "S0": 0.01,
+    "S2": 0.05
+   },
+   "rule": "(E_mpc - E_oracle) / E_aon (pooled means; oracle = zero-violation perfect-foresight benchmark on the same frozen model) <= 1 point (S0) / 5 points (S2) in each H1 cell; held iff all 8 pass; the gap to oracle_budget (same 1 % allowance) and to oracle_test is reported alongside, not scored"
+  },
+  "not_claimed": "no prediction states that mpc outperforms exh or thr_ul; their paired differences are reported (review point A)"
+ },
+ "development_basis": "P3.3 run 2 development values (mpc saving vs aon, g = 1 / 2): 10/90 S0 10.9 / 5.7 %, S2 42.7 / 31.2 %; 26/74 S0 10.8 / 5.5 %, S2 38.9 / 20.7 %; mpc violations <= 1 %; thr_dl - thr_ul at 26/74: +2.1 to +44 points; unavoidable share 26/74: 0.2 % (g = 2), 5.5 % (g = 2.5); 10/90 0.1 % (g = 3); mpc - oracle gap <= 0.3 point (S0), <= 2.6 points (S2)",
+ "reported": "per controller x mix x g x scenario on the test data: energy per site-day, saving vs aon with its 95 % pigeonhole interval (qualified only where both meet the 1 % budget), avoidable / unavoidable / total failure shares under the three criteria, transitions, gap seconds, J per delivered Mbit, cells on, pattern shares; paired gaps mpc - exh, mpc - thr_ul, mpc - oracle, mpc - oracle_budget, mpc - oracle_test, exh - oracle; violation differences thr_dl - thr_ul, mpc - exh; offline table time and online decision times",
+ "gates": {
+  "G0_provenance": "P3.3 run 2 manifest, git head, config hash and every output hash; frozen parameters and test squares equal this config; all 14 trace hashes; code constants equal this config",
+  "G1_heldout_population": "the offset builder with offset 0 equals p3_2c.build_population bitwise (2 realizations); the test population draws exactly realizations 100-199, 6 random-stream calls each",
+  "G2_test_traces": "every test-week file aligned to the local day (144 slots, none outside, none misaligned); 25 test squares disjoint from the development squares; slots without activity and clipped slots reported",
+  "G3_frozen_reproduction": "with the frozen development model the development traces hash equal P3.3 F9, and every controller reproduces P3.3 development energy and all-user violation share exactly (<= 1e-12) for 26/74 S0 and 10/90 S2 at all seven g",
+  "G4_fixed_point": "test table: as P3.3 F3",
+  "G5_all_user": "test table: identity and monotonicity as P3.3 F4",
+  "G6_activation_coupling": "test table: as P3.3 F2",
+  "G7_ledger": "100 random test runs recomputed by the independent scalar loop on the test model (as P3.3 F6)",
+  "G8_causality": "every non-oracle frozen controller on the held-out traces: 20 runs x 5 cuts (as P3.3 F7)",
+  "G9_budget_oracle": "lower bound <= upper bound for every run; 6 cells evaluated; runs whose budget cannot be met counted",
+  "G10_times": "test-table construction time and per-decision times recorded with the machine",
+  "pass_rule": "G0-G10"
+ },
+ "decision_rules": {
+  "all_gates_pass": "P3.4 is the held-out result of record for Phase 3; the predictions are scored as registered and reported whether they hold or fail; next: the publication-readiness audit",
+  "gate_fails": "stop; keep the evidence; diagnose; any change after test outcomes are seen is disclosed and the affected results are no longer an untouched held-out test"
+ },
+ "limitations": [
+  "Milan November 2013 Internet activity tests robustness to real temporal demand patterns, not 2026 6G traffic; it is a CDR count, not bytes",
+  "seven held-out days cannot establish seasonal generalization",
+  "the decision space is eight sector-index patterns applied network-wide (homogeneous frame, D15), not independent control of 57 sectors; the sub-millisecond decision time must not be extrapolated to that problem",
+  "the online decision time excludes the offline construction of the feasibility table (hours on a laptop), reported separately",
+  "all results are conditional on the radio, hardware, traffic and service models of P3.1-P3.3"
+ ],
+ "declared_before_registration": [
+  "Every P3.3 development result (runs 1 and 2) was seen before registration; the predictions are development-informed (development_basis).",
+  "The test-week files were downloaded and hashed in P3.3; no test-week content and no realization 100-199 has been read.",
+  "Unit tests: 5 (toy tables); full suite passing.",
+  "One smoke run before registration (--smoke-realizations 2, scratch folder, 541 s) with the 7 real development files and 7 SYNTHETIC test-week files, so that no test-week content was read: every gate G0-G10 computable and passing; G3 (frozen reproduction of every P3.3 development result to <= 1e-12) passed on the real development data; verdict forced FAIL; only gate lines printed; outputs not opened."
+ ],
+ "outputs": {
+  "folder": "results/phase3/p3_4_heldout",
+  "files": [
+   "summary.json",
+   "validation.json",
+   "manifest.json",
+   "run1_stdout.txt",
+   "raw/test_table_isd200.npz (git-ignored)",
+   "raw/runs.json.gz (git-ignored)"
+  ]
+ }
+}

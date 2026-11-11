@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) next.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) pre-registered, run 1 pending.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -2315,6 +2315,146 @@ and go into P3.4's pre-registration:
 - the test squares' a_ref;
 - the development T_0.5.
 
+### P3.4 held-out test of the frozen controllers (PRE-REGISTERED 2026-11-11)
+
+Config `configs/p3/p3_4_heldout.json`, code `scripts/p3_4_heldout.py`,
+tests `tests/test_p3_4_heldout.py`. It imports P3.3's controllers, model
+and accounting unchanged. **Nothing is tuned.**
+
+**Held-out data, read for the first time by the measured run.**
+
+| Holdout | What is held out | Disclosure |
+|---|---|---|
+| Temporal | The traffic of 18–24 November 2013, the test week | — |
+| Radio | Realizations 100–199 (same seed and streams) | The controllers decide on the frozen development model; every outcome is scored on the test radio table |
+| Spatial | The 25 test squares, excluded from tuning, the forecast fit and the thresholds | Their selection used their development-week mean activity, and their a_ref is their own development-week busiest hour (historical site information). A strict spatial test with normalization from development squares only is not part of P3.4 |
+
+**Scope.** The primary 50 dBm radio and its 14 energy scenarios. The 53 and
+43 dBm radio sensitivities were development-only.
+
+**Controllers.**
+- P3.3's nine controllers.
+- `oracle_budget`: perfect foresight with the *same* 1% avoidable-violation
+  allowance per run as the online controllers (review point D).
+  - It is a Lagrangian DP: energy + λ × violation seconds, with bisection
+    on log₁₀ λ ∈ [−3, 9] (50 steps).
+  - The best plan within the budget is an upper bound. The maximum over the
+    evaluated λ of (DP value − λ × budget) is a lower bound, by weak
+    duality.
+- `oracle_test`: perfect foresight *and* the test radio table, a
+  full-information reference.
+- `oracle_budget` and `oracle_test` run in the primary S0–S2 scenarios.
+
+**Statistics.** All comparisons are paired: the same squares, week and
+realizations.
+- **Energy ratios and gaps:** a pigeonhole bootstrap that resamples test
+  squares and realizations independently (crossed design; 2000 replicates,
+  seed 20261112).
+- **Violation differences:** a bootstrap over test squares, because the
+  compliance tables are pooled over realizations.
+- **Slots and realizations are never treated as independent weeks.**
+
+**Predictions** (scored as registered and reported whether they hold or
+fail):
+- **H1 (energy with service).** Each of 8 cells must pass:
+  - mpc at 50 dBm, both mixes, g ∈ {1, 2}, S0 and S2;
+  - saving vs `aon` ≥ 3% (S0) or ≥ 10% (S2);
+  - its 95% pigeonhole interval above 0;
+  - mpc's avoidable all-user violation share ≤ 1%.
+- **H2 (the UL is necessary).** Each of 9 cells must pass:
+  - 26/74, g ∈ {1, 1.5, 2}, S0–S2;
+  - avoidable all-user violation share of `thr_dl` minus `thr_ul` ≥ 1
+    percentage point;
+  - its 95% square-bootstrap interval above 0.
+- **H4 (feasibility boundary).** All three must hold. The unavoidable
+  all-user share is:
+  - at 26/74, ≤ 1% at g = 2.0 and ≥ 1% at g = 2.5 (the boundary lies in
+    (2.0, 2.5]);
+  - at 10/90, ≤ 1% at g = 3.0.
+- **Q3 (oracle gap).** In each H1 cell, (E_mpc − E_oracle)/E_aon ≤ 1 point
+  (S0) or ≤ 5 points (S2).
+  - Here `oracle` is the zero-violation perfect-foresight benchmark on the
+    same frozen model.
+  - The gaps to `oracle_budget` and `oracle_test` are reported alongside,
+    not scored.
+- **Not claimed:** that mpc beats `exh` or `thr_ul` (review point A).
+  Their paired differences are reported.
+
+The predictions are development-informed. The development values (mpc,
+g = 1 / g = 2):
+
+| Mix | S0 saving | S2 saving |
+|---|---|---|
+| 10/90 | 10.9 / 5.7% | 42.7 / 31.2% |
+| 26/74 | 10.8 / 5.5% | 38.9 / 20.7% |
+
+In development, the H2 differences were +2.1 to +44 points, the H4
+unavoidable shares were 0.2% (g = 2) and 5.5% (g = 2.5) at 26/74 and 0.1%
+at 10/90 (g = 3), and the gaps were ≤ 0.3 / 2.6 points.
+
+**Gates** (pass rule G0–G10):
+
+| Gate | Check |
+|---|---|
+| G0 | P3.3 run 2 manifest, git head, config and output hashes; frozen parameters and test squares equal the config; 14 trace hashes; constants |
+| G1 | The offset builder with offset 0 equals p3_2c's builder bitwise; the test population draws exactly realizations 100–199, 6 random-stream calls each |
+| G2 | Test-week files aligned to the local day; 25 test squares disjoint from development; slots without activity and clipped slots reported |
+| G3 | With the frozen model, the development traces' hash equals P3.3 F9's, and every controller reproduces P3.3's development energy and violation exactly (≤ 1e-12) for 26/74 S0 and 10/90 S2 at all 7 g |
+| G4–G6 | The test table: fixed point and closure, all-user identity, activation coupling (as P3.3 F3, F4, F2) |
+| G7 | 100 test runs recomputed by the independent scalar loop |
+| G8 | Causality of the frozen controllers on the held-out traces (100 checks each) |
+| G9 | Budget oracle: lower bound ≤ upper bound in every run; runs where the budget cannot be met are counted |
+| G10 | Offline test-table time and online decision times, with the machine |
+
+**Reported together** (review: energy, feasibility, decision time and
+robustness side by side):
+- energy per site-day and the saving with its interval, qualified only where
+  both controllers meet the budget;
+- avoidable, unavoidable and total failure shares under all three criteria;
+- transitions, gap seconds, J per delivered Mbit, cells on and pattern
+  shares;
+- the paired gaps and the violation differences;
+- the offline table time against the online decision time.
+
+**Limitations, stated with every P3.4 result:**
+- Milan's 2013 CDR activity tests robustness to real temporal demand
+  patterns; it is not 2026 6G traffic and not byte volume.
+- Seven held-out days cannot establish seasonal generalization.
+- The decision space is eight network-wide sector-index patterns (D15),
+  not independent control of 57 sectors. The sub-millisecond decision time
+  must not be extrapolated to that problem.
+- The online time excludes the offline construction of the feasibility
+  table (hours on a laptop), which is reported separately.
+- All results are conditional on the radio, hardware, traffic and service
+  models of P3.1–P3.3.
+
+**Decision rule.**
+- **If all gates pass**, P3.4 is Phase 3's held-out result of record. Next
+  is the publication-readiness audit.
+- **If a gate fails:** stop, keep the evidence and diagnose. Any change made
+  after test outcomes are seen is disclosed, and the affected results no
+  longer count as an untouched held-out test.
+
+**Declared before registration.**
+- Every P3.3 development result was seen.
+- The test-week files were only downloaded and hashed.
+- No test-week content and no realization 100–199 had been read.
+- **Tests:** 5, on toy tables. They check:
+  - that the split simulator reduces exactly to P3.3's;
+  - that it scores on the evaluation model;
+  - the budget oracle's bracket and budget;
+  - the bootstrap intervals.
+- **Full suite:** 233 tests pass.
+- **One smoke run before registration** (2 realizations, scratch folder,
+  541 s).
+  - It used the 7 real development files and 7 *synthetic* test-week files,
+    so no test-week content was read.
+  - Every gate G0–G10 was computable and passed.
+  - G3 passed on the real development data: the frozen model reproduces
+    every P3.3 development result to ≤ 1e-12.
+  - The verdict was forced to fail.
+  - It printed only gate lines, and its outputs were not opened.
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the
@@ -2423,3 +2563,18 @@ unverified date and the D7 misreading above. This table is the record.
 | Keep P3.3 (development) and P3.4 (frozen, held-out) separate | **Agreed; reverses D26** | D33: two measured runs. P3.4's test squares, test week and realizations 100–199 are read only after the freeze |
 | Report energy, feasibility, decision time and robustness together | Agreed | D32 reporting list; F10 |
 | ITU-R M.2412 counts all user locations | Agreed (already D21) | All-user is primary; admitted-user is reported alongside |
+
+## 9. Audit of P3.3 and review of the P3.4 design (ChatGPT, 2026-11-11) and response
+
+| Point | Verdict | Action |
+|---|---|---|
+| (A) MPC does not consistently beat the online exhaustive baseline | **Correct** (`thr_ul` and `exh` are within 0.5 point of `mpc`) | No prediction claims MPC superiority; every controller is reported with paired differences. The contribution is the UL-feasible, interference-aware framework and its energy–service map |
+| (B) The decision time excludes the feasibility-table construction; eight patterns are not 57 independent sectors | **Correct** | Offline table time and online decision time are reported separately; the decision space is stated as a limitation |
+| (C) The test squares' normalization uses their own development-week history | **Correct, disclosed** | Holdouts named precisely: temporal (test week), radio (realizations 100–199), spatial (squares excluded from tuning; their historical a_ref and their selection by development-week activity disclosed) |
+| (D) The oracle allows no avoidable violation, while the online controllers may use up to 1% | **Correct** | `oracle_budget` added: the same 1% allowance per run, Lagrangian DP with certified upper and lower bounds; Q3 stays registered against the zero-violation oracle, with the other two gaps reported alongside |
+| Numerical H1/H2/H4/Q3 predictions with fixed cells, metrics and pass rules | Adopted | H1 (≥ 3% S0 / ≥ 10% S2, interval above 0, violations ≤ 1%), H2 (≥ 1 point, interval above 0), H4 (boundary in (2.0, 2.5] at 26/74; none below 3.0 at 10/90), Q3 (≤ 1 / 5 points) |
+| Paired differences; squares and time dependence; realizations are not independent weeks | Adopted | Pigeonhole bootstrap over squares × realizations; bootstrap over squares for violation shares |
+| Report all controllers under S0–S2 with avoidable, unavoidable and total failures | Adopted | Results table and paired comparisons |
+| Preserve failures; do not tune on held-out outcomes | Adopted (already the practice) | Decision rule |
+| Milan 2013 data are temporal-demand robustness, not 2026 6G traffic; seven days are not seasonal | **Correct** | Stated as limitations |
+| The upload had results only, not the source; claims verified against summaries | Noted | The source, configs and tests are in the repository; every gate in P3.4 re-executes the frozen code |

@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; publication-readiness audit recorded (§10); figure stage in progress.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; publication-readiness audit recorded (§10); figure stage complete, Figures 1–8 (§10.6, §10.8).** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -3007,3 +3007,103 @@ written.
 | 5 | Traffic in Figure 3(b) | P3.2c's ledger uses the ETSI ES 202 706-1 three-level day, not the Milan traces of Figures 4–8: low 00–06 h (zero traffic), medium 06–16 h (g·x_30), busy 16–24 h (g). The caption says so |
 | 6 | Curves in Figure 3(a) | The P3.1 powers recorded at the tabulated occupancies appear affine in occupancy, so straight lines through the recorded points would be exact. The verifier must confirm affinity before the lines are accepted |
 | 7 | Map in Figure 1(a) | Drawn from recorded geometry only: the E1c.2 site file (ISD 200), the E1.1 outdoor mask and the E1c indoor samples. The two sample sets lie on one 4 m lattice and do not overlap; buildings are the indoor points. No scene mesh is read |
+
+### 10.8 Figures 1–3 from the validated outputs (2026-11-11): 279 of 279 checks passed
+
+**Files** (`paper/figures/`, generated at commit a88db7d):
+- the three figures as PDF and 600 dpi PNG, 7.16 in wide;
+- `captions_fig1-3.md`;
+- `source_data/fig{1,2,3}_*.csv` (200 rows, each with its source key);
+- `plotted_values_fig1-3.json`;
+- `caption_facts_fig1-3.json`;
+- `manifest_fig1-3.json` (SHA-256 7a0c8f08…);
+- `verification_report_fig1-3.json` / `.txt`.
+
+**Reproduce:** `python -I scripts/figures/model_figures.py .`, then
+`python -I scripts/figures/verify_model_figures.py .`.
+- A rebuild in a fresh process is byte-identical.
+- The shared style module is unchanged since Figures 4–8 (a939b8f0…).
+
+**What the figures show.**
+- **Figure 1(a):** the E1c.2 layout in the Munich scene. It shows site 0
+  (27 m), 17 rooftop sites and 1 mast (all at 25 m), the sector boresights
+  (30°, 150° and 270°, numbered 1–3 as the pattern bits), the nominal cells
+  and the buildings of the 4 m sample grid.
+- **Figure 1(b):** the MPC loop as implemented, with its offline inputs.
+- **Figure 2(a):** the four recorded percentiles of the case-A 7.2 GHz SINR,
+  with the F2 thresholds.
+- **Figure 2(b):** F2 feasibility per carrier and direction under the four
+  interference models, in cases A and C.
+- **Figure 3(a):** P3.1 power per cell, with S1 and S2 added.
+- **Figure 3(b):** P3.2c daily site energy at 10/90, for 3.5 GHz only and
+  always on under S0–S2.
+
+**Verification** (`verify_model_figures.py`, which imports neither build
+script):
+- **Independent recomputation.** All 1,224 values read back from the
+  rendered artists, all 200 source-data rows and every caption number are
+  recomputed from the experiment files and match.
+- **Placement and markers.** Every Figure 2 marker sits on the rendered row
+  and panel labelled for it, and every artist lies in its own panel.
+- **Model facts.**
+  - Site placement: masts on their lattice points, rooftop sites within
+    0.2·ISD.
+  - The bold hexagon is the Voronoi cell of site 0. The scored users equal
+    E1c.3's recorded victims exactly (935 outdoor, 5,756 indoor).
+  - The map raster equals the recorded geometry (30,888 open outdoor points,
+    as in E1.1).
+  - The F2 thresholds are reproduced by the frozen E1c function (within
+    1e-9 dB).
+  - E1c.3's averaged model equals E1c.2's values exactly.
+  - The S1 and S2 rules of D25 hold, and the sleep powers scale with
+    P_aux.
+- **Figure 1(b) against the code.** `p3_3_controllers.py` equals its blob at
+  the P3.4 run commit (e55fd3a). The MPC source contains each step that the
+  diagram and caption state. The fallback pattern is (1, 1, 1) for every mix
+  and offset.
+- **Other checks.** Input hashes against their manifests, fonts (STIX
+  TrueType only) and PNG size.
+
+**Mutation test** (scratch copy). Nine planted errors were all caught by
+their own content checks:
+- a value off by 0.01 kWh;
+- a missing site marker;
+- an infeasible marker drawn filled;
+- a wrong S2 colour;
+- the false caption range of finding 1;
+- a CSV value off by 1e-4;
+- two swapped row labels;
+- the diagram claiming H = 6;
+- an altered map raster.
+
+My first CSV mutation was malformed, because it split on commas that
+appear inside a field. It was rerun with a CSV parser.
+
+**Found while building, and recorded here:**
+1. **A false caption claim, caught before release.**
+   - My first Figure 3(b) caption said always-on uses less energy than
+     3.5 GHz only "from g = 1.75". That is true only for g = 1.75–3.25.
+   - From g = 3.5, the 3.5-GHz-only energy stays at 82.83 kWh and always-on
+     is dearer again.
+   - Found by reading the rendered figure. The build now requires the range
+     to be contiguous and recomputes it, and the mutation test includes this
+     error.
+2. **10.7, row 6 was wrong for the 7.2 GHz model.**
+   - Its recorded powers deviate from a straight line by up to 0.73 mW, so
+     the verifier refused the affinity claim.
+   - Evaluated densely (10,001 points) with the frozen P3.1 function, the
+     drawn segments are within 0.18 mW of the model.
+   - The 3.5 GHz model is exactly affine.
+   - The caption states both facts.
+3. **Ties on the cell boundary.** 9 outdoor and 212 indoor victims lie
+   exactly on the vertical edges of site 0's hexagon (x = −91.5 and
+   108.5 m), and E1c.2 gives these ties to site 0.
+   - The first build check tested the strict interior and flagged them.
+   - The check is now boundary-aware and two-sided: no victim outside, and
+     no non-victim strictly inside.
+4. **S2 almost coincides with the 3.5 GHz line in Figure 3(a)** (within
+   8.6 W), as the parity rule implies. The overlap is annotated, not
+   hidden.
+
+**Figure stage complete:** Figures 1–8, 369 of 369 automated checks
+(90 + 279).

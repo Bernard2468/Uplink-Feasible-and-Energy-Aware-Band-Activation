@@ -1,0 +1,1405 @@
+{
+ "all_checks_passed": true,
+ "n_checks": 279,
+ "n_plotted_values": 1224,
+ "n_source_rows": 200,
+ "figure_manifest_sha256": "7a0c8f081b9530da4bd60eba72aadd1d2f0e3ee6fe54995c8aae6615bbebb43e",
+ "verifier_sha256": "4592bbe38ecea0b4ba209428372504a59444a4e5e19c0ba769a720d51f1c115a",
+ "checks": [
+  {
+   "check": "input matches its recording manifest: results/phase2/e1c3_directional/summary.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: results/phase2/e1c3_directional/raw/counts_isd200.npz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: results/phase2/e1c2_geometry/e1c2_sites_isd200.npz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: results/phase2/e1_geometry/site_tx0_mask.npz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: results/phase2/e1c_geometry/site_tx0_indoor.npz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: results/phase2/e1_5_4_multiuser/manifest.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: configs/e1/e1_4_antennas_o2i.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: results/phase3/p3_1_energy_models/summary.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: results/phase3/p3_1_energy_models/manifest.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: results/phase3/p3_2c_energy_ledger/summary.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: configs/p3/p3_3_controllers.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: configs/p3/p3_4_heldout.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "input matches its recording manifest: results/phase2/e1c2_interference/summary.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "E1.5.4 summary equals its committed blob (no manifest hashes it)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "figure manifest input hashes equal the files now",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "figure manifest records every anchored input",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "case A label: 8x16 arrays at both carriers, 20 MHz (E1.4 config)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "case C is the case of Phase 3 (P3.2c summary)",
+   "passed": true,
+   "detail": "C_deployment"
+  },
+  {
+   "check": "P3.2c: one energy row per (policy, scenario, g) in the primary setting",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig1_architecture_w1: tagged artists are exactly the expected set",
+   "passed": true,
+   "detail": "missing [], extra []"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|0,0",
+   "passed": true,
+   "detail": "[108.50000000000001, 8.500000000000007, -91.50000000000001, -91.5, 8.499999999999979, 108.49999999999997, 108.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257] vs [108.50000000000001, 8.500000000000007, -91.50000000000001, -91.5, 8.499999999999979, 108.49999999999997, 108.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|-1,0",
+   "passed": true,
+   "detail": "[-91.49999999999999, -191.5, -291.5, -291.5, -191.50000000000003, -91.50000000000003, -91.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257] vs [-91.49999999999999, -191.5, -291.5, -291.5, -191.50000000000003, -91.50000000000003, -91.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|-1,1",
+   "passed": true,
+   "detail": "[8.500000000000014, -91.5, -191.5, -191.5, -91.50000000000001, 8.499999999999972, 8.5] [251.9401076758503, 309.6751345948129, 251.9401076758503, 136.47005383792512, 78.73502691896256, 136.4700538379251, 251.9401076758503] vs [8.500000000000014, -91.5, -191.5, -191.5, -91.50000000000001, 8.499999999999972, 8.5] [251.9401076758503, 309.6751345948129, 251.9401076758503, 136.47005383792512, 78.73502691896256, 136.4700538379251, 251.9401076758503]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|0,-1",
+   "passed": true,
+   "detail": "[8.500000000000014, -91.5, -191.5, -191.5, -91.50000000000001, 8.499999999999972, 8.5] [-94.47005383792515, -36.73502691896256, -94.47005383792515, -209.94010767585033, -267.6751345948129, -209.94010767585036, -94.47005383792515] vs [8.500000000000014, -91.5, -191.5, -191.5, -91.50000000000001, 8.499999999999972, 8.5] [-94.47005383792515, -36.73502691896256, -94.47005383792515, -209.94010767585033, -267.6751345948129, -209.94010767585036, -94.47005383792515]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|0,1",
+   "passed": true,
+   "detail": "[208.5, 108.5, 8.499999999999986, 8.5, 108.49999999999999, 208.49999999999997, 208.5] [251.9401076758503, 309.6751345948129, 251.9401076758503, 136.47005383792512, 78.73502691896256, 136.4700538379251, 251.9401076758503] vs [208.5, 108.5, 8.499999999999986, 8.5, 108.49999999999999, 208.49999999999997, 208.5] [251.9401076758503, 309.6751345948129, 251.9401076758503, 136.47005383792512, 78.73502691896256, 136.4700538379251, 251.9401076758503]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|1,-1",
+   "passed": true,
+   "detail": "[208.5, 108.5, 8.499999999999986, 8.5, 108.49999999999999, 208.49999999999997, 208.5] [-94.47005383792515, -36.73502691896256, -94.47005383792515, -209.94010767585033, -267.6751345948129, -209.94010767585036, -94.47005383792515] vs [208.5, 108.5, 8.499999999999986, 8.5, 108.49999999999999, 208.49999999999997, 208.5] [-94.47005383792515, -36.73502691896256, -94.47005383792515, -209.94010767585033, -267.6751345948129, -209.94010767585036, -94.47005383792515]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|1,0",
+   "passed": true,
+   "detail": "[308.5, 208.5, 108.49999999999999, 108.5, 208.49999999999997, 308.5, 308.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257] vs [308.5, 208.5, 108.49999999999999, 108.5, 208.49999999999997, 308.5, 308.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|-2,0",
+   "passed": true,
+   "detail": "[-291.5, -391.5, -491.5, -491.5, -391.5, -291.5, -291.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257] vs [-291.5, -391.5, -491.5, -491.5, -391.5, -291.5, -291.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|-2,1",
+   "passed": true,
+   "detail": "[-191.5, -291.5, -391.5, -391.5, -291.5, -191.50000000000003, -191.5] [251.9401076758503, 309.6751345948129, 251.9401076758503, 136.47005383792512, 78.73502691896256, 136.4700538379251, 251.9401076758503] vs [-191.5, -291.5, -391.5, -391.5, -291.5, -191.50000000000003, -191.5] [251.9401076758503, 309.6751345948129, 251.9401076758503, 136.47005383792512, 78.73502691896256, 136.4700538379251, 251.9401076758503]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|-2,2",
+   "passed": true,
+   "detail": "[-91.49999999999999, -191.5, -291.5, -291.5, -191.50000000000003, -91.50000000000003, -91.5] [425.145188432738, 482.8802153517006, 425.145188432738, 309.67513459481285, 251.9401076758503, 309.6751345948128, 425.14518843273805] vs [-91.49999999999999, -191.5, -291.5, -291.5, -191.50000000000003, -91.50000000000003, -91.5] [425.145188432738, 482.8802153517006, 425.145188432738, 309.67513459481285, 251.9401076758503, 309.6751345948128, 425.14518843273805]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|-1,-1",
+   "passed": true,
+   "detail": "[-191.5, -291.5, -391.5, -391.5, -291.5, -191.50000000000003, -191.5] [-94.47005383792515, -36.73502691896256, -94.47005383792515, -209.94010767585033, -267.6751345948129, -209.94010767585036, -94.47005383792515] vs [-191.5, -291.5, -391.5, -391.5, -291.5, -191.50000000000003, -191.5] [-94.47005383792515, -36.73502691896256, -94.47005383792515, -209.94010767585033, -267.6751345948129, -209.94010767585036, -94.47005383792515]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|-1,2",
+   "passed": true,
+   "detail": "[108.50000000000001, 8.500000000000007, -91.50000000000001, -91.5, 8.499999999999979, 108.49999999999997, 108.5] [425.145188432738, 482.8802153517006, 425.145188432738, 309.67513459481285, 251.9401076758503, 309.6751345948128, 425.14518843273805] vs [108.50000000000001, 8.500000000000007, -91.50000000000001, -91.5, 8.499999999999979, 108.49999999999997, 108.5] [425.145188432738, 482.8802153517006, 425.145188432738, 309.67513459481285, 251.9401076758503, 309.6751345948128, 425.14518843273805]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|0,-2",
+   "passed": true,
+   "detail": "[-91.49999999999999, -191.5, -291.5, -291.5, -191.50000000000003, -91.50000000000003, -91.5] [-267.6751345948129, -209.9401076758503, -267.6751345948129, -383.14518843273805, -440.8802153517006, -383.1451884327381, -267.67513459481285] vs [-91.49999999999999, -191.5, -291.5, -291.5, -191.50000000000003, -91.50000000000003, -91.5] [-267.6751345948129, -209.9401076758503, -267.6751345948129, -383.14518843273805, -440.8802153517006, -383.1451884327381, -267.67513459481285]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|0,2",
+   "passed": true,
+   "detail": "[308.5, 208.5, 108.49999999999999, 108.5, 208.49999999999997, 308.5, 308.5] [425.145188432738, 482.8802153517006, 425.145188432738, 309.67513459481285, 251.9401076758503, 309.6751345948128, 425.14518843273805] vs [308.5, 208.5, 108.49999999999999, 108.5, 208.49999999999997, 308.5, 308.5] [425.145188432738, 482.8802153517006, 425.145188432738, 309.67513459481285, 251.9401076758503, 309.6751345948128, 425.14518843273805]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|1,-2",
+   "passed": true,
+   "detail": "[108.50000000000001, 8.500000000000007, -91.50000000000001, -91.5, 8.499999999999979, 108.49999999999997, 108.5] [-267.6751345948129, -209.9401076758503, -267.6751345948129, -383.14518843273805, -440.8802153517006, -383.1451884327381, -267.67513459481285] vs [108.50000000000001, 8.500000000000007, -91.50000000000001, -91.5, 8.499999999999979, 108.49999999999997, 108.5] [-267.6751345948129, -209.9401076758503, -267.6751345948129, -383.14518843273805, -440.8802153517006, -383.1451884327381, -267.67513459481285]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|1,1",
+   "passed": true,
+   "detail": "[408.5, 308.5, 208.5, 208.5, 308.5, 408.5, 408.5] [251.9401076758503, 309.6751345948129, 251.9401076758503, 136.47005383792512, 78.73502691896256, 136.4700538379251, 251.9401076758503] vs [408.5, 308.5, 208.5, 208.5, 308.5, 408.5, 408.5] [251.9401076758503, 309.6751345948129, 251.9401076758503, 136.47005383792512, 78.73502691896256, 136.4700538379251, 251.9401076758503]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|2,-2",
+   "passed": true,
+   "detail": "[308.5, 208.5, 108.49999999999999, 108.5, 208.49999999999997, 308.5, 308.5] [-267.6751345948129, -209.9401076758503, -267.6751345948129, -383.14518843273805, -440.8802153517006, -383.1451884327381, -267.67513459481285] vs [308.5, 208.5, 108.49999999999999, 108.5, 208.49999999999997, 308.5, 308.5] [-267.6751345948129, -209.9401076758503, -267.6751345948129, -383.14518843273805, -440.8802153517006, -383.1451884327381, -267.67513459481285]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|2,-1",
+   "passed": true,
+   "detail": "[408.5, 308.5, 208.5, 208.5, 308.5, 408.5, 408.5] [-94.47005383792515, -36.73502691896256, -94.47005383792515, -209.94010767585033, -267.6751345948129, -209.94010767585036, -94.47005383792515] vs [408.5, 308.5, 208.5, 208.5, 308.5, 408.5, 408.5] [-94.47005383792515, -36.73502691896256, -94.47005383792515, -209.94010767585033, -267.6751345948129, -209.94010767585036, -94.47005383792515]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|hex|2,0",
+   "passed": true,
+   "detail": "[508.5, 408.5, 308.5, 308.5, 408.5, 508.5, 508.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257] vs [508.5, 408.5, 308.5, 308.5, 408.5, 508.5, 508.5] [78.73502691896257, 136.47005383792515, 78.73502691896257, -36.735026918962596, -94.47005383792516, -36.73502691896263, 78.73502691896257]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|sites|rooftop",
+   "passed": true,
+   "detail": "[-191.5, -91.5, -95.5, 108.5, 116.5, 208.5, -391.5, -291.5, -201.5, -291.5, 6.5, 208.5, 6.5, 308.5, 208.5, 308.5, 408.5] [21.0, 194.20508075688772, -150.20508075688772, 194.20508075688772, -152.20508075688772, 21.0, 21.0, 194.20508075688772, 345.41016151377545, -152.20508075688772, 357.41016151377545, 363.41016151377545, -311.41016151377545, 194.20508075688772, -325.41016151377545, -150.20508075688772, 21.0] vs [-191.5, -91.5, -95.5, 108.5, 116.5, 208.5, -391.5, -291.5, -201.5, -291.5, 6.5, 208.5, 6.5, 308.5, 208.5, 308.5, 408.5] [21.0, 194.20508075688772, -150.20508075688772, 194.205080756887"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|sites|mast",
+   "passed": true,
+   "detail": "[-191.5] [-325.41016151377545] vs [-191.5] [-325.41016151377545]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|sites|site0",
+   "passed": true,
+   "detail": "[8.5] [21.0] vs [8.5] [21.0]"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|seclabel|0",
+   "passed": true,
+   "detail": "'1' != '1'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|seclabel|1",
+   "passed": true,
+   "detail": "'2' != '2'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|seclabel|2",
+   "passed": true,
+   "detail": "'3' != '3'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|sectors",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig1_architecture_w1: f1a|scalebar",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|box|C1",
+   "passed": true,
+   "detail": "'Measured traffic $x_{t-1}$ of the previous slot' != 'Measured traffic $x_{t-1}$ of the previous slot'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|box|C2",
+   "passed": true,
+   "detail": "'Forecast $\\\\hat{x}_{t+h}$, $h$ = 0, 1, 2, by seasonal\\npersistence, and upper bound $\\\\hat{x}_{t+h}\\\\,e^{q_{\\\\alpha,h}}$' != 'Forecast $\\\\hat{x}_{t+h}$, $h$ = 0, 1, 2, by seasonal\\npersistence, and upper bound $\\\\hat{x}_{t+h}\\\\,e^{q_{\\\\alpha,h}}$'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|box|C3",
+   "passed": true,
+   "detail": "'Dynamic program over $H$ = 3 slots:\\nminimum forecast energy, using only\\npatterns feasible at the upper bound\\n(if none is feasible: all cells on)' != 'Dynamic program over $H$ = 3 slots:\\nminimum forecast energy, using only\\npatterns feasible at the upper bound\\n(if none is feasible: all cells on)'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|box|C4",
+   "passed": true,
+   "detail": "'Apply the first pattern $p_t$' != 'Apply the first pattern $p_t$'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|box|B1",
+   "passed": true,
+   "detail": "'Forecast model\\nweekday/weekend\\nprofile; log-error\\nquantiles $q_{\\\\alpha,h}$' != 'Forecast model\\nweekday/weekend\\nprofile; log-error\\nquantiles $q_{\\\\alpha,h}$'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|box|B2",
+   "passed": true,
+   "detail": "'Radio table\\nall-user DL + UL\\noutage per pattern\\nand traffic' != 'Radio table\\nall-user DL + UL\\noutage per pattern\\nand traffic'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|box|B3",
+   "passed": true,
+   "detail": "'Energy table\\nsite power per\\npattern and traffic,\\nS0, S1, S2' != 'Energy table\\nsite power per\\npattern and traffic,\\nS0, S1, S2'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|box|N1",
+   "passed": true,
+   "detail": "'3.5 GHz layer\\n(all 57 cells)\\nalways on' != '3.5 GHz layer\\n(all 57 cells)\\nalways on'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|box|N2",
+   "passed": true,
+   "detail": "'7.2 GHz layer (57 cells): pattern $p_t$,\\none on/off bit per sector 1, 2, 3, at\\nevery site; a woken cell serves after\\n$T_\\\\mathrm{TR} + T_\\\\mathrm{SCell}$' != '7.2 GHz layer (57 cells): pattern $p_t$,\\none on/off bit per sector 1, 2, 3, at\\nevery site; a woken cell serves after\\n$T_\\\\mathrm{TR} + T_\\\\mathrm{SCell}$'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|container|Online",
+   "passed": true,
+   "detail": "'Online, every 10-min slot $t$' != 'Online, every 10-min slot $t$'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|container|Offline",
+   "passed": true,
+   "detail": "'Offline (development\\nweek), then frozen' != 'Offline (development\\nweek), then frozen'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|container|network",
+   "passed": true,
+   "detail": "'Network: 19 sites × 3 sectors' != 'Network: 19 sites × 3 sectors'"
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|feedback",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig1_architecture_w1: f1b|feedback_label",
+   "passed": true,
+   "detail": "'traffic of slot $t$, measured' != 'traffic of slot $t$, measured'"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: tagged artists are exactly the expected set",
+   "passed": true,
+   "detail": "missing [], extra []"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|noise_multi|range",
+   "passed": true,
+   "detail": "[16.87964376590331, 76.66484820434144] [3.0, 3.0] vs [16.87964376590331, 76.66484820434144] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|noise_multi|ends",
+   "passed": true,
+   "detail": "[16.87964376590331, 76.66484820434144] [3.0, 3.0] vs [16.87964376590331, 76.66484820434144] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|noise_multi|p5",
+   "passed": true,
+   "detail": "[27.197799002468116] [3.0] vs [27.197799002468116] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|noise_multi|p50",
+   "passed": true,
+   "detail": "[51.53878200829226] [3.0] vs [51.53878200829226] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|primary|range",
+   "passed": true,
+   "detail": "[14.943688500483177, 43.93877512032489] [2.0, 2.0] vs [14.943688500483177, 43.93877512032489] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|primary|ends",
+   "passed": true,
+   "detail": "[14.943688500483177, 43.93877512032489] [2.0, 2.0] vs [14.943688500483177, 43.93877512032489] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|primary|p5",
+   "passed": true,
+   "detail": "[17.946267003879086] [2.0] vs [17.946267003879086] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|primary|p50",
+   "passed": true,
+   "detail": "[25.90387321219542] [2.0] vs [25.90387321219542] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|sd|range",
+   "passed": true,
+   "detail": "[9.2434612697176, 44.54430804860402] [1.0, 1.0] vs [9.2434612697176, 44.54430804860402] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|sd|ends",
+   "passed": true,
+   "detail": "[9.2434612697176, 44.54430804860402] [1.0, 1.0] vs [9.2434612697176, 44.54430804860402] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|sd|p5",
+   "passed": true,
+   "detail": "[13.925055131691465] [1.0] vs [13.925055131691465] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|sd|p50",
+   "passed": true,
+   "detail": "[25.430488167192408] [1.0] vs [25.430488167192408] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|geo|range",
+   "passed": true,
+   "detail": "[5.1195890171998855, 47.78789247184636] [0.0, 0.0] vs [5.1195890171998855, 47.78789247184636] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|geo|ends",
+   "passed": true,
+   "detail": "[5.1195890171998855, 47.78789247184636] [0.0, 0.0] vs [5.1195890171998855, 47.78789247184636] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|geo|p5",
+   "passed": true,
+   "detail": "[10.373241953757045] [0.0] vs [10.373241953757045] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|geo|p50",
+   "passed": true,
+   "detail": "[27.524625206060804] [0.0] vs [27.524625206060804] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|DL|threshold",
+   "passed": true,
+   "detail": "[12.915561399979632, 12.915561399979632] [-0.6, 3.6] vs [12.915561399979632, 12.915561399979632] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|noise_multi|range",
+   "passed": true,
+   "detail": "[-8.140488431876605, 51.64329801691093] [3.0, 3.0] vs [-8.140488431876605, 51.64329801691093] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|noise_multi|ends",
+   "passed": true,
+   "detail": "[-8.140488431876605, 51.64329801691093] [3.0, 3.0] vs [-8.140488431876605, 51.64329801691093] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|noise_multi|p5",
+   "passed": true,
+   "detail": "[2.178070609519253] [3.0] vs [2.178070609519253] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|noise_multi|p50",
+   "passed": true,
+   "detail": "[26.51808855193184] [3.0] vs [26.51808855193184] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|primary|range",
+   "passed": true,
+   "detail": "[-8.574657534246569, 51.24805309131577] [2.0, 2.0] vs [-8.574657534246569, 51.24805309131577] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|primary|ends",
+   "passed": true,
+   "detail": "[-8.574657534246569, 51.24805309131577] [2.0, 2.0] vs [-8.574657534246569, 51.24805309131577] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|primary|p5",
+   "passed": true,
+   "detail": "[1.7372714714777544] [2.0] vs [1.7372714714777544] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|primary|p50",
+   "passed": true,
+   "detail": "[26.089617934347473] [2.0] vs [26.089617934347473] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|sd|range",
+   "passed": true,
+   "detail": "[-9.034298780487802, 51.24591615585854] [1.0, 1.0] vs [-9.034298780487802, 51.24591615585854] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|sd|ends",
+   "passed": true,
+   "detail": "[-9.034298780487802, 51.24591615585854] [1.0, 1.0] vs [-9.034298780487802, 51.24591615585854] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|sd|p5",
+   "passed": true,
+   "detail": "[1.342056956866955] [1.0] vs [1.342056956866955] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|sd|p50",
+   "passed": true,
+   "detail": "[25.830107341699005] [1.0] vs [25.830107341699005] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|geo|range",
+   "passed": true,
+   "detail": "[-9.647534246575333, 51.34495897965428] [0.0, 0.0] vs [-9.647534246575333, 51.34495897965428] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|geo|ends",
+   "passed": true,
+   "detail": "[-9.647534246575333, 51.34495897965428] [0.0, 0.0] vs [-9.647534246575333, 51.34495897965428] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|geo|p5",
+   "passed": true,
+   "detail": "[0.8543465583565251] [0.0] vs [0.8543465583565251] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|geo|p50",
+   "passed": true,
+   "detail": "[25.593644013101198] [0.0] vs [25.593644013101198] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2a|UL_F2|threshold",
+   "passed": true,
+   "detail": "[8.660666459308882, 8.660666459308882] [-0.6, 3.6] vs [8.660666459308882, 8.660666459308882] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|noise_multi",
+   "passed": true,
+   "detail": "[0.9998871438498957] [10.0] vs [0.9998871438498957] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|noise_multi|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|primary",
+   "passed": true,
+   "detail": "[0.999784850590688] [10.0] vs [0.999784850590688] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|primary|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|sd",
+   "passed": true,
+   "detail": "[0.9669629890038017] [10.0] vs [0.9669629890038017] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|sd|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|geo",
+   "passed": true,
+   "detail": "[0.9230264956724998] [10.0] vs [0.9230264956724998] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_3.5GHz|geo|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|noise_multi",
+   "passed": true,
+   "detail": "[0.9959735927727589] [9.0] vs [0.9959735927727589] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|noise_multi|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|primary",
+   "passed": true,
+   "detail": "[0.9947999999999999] [9.0] vs [0.9947999999999999] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|primary|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|sd",
+   "passed": true,
+   "detail": "[0.9618071150122821] [9.0] vs [0.9618071150122821] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|sd|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|geo",
+   "passed": true,
+   "detail": "[0.9192310777314907] [9.0] vs [0.9192310777314907] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|DL_7.2GHz|geo|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|noise_multi",
+   "passed": true,
+   "detail": "[0.9719879149587689] [8.0] vs [0.9719879149587689] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|noise_multi|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|primary",
+   "passed": true,
+   "detail": "[0.9697042524331737] [8.0] vs [0.9697042524331737] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|primary|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|sd",
+   "passed": true,
+   "detail": "[0.9673735043275001] [8.0] vs [0.9673735043275001] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|sd|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|geo",
+   "passed": true,
+   "detail": "[0.9640010806672786] [8.0] vs [0.9640010806672786] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_3.5GHz|geo|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|noise_multi",
+   "passed": true,
+   "detail": "[0.9008514320327916] [7.0] vs [0.9008514320327916] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|noise_multi|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|primary",
+   "passed": true,
+   "detail": "[0.8963258055765108] [7.0] vs [0.8963258055765108] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|primary|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|sd",
+   "passed": true,
+   "detail": "[0.8917772294336902] [7.0] vs [0.8917772294336902] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|sd|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|geo",
+   "passed": true,
+   "detail": "[0.8858541307280382] [7.0] vs [0.8858541307280382] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|A_equal_elements|UL_7.2GHz|geo|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|noise_multi",
+   "passed": true,
+   "detail": "[0.9999594162612926] [4.6] vs [0.9999594162612926] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|noise_multi|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|primary",
+   "passed": true,
+   "detail": "[0.9999085476025018] [4.6] vs [0.9999085476025018] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|primary|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|sd",
+   "passed": true,
+   "detail": "[0.9663907481799974] [4.6] vs [0.9663907481799974] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|sd|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|geo",
+   "passed": true,
+   "detail": "[0.9260649143604629] [4.6] vs [0.9260649143604629] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_3.5GHz|geo|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|noise_multi",
+   "passed": true,
+   "detail": "[0.9996289089645587] [3.5999999999999996] vs [0.9996289089645587] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|noise_multi|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|primary",
+   "passed": true,
+   "detail": "[0.9996150104239055] [3.5999999999999996] vs [0.9996150104239055] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|primary|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|sd",
+   "passed": true,
+   "detail": "[0.9966896738302372] [3.5999999999999996] vs [0.9966896738302372] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|sd|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|geo",
+   "passed": true,
+   "detail": "[0.9882657326649152] [3.5999999999999996] vs [0.9882657326649152] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|DL_7.2GHz|geo|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|noise_multi",
+   "passed": true,
+   "detail": "[0.9257284938664327] [2.5999999999999996] vs [0.9257284938664327] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|noise_multi|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|primary",
+   "passed": true,
+   "detail": "[0.9218014946505484] [2.5999999999999996] vs [0.9218014946505484] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|primary|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|sd",
+   "passed": true,
+   "detail": "[0.9167666048540839] [2.5999999999999996] vs [0.9167666048540839] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|sd|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|geo",
+   "passed": true,
+   "detail": "[0.9105782001018237] [2.5999999999999996] vs [0.9105782001018237] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_3.5GHz|geo|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|noise_multi",
+   "passed": true,
+   "detail": "[0.8527634802837681] [1.5999999999999996] vs [0.8527634802837681] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|noise_multi|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|primary",
+   "passed": true,
+   "detail": "[0.8512928615757379] [1.5999999999999996] vs [0.8512928615757379] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|primary|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|sd",
+   "passed": true,
+   "detail": "[0.8489122883166788] [1.5999999999999996] vs [0.8489122883166788] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|sd|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|geo",
+   "passed": true,
+   "detail": "[0.8461527085431431] [1.5999999999999996] vs [0.8461527085431431] None"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|C_deployment|UL_7.2GHz|geo|se",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|case|A_equal_elements",
+   "passed": true,
+   "detail": "'Case A: 8×16 arrays at both carriers, 20 MHz' != 'Case A: 8×16 arrays at both carriers, 20 MHz'"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: f2b|case|C_deployment",
+   "passed": true,
+   "detail": "'Case C: deployment (used in Phase 3)' != 'Case C: deployment (used in Phase 3)'"
+  },
+  {
+   "check": "fig3_power_energy_w4: tagged artists are exactly the expected set",
+   "passed": true,
+   "detail": "missing [], extra []"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3a|35|right",
+   "passed": true,
+   "detail": "[0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [712.1800000000001, 741.2002216516048, 799.2406649548143, 886.3013299096285, 1002.3822165160475, 1292.5844330320951] vs [0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [712.1800000000001, 741.2002216516048, 799.2406649548143, 886.3013299096285, 1002.3822165160475, 1292.5844330320951]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3a|35|left",
+   "passed": true,
+   "detail": "[0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [891.8, 918.1242216516048, 970.7726649548142, 1049.7453299096285, 1155.0422165160476, 1418.2844330320952] vs [0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [891.8, 918.1242216516048, 970.7726649548142, 1049.7453299096285, 1155.0422165160476, 1418.2844330320952]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3a|72|S0",
+   "passed": true,
+   "detail": "[0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [171.56536868156567, 201.0135507603576, 259.90995848950786, 348.25467901214915, 466.04784304298045, 760.5317697899404] vs [0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [171.56536868156567, 201.0135507603576, 259.90995848950786, 348.25467901214915, 466.04784304298045, 760.5317697899404]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3a|72|S1",
+   "passed": true,
+   "detail": "[0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [343.5919951641537, 373.0401772429456, 431.9365849720959, 520.2813054947371, 638.0744695255685, 932.5583962725284] vs [0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [343.5919951641537, 373.0401772429456, 431.9365849720959, 520.2813054947371, 638.0744695255685, 932.5583962725284]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3a|72|S2",
+   "passed": true,
+   "detail": "[0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [712.1800000000001, 741.628182078792, 800.5245898079422, 888.8693103305835, 1006.6624743614148, 1301.146401108375] vs [0.0, 0.05, 0.15, 0.3, 0.5, 1.0] [712.1800000000001, 741.628182078792, 800.5245898079422, 888.8693103305835, 1006.6624743614148, 1301.146401108375]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3a|s2_note",
+   "passed": true,
+   "detail": "'7.2 GHz S2 almost coincides with\\n3.5 GHz, idle modes (equal at $L$ = 0)' != '7.2 GHz S2 almost coincides with\\n3.5 GHz, idle modes (equal at $L$ = 0)'"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|35only|S0",
+   "passed": true,
+   "detail": "[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [57.19003293965248, 60.330357632988076, 63.674892112836886, 67.22171833524372, 70.9581994786637, 74.2997427669922, 76.86703292054146, 78.67908172198185, 80.36026569523393, 81.60807172620812, 82.48063351703692, 82.80832031310383, 82.82823840290837, 82.82823840290837, 82.82823840290837] vs [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [57.19003293965248, 60.330357632988076, 63.674892112836886, 67.22171833524372, 70.9581994786637, 74.2997427669922, 76.86703292054146, 78.67908172"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|35only|S0|feasible",
+   "passed": true,
+   "detail": "[0.5, 0.75, 1.0, 1.25] [57.19003293965248, 60.330357632988076, 63.674892112836886, 67.22171833524372] vs [0.5, 0.75, 1.0, 1.25] [57.19003293965248, 60.330357632988076, 63.674892112836886, 67.22171833524372]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|35only|S0|infeasible",
+   "passed": true,
+   "detail": "[1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [70.9581994786637, 74.2997427669922, 76.86703292054146, 78.67908172198185, 80.36026569523393, 81.60807172620812, 82.48063351703692, 82.80832031310383, 82.82823840290837, 82.82823840290837, 82.82823840290837] vs [1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [70.9581994786637, 74.2997427669922, 76.86703292054146, 78.67908172198185, 80.36026569523393, 81.60807172620812, 82.48063351703692, 82.80832031310383, 82.82823840290837, 82.82823840290837, 82.82823840290837]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|35only|S0|ci",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S0",
+   "passed": true,
+   "detail": "[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [66.37785557145904, 67.75917024286336, 69.1454010876243, 70.53646244039506, 71.9322563759833, 73.3328938179826, 74.73842167609637, 76.14883720714903, 77.5641131365055, 78.98424428083783, 80.4093494162982, 81.83952541234987, 83.274804271107, 84.71325524886963, 86.00112445209346] vs [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [66.37785557145904, 67.75917024286336, 69.1454010876243, 70.53646244039506, 71.9322563759833, 73.3328938179826, 74.73842167609637, 76.14883720714903, 77"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S0|feasible",
+   "passed": true,
+   "detail": "[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5] [66.37785557145904, 67.75917024286336, 69.1454010876243, 70.53646244039506, 71.9322563759833, 73.3328938179826, 74.73842167609637, 76.14883720714903, 77.5641131365055, 78.98424428083783, 80.4093494162982, 81.83952541234987, 83.274804271107] vs [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5] [66.37785557145904, 67.75917024286336, 69.1454010876243, 70.53646244039506, 71.9322563759833, 73.3328938179826, 74.73842167609637, 76.14883720714903, 77.5641131365055, 78.98424428083783, 80.4093494162982, 81.8395"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S0|infeasible",
+   "passed": true,
+   "detail": "[3.75, 4.0] [84.71325524886963, 86.00112445209346] vs [3.75, 4.0] [84.71325524886963, 86.00112445209346]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S0|ci",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S1",
+   "passed": true,
+   "detail": "[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [78.76377267820536, 80.14508734960968, 81.53131819437064, 82.92237954714138, 84.31817348272965, 85.71881092472893, 87.1243387828427, 88.53475431389539, 89.95003024325187, 91.37016138758416, 92.79526652304456, 94.22544251909622, 95.66072137785335, 97.09917235561598, 98.3870415588398] vs [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [78.76377267820536, 80.14508734960968, 81.53131819437064, 82.92237954714138, 84.31817348272965, 85.71881092472893, 87.1243387828427, 88.53475431389"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S1|feasible",
+   "passed": true,
+   "detail": "[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5] [78.76377267820536, 80.14508734960968, 81.53131819437064, 82.92237954714138, 84.31817348272965, 85.71881092472893, 87.1243387828427, 88.53475431389539, 89.95003024325187, 91.37016138758416, 92.79526652304456, 94.22544251909622, 95.66072137785335] vs [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5] [78.76377267820536, 80.14508734960968, 81.53131819437064, 82.92237954714138, 84.31817348272965, 85.71881092472893, 87.1243387828427, 88.53475431389539, 89.95003024325187, 91.37016138758416, 92.7952665230445"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S1|infeasible",
+   "passed": true,
+   "detail": "[3.75, 4.0] [97.09917235561598, 98.3870415588398] vs [3.75, 4.0] [97.09917235561598, 98.3870415588398]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S1|ci",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S2",
+   "passed": true,
+   "detail": "[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [105.30210902638632, 106.68342369779062, 108.06965454255158, 109.46071589532231, 110.85650983091057, 112.25714727290986, 113.66267513102366, 115.07309066207634, 116.48836659143281, 117.9084977357651, 119.33360287122548, 120.76377886727714, 122.19905772603427, 123.63750870379688, 124.92537790702076] vs [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0] [105.30210902638632, 106.68342369779062, 108.06965454255158, 109.46071589532231, 110.85650983091057, 112.25714727290986, 113.662675"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S2|feasible",
+   "passed": true,
+   "detail": "[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5] [105.30210902638632, 106.68342369779062, 108.06965454255158, 109.46071589532231, 110.85650983091057, 112.25714727290986, 113.66267513102366, 115.07309066207634, 116.48836659143281, 117.9084977357651, 119.33360287122548, 120.76377886727714, 122.19905772603427] vs [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5] [105.30210902638632, 106.68342369779062, 108.06965454255158, 109.46071589532231, 110.85650983091057, 112.25714727290986, 113.66267513102366, 115.07309066207634, 116.48836659143281, 117.90849773"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S2|infeasible",
+   "passed": true,
+   "detail": "[3.75, 4.0] [123.63750870379688, 124.92537790702076] vs [3.75, 4.0] [123.63750870379688, 124.92537790702076]"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|aon_ulsel|S2|ci",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|gstar|35only",
+   "passed": true,
+   "detail": "[1.4453125, 1.4453125] [50.0, 142.0] vs [1.4453125, 1.4453125] None"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|gstar_label|35only",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|gstar|aon_ulsel",
+   "passed": true,
+   "detail": "[3.71875, 3.71875] [50.0, 142.0] vs [3.71875, 3.71875] None"
+  },
+  {
+   "check": "fig3_power_energy_w4: f3b|gstar_label|aon_ulsel",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2 (a) DL: every percentile marker sits on its model's labelled row, in the panel labelled 'DL, 7.2 GHz'",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2 (a) UL_F2: every percentile marker sits on its model's labelled row, in the panel labelled 'UL, 7.2 GHz'",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig2 (b): every marker sits on its link's labelled row, case A rows above case C rows",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig1_architecture_w1: every tagged artist lies in its own panel",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig3_power_energy_w4: every tagged artist lies in its own panel",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "site 0 is the lattice origin and the E1.1 gNB (8.5, 21, 27 m)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "every rooftop site within 0.2 ISD of its lattice point, masts on it",
+   "passed": true,
+   "detail": "max 24.17 m"
+  },
+  {
+   "check": "rings 0-2 with 1 + 6 + 12 sites",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "every non-site-0 antenna at 25 m",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "sector bearings identical in E1.4 cases A, B, C (the cases E1c.2/E1c.3 use)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "bold hexagon: each vertex equidistant from site 0 and exactly two neighbours (the Voronoi cell)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "scored users = the sampled points nearest to site 0 (ties to site 0), as recorded by E1c.3",
+   "passed": true,
+   "detail": "935/935, 5756/5756"
+  },
+  {
+   "check": "every scored user inside or on the bold hexagon",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "build check agrees: victims 935 / 5756 inside or on the cell, no non-victim strictly inside",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "map raster recomputed from the E1.1 mask and E1c indoor samples equals the drawn image",
+   "passed": true,
+   "detail": "d7e6bb04712795f422c80eaa279007e86a8bf44a38dd979c1d725e0de03f7dd6"
+  },
+  {
+   "check": "map outdoor cells = E1.1 open outdoor points (30,888); scene = munich",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "p3_3_controllers.py equals its blob at the P3.4 run commit (e55fd3a)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 1(b) claim in the frozen code: measured traffic of the previous slot",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 1(b) claim in the frozen code: forecast horizons h = 0..H-1",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 1(b) claim in the frozen code: upper bound x e^q",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 1(b) claim in the frozen code: feasible set at the upper bound, energy at the point forecast",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 1(b) claim in the frozen code: dynamic program, first action applied",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 1(b) claim in the frozen code: all-user criterion by default",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 1(b) claim in the frozen code: fallback = maximum-capacity pattern",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 1(b) claim in the frozen code: wake-gap penalty in the cost",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "maximum-capacity fallback is all on (1, 1, 1) for the all-user criterion, every mix and offset",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "MPC horizon H is one value in every frozen cell",
+   "passed": true,
+   "detail": "{3}"
+  },
+  {
+   "check": "slot 600 s, epsilon 0.05, eight patterns",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "F2 thresholds: E1.5.4 record = frozen E1c thresholds() (within 1e-9 dB)",
+   "passed": true,
+   "detail": "{'DL': 12.915561399979659, 'UL': 8.660666459308894}"
+  },
+  {
+   "check": "E1c.3 averaged model reproduces E1c.2 exactly: A_equal_elements DL_3.5GHz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "E1c.3 averaged model reproduces E1c.2 exactly: A_equal_elements DL_7.2GHz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "E1c.3 averaged model reproduces E1c.2 exactly: A_equal_elements UL_3.5GHz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "E1c.3 averaged model reproduces E1c.2 exactly: A_equal_elements UL_7.2GHz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "E1c.3 averaged model reproduces E1c.2 exactly: C_deployment DL_3.5GHz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "E1c.3 averaged model reproduces E1c.2 exactly: C_deployment DL_7.2GHz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "E1c.3 averaged model reproduces E1c.2 exactly: C_deployment UL_3.5GHz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "E1c.3 averaged model reproduces E1c.2 exactly: C_deployment UL_7.2GHz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "P3.1 3.5 GHz powers affine in L (both cases; max deviation < 1e-9 W)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "P3.1 7.2 GHz powers are not exactly affine (off a straight line by > 1e-9 W), and the caption says so: no \"both models are affine\", the 1 mW bound stated",
+   "passed": true,
+   "detail": "0.726 mW"
+  },
+  {
+   "check": "P3.1 config matches the P3.1 manifest",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "frozen model reproduces the recorded P3.1 points: 3.5 right",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "frozen model reproduces the recorded P3.1 points: 3.5 left",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "frozen model reproduces the recorded P3.1 points: 7.2",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "drawn segments within 1 mW of the frozen power models at every occupancy (10,001-point grid)",
+   "passed": true,
+   "detail": "{'3.5 right': '0.0000 mW', '3.5 left': '0.0000 mW', '7.2': '0.1815 mW'}"
+  },
+  {
+   "check": "3.5 GHz drawn segments are exact (model affine, < 1e-9 W)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "P3.1 7.2 GHz model separable: P(1,1) = P(1,0) + P(0,1) - P(0,0)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "S1 overhead = 17 W (N_PA P_max)^0.25 / 0.81 + 90 W / 0.855 (D25)",
+   "passed": true,
+   "detail": "172.02662648258803 vs 172.02662648258803"
+  },
+  {
+   "check": "S2 overhead = P_3.5(0) - P_empty,7.2 (parity, D25)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "S0 overhead is zero",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "P3.2c P_empty = P3.1 P_empty and P(0, 0)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "sleep powers scale with the overhead: deep(S) = (P_mu + P_aux) deep(S0) / P_mu",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "always-on cheaper than 3.5 GHz only (S0) on one contiguous range of g, dearer at every g above it",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "3.5 GHz only fails the all-user criterion at every g above its g* and meets it below",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "always on fails the all-user criterion exactly above its g*",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "always-on S1/S2 increments constant over g and equal to 3 cells x P_aux x 24 h",
+   "passed": true,
+   "detail": "{'S1': (12.38591710674632, 12.385917106746376), 'S2': (38.92425345492725, 38.92425345492731)}"
+  },
+  {
+   "check": "caption facts equal the independent recomputation",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "every caption fact appears in captions_fig1-3.md, no unfilled placeholder",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "3.5-GHz-only energy constant above the cheaper range (caption \"stays at\")",
+   "passed": true,
+   "detail": "{82.828238}"
+  },
+  {
+   "check": "caption constant: M.2412 mix 20% in car, 80% indoor",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: ISD 200 victims and realizations from E1c.3",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: F2 = 2.25 / 1.5 bit/s/Hz at 10 users per cell (M.2410 0.225 / 0.15 per user)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: case C at 53 dBm in E1c.3; Phase 3 primary 50 dBm (-3 dB)",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: case C 100/200 MHz, 16x32 at 7.2 GHz",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: M_RF = 256 and 1024 PAs at 50 dBm",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "caption constant: ETSI day: medium level g x_30 with x_30 from P3.2c",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig1_architecture_w1: all 42 source-data rows equal the value at their source key",
+   "passed": true,
+   "detail": "[]"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2: all 66 source-data rows equal the value at their source key",
+   "passed": true,
+   "detail": "[]"
+  },
+  {
+   "check": "fig3_power_energy_w4: all 92 source-data rows equal the value at their source key",
+   "passed": true,
+   "detail": "[]"
+  },
+  {
+   "check": "S0-S2 colours in Figure 3 equal those of Figure 5",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 2: one colour per interference model across both panels, four distinct colours",
+   "passed": true,
+   "detail": "{'noise_multi': {'#b9b7af'}, 'primary': {'#86847d'}, 'sd': {'#4a4945'}, 'geo': {'#0b0b0b'}}"
+  },
+  {
+   "check": "output hash matches figure manifest: fig1_architecture_w1.pdf",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: fig1_architecture_w1.png",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: source_data/fig1_architecture_w1.csv",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: fig2_interference_feasibility_w2.pdf",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: fig2_interference_feasibility_w2.png",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: source_data/fig2_interference_feasibility_w2.csv",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: fig3_power_energy_w4.pdf",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: fig3_power_energy_w4.png",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: source_data/fig3_power_energy_w4.csv",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: captions_fig1-3.md",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: caption_facts_fig1-3.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "output hash matches figure manifest: plotted_values_fig1-3.json",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "figure manifest: layout and build checks passed",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "figure manifest: shared style module unchanged since Figures 4-8",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "fig1_architecture_w1.pdf: no Type 3 fonts, TrueType embedded, STIX only",
+   "passed": true,
+   "detail": "DVGISQ+STIXGeneral-Italic, FIUYLO+STIXGeneral-Italic, FNSTIV+STIXGeneral-Regular, GMIXJT+STIXGeneral-Regular"
+  },
+  {
+   "check": "fig1_architecture_w1.png: 7.16 in at 600 dpi",
+   "passed": true,
+   "detail": "4296 x 2370 px"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2.pdf: no Type 3 fonts, TrueType embedded, STIX only",
+   "passed": true,
+   "detail": "FPOYKZ+STIXGeneral-Regular"
+  },
+  {
+   "check": "fig2_interference_feasibility_w2.png: 7.16 in at 600 dpi",
+   "passed": true,
+   "detail": "4296 x 1770 px"
+  },
+  {
+   "check": "fig3_power_energy_w4.pdf: no Type 3 fonts, TrueType embedded, STIX only",
+   "passed": true,
+   "detail": "CKEQVD+STIXGeneral-Regular, DRMNTL+STIXGeneral-Regular, GDDGHH+STIXGeneral-Italic"
+  },
+  {
+   "check": "fig3_power_energy_w4.png: 7.16 in at 600 dpi",
+   "passed": true,
+   "detail": "4296 x 1770 px"
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+G0 PASS
+G3 PASS (103 s)
+test traces: G2 PASS (79 s)
+ISD 200: victims [935, 5756], case C_deployment
+ISD 200: realization 2/2, 2 s
+ISD 200: victims [935, 5756], case C_deployment
+ISD 200: realization 2/2, 2 s
+ISD 200: victims [935, 5756], case C_deployment
+ISD 200: realization 10/100, 8 s
+ISD 200: realization 20/100, 15 s
+ISD 200: realization 30/100, 23 s
+ISD 200: realization 40/100, 31 s
+ISD 200: realization 50/100, 38 s
+ISD 200: realization 60/100, 46 s
+ISD 200: realization 70/100, 53 s
+ISD 200: realization 80/100, 61 s
+ISD 200: realization 90/100, 69 s
+ISD 200: realization 100/100, 77 s
+test table solved (10448 s)
+evaluation done (346 s)
+G0_provenance PASS
+G3_frozen_reproduction PASS
+G2_test_traces PASS
+G1_heldout_population PASS
+G4_fixed_point PASS
+G5_all_user PASS
+G6_activation_coupling PASS
+G7_ledger PASS
+G8_causality PASS
+G9_budget_oracle PASS
+G10_times PASS
+predictions held: {'H1': True, 'H2': True, 'H4': True, 'Q3': True}
+P3.4 GATES PASSED 11327 s

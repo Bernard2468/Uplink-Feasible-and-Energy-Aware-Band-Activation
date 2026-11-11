@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) pre-registered, run 1 pending.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; next: the publication-readiness audit.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -982,8 +982,8 @@ capacity.**
 |---|---|---|
 | P3.1 | Hardware energy models of both layers; state ladder | Source versions and hashes recorded; 1.3 Table II recomputed from 1.4 (both static-term forms reported); 1.2's totals (740 / 1658 / 300 / 1044 W, PA 262 W) reproduced, or, where an input is not stated in the source, labelled "not independently reproducible" under a rule fixed before the run (no input tuned to force agreement); TR tables transcribed and checked against the .docx; D10 feasibility; D4 state consistency (powers ≥ 0, ordered deep < light < micro, legal transitions, D ≥ T, energy in J); unit tests on small worked examples |
 | P3.2 | Split into P3.2a (coupled radio engine), P3.2b (traffic and resources), P3.2c (time-dependent energy); see D12 | P3.2a: gates Q0–Q7. P3.2b: gates B0–B8 (closure, calibration, identical workloads, fixed-point uniqueness, independent reference). P3.2c: state-machine and energy-ledger gates, causality, no service while asleep or waking, P_aux S0–S2 |
-| P3.3 | Controllers and baselines on development data (D27–D33) | Gates F0–F10 (provenance, radio reproduction, activation coupling, fixed point, all-user identity, traces, ledger, causality, DP = brute force, fairness, decision time) |
-| P3.4 | Held-out test of the frozen controllers (D33) | Pre-registered after P3.3; paired comparisons, confidence intervals; H1, H2, H4 and Q3 scored as pre-registered |
+| P3.3 | Controllers and baselines on development data (D27–D33) | Gates F0–F10 (provenance, radio reproduction, activation coupling, fixed point, all-user identity, traces, ledger, causality, DP = brute force, fairness, decision time); F11 (run 1's evidence) added by amendment 1 |
+| P3.4 | Held-out test of the frozen controllers (D33) | Gates G0–G10; paired comparisons, confidence intervals; H1, H2, H4 and Q3 scored as pre-registered |
 
 ### P3.1 source-reproduced hardware energy models (PRE-REGISTERED 2026-11-09)
 
@@ -2315,6 +2315,16 @@ and go into P3.4's pre-registration:
 - the test squares' a_ref;
 - the development T_0.5.
 
+**Corrections (2026-11-11, found while verifying P3.4; the text above is
+left as written).** Three statements in this section are corrected in
+"P3.4 run 1, Corrections to the P3.3 record":
+- the 1% budget holds for the tuning average over g, not in every cell;
+- `mpc`'s 26/74 violation at g = 1.5 is 1.0042%, not ≤ 1%;
+- the hardware sensitivity omitted the violations at g ≥ 1.5 under
+  M_RF 1024 and 53 dBm.
+
+No verdict changes.
+
 ### P3.4 held-out test of the frozen controllers (PRE-REGISTERED 2026-11-11)
 
 Config `configs/p3/p3_4_heldout.json`, code `scripts/p3_4_heldout.py`,
@@ -2455,6 +2465,201 @@ robustness side by side):
   - The verdict was forced to fail.
   - It printed only gate lines, and its outputs were not opened.
 
+#### P3.4 run 1 (commit e55fd3a): all gates G0–G10 PASSED; H1, H2, H4 and Q3 held; result of record (2026-11-11, 11 320 s)
+
+Outputs are in `results/phase3/p3_4_heldout/`. The raw files
+(`test_table_isd200.npz`, `runs.json.gz`) are git-ignored; their hashes in
+the manifest match. The manifest's config hash (1d229f02…) equals the
+config in the registration commit e55fd3a, and the four scripts are
+unchanged since that commit. Nothing was tuned, and no change was made
+after the run.
+
+Independent check, by a separate read-only script:
+- all output, input and trace hashes;
+- no CR bytes in the committed outputs;
+- the four predictions re-scored from the per-cell results, using the
+  thresholds in the committed config, with the same verdicts;
+- pooled energies and violation shares equal the means of the 25
+  per-square runs (462 keys; ≤ 4.4e-16).
+
+| Gate | Result |
+|---|---|
+| G0 | 6 provenance checks and 8 constant checks pass; P3.3 run 2 manifest, outputs and config hashes; frozen parameters and test squares equal the config; all 14 trace hashes |
+| G1 | Offset-0 builder bitwise equal to P3.2c's; realizations 100–199 drawn, 6 random-stream calls each, disjoint from development |
+| G2 | Every test-week file aligned to the local day; 25 test squares disjoint from development; no slot without activity in any test square; 1 and 2 clipped slots at g = 3 and 3.5 |
+| G3 | Development trace hash equal to P3.3 F9; 126 energy and violation values reproduced exactly (maximum difference 0) |
+| G4 | 45 batched solves converged (residual ≤ 2.0e-11); closure ≤ 2.2e-16; occupancy ≤ 2.0e-11; 4824 workload comparisons, 0 mismatches; loads monotone |
+| G5 | Identity to 1.8e-13; outage monotone in every pattern |
+| G6 | No off-sector 7.2 GHz load or user; on-sector load > 0 at every x > 0 |
+| G7 | 100 test runs: energy to 9.8e-15; violation seconds and bits exact; transitions equal |
+| G8 | 700 checks, 0 violations |
+| G9 | 6 cells (2 mixes × S0–S2) × 7 g × 25 squares = 1050 runs: lower bound ≤ upper bound in all; budget met in all on the decision model; bracket width ≤ 1.8e-4 relative |
+| G10 | Test table 10 448 s (2.9 h, offline). Median (99th percentile) per decision: `thr` 0.06–0.07 (0.20–0.22) ms, `exh` 0.22 (0.78) ms, `mpc` 0.30 (0.93) ms; `oracle` 41 ms and `oracle_budget` 2.5 s per site-week. WSL2, x86-64 laptop |
+
+**Scored predictions.** All four held.
+
+**H1 (energy with service): held, 8 / 8 cells.** These are `mpc` savings vs
+`aon`, with the 95% pigeonhole interval and `mpc`'s avoidable all-user
+violation share:
+
+| Mix, g | S0 (≥ 3%) | S2 (≥ 10%) |
+|---|---|---|
+| 10/90, 1 | 10.38% [9.60, 11.15]; 0.004% | 42.20% [41.61, 42.82]; 0.008% |
+| 10/90, 2 | 4.97% [3.98, 6.11]; 0.040% | 29.58% [27.71, 31.51]; 0.754% |
+| 26/74, 1 | 10.22% [9.49, 11.03]; 0.500% | 37.63% [36.44, 38.95]; 0.500% |
+| 26/74, 2 | 4.76% [3.76, 5.88]; 0.683% | 18.92% [15.60, 22.51]; 0.683% |
+
+**H2 (the UL is necessary): held, 9 / 9 cells.** At 26/74, the avoidable
+all-user violation share of `thr_dl` minus that of `thr_ul`, in percentage
+points, with the 95% square-bootstrap interval:
+
+| g | S0 | S1 | S2 |
+|---|---|---|---|
+| 1 | 2.44 [1.94, 2.96] | 8.62 [6.31, 10.83] | 8.62 [6.52, 10.68] |
+| 1.5 | 8.07 [6.67, 9.45] | 38.80 [33.05, 44.38] | 38.80 [32.93, 44.81] |
+| 2 | 5.84 [4.50, 7.27] | 46.12 [38.98, 52.95] | 46.12 [39.03, 53.14] |
+
+On its own DL-only criterion `thr_dl` violates ≤ 0.90% in these cells. The
+UL-agnostic rule therefore looks compliant while failing the all-user
+criterion.
+
+**H4 (feasibility boundary): held.** The unavoidable all-user share is:
+- at 26/74: 0.46% at g = 2.0 and 7.53% at g = 2.5;
+- at 10/90: 0.08% at g = 3.0.
+
+**Q3 (oracle gap): held, 8 / 8 cells.** These are (E_mpc − E_oracle)/E_aon
+in points, with the 95% interval:
+
+| Mix, g | S0 (≤ 1) | S2 (≤ 5) |
+|---|---|---|
+| 10/90, 1 | 0.07 [0.05, 0.08] | 0.07 [0.06, 0.08] |
+| 10/90, 2 | 0.12 [0.10, 0.14] | 2.65 [2.30, 2.99] |
+| 26/74, 1 | 0.31 [0.26, 0.36] | 3.06 [2.62, 3.48] |
+| 26/74, 2 | 0.27 [0.23, 0.32] | 2.35 [1.95, 2.79] |
+
+- These are reported alongside, not scored. In the same cells, the gap to
+  `oracle_budget` is ≤ 3.72 points and the gap to `oracle_test` is
+  ≤ 3.06 points.
+- The S2 gaps are up to 0.4 point larger than in development, where they
+  were ≤ 2.6 points.
+
+**Development vs test.** Savings vs `aon`, `mpc` / `oracle`, in %. Both
+sides use the pooled ratio 1 − E_c/E_aon on which H1 is scored. P3.3's
+development table reports the mean of per-square savings, which differs
+by ≤ 0.13 point.
+
+| Mix, g | S0 dev → test | S1 dev → test | S2 dev → test |
+|---|---|---|---|
+| 10/90, 1 | 10.91 / 10.97 → 10.38 / 10.45 | 24.33 / 24.36 → 23.81 / 23.84 | 42.66 / 42.71 → 42.20 / 42.27 |
+| 10/90, 2 | 5.65 / 5.77 → 4.97 / 5.09 | 15.80 / 16.30 → 14.77 / 15.34 | 31.08 / 33.47 → 29.58 / 32.23 |
+| 26/74, 1 | 10.80 / 11.05 → 10.22 / 10.52 | 22.68 / 23.93 → 21.81 / 23.28 | 38.85 / 41.48 → 37.63 / 40.69 |
+| 26/74, 2 | 5.45 / 5.71 → 4.76 / 5.03 | 11.79 / 12.89 → 10.67 / 11.81 | 20.62 / 22.90 → 18.92 / 21.27 |
+
+- **Savings fell by 0.45–1.70 points in every cell, and the oracle's fell
+  by a similar amount (0.44–1.62 points).** The drop therefore comes
+  mainly from the data, not from the online controllers. The development
+  values are on different squares, a different week and different
+  realizations; the three effects are not separated.
+- **For the test squares, the test week has higher peaks relative to the
+  frozen a_ref.**
+  - The busiest hour is a median 3.7% higher, in 14 of 25 squares.
+  - Slots above the reference busy hour rose from 1.13% to 1.96%.
+  - Mean normalized traffic is 0.8% lower, because one square fell to
+    37% of its development activity. The median square is 1.9% busier.
+- **The violation shares carried over.** For `mpc` at 26/74, g = 1–2:
+  0.46–1.004% in development, 0.50–0.79% on test.
+- **The H4 unavoidable shares rose**, consistent with the higher peaks:
+  - 26/74: 0.23 → 0.46% at g = 2 and 5.48 → 7.53% at g = 2.5;
+  - 10/90: 0.07 → 0.08% at g = 3.
+- **The H2 differences moved by −0.62 to +3.07 points.** They fell at S0
+  (g = 1.5 and 2) and rose at S1/S2.
+
+**Held-out observations** (reported, not scored):
+- **Radio holdout.**
+  - `oracle` has zero avoidable violations on its decision model and
+    0–0.61% on the test table.
+  - `oracle_budget` uses its full 1% on the decision model. On the test
+    table it exceeds 1% in 8 of 42 cells: 10/90, S1/S2, g ≥ 2, at
+    1.38–2.04%. A plan that spends the whole allowance on the model is not
+    robust to the radio holdout. `mpc` stayed at 0.75–0.95% in those
+    cells.
+  - Knowing the test table (`oracle_test` vs `oracle`) changes the saving
+    by −0.02 to +0.22 point.
+- **Budget compliance across all 14 scenarios** (each controller in
+  7 g × 2 mixes × 14 scenarios = 196 cells):
+
+  | Controller | Cells within the 1% budget, test | Development |
+  |---|---|---|
+  | `mpc` | 191 | 179 |
+  | `exh` | 137 | 158 |
+  | `thr_ul` | 136 | 108 |
+  | `thr_dl` (all-user) | 94 | 94 |
+  | `tod` | 84 | 112 |
+
+  `mpc`'s five failures are all at 10/90, `mrf1024_S0`, g ≥ 1.5
+  (1.31–7.87%). They are present in development too (1.31–7.83%); see the
+  corrections below.
+- **Paired differences** (review point A; there is no superiority claim).
+  Over the 12 primary cells with g ∈ {1, 2}:
+  - `mpc − exh` is 0.00 to +0.57 point of E_aon, and `mpc − thr_ul` is
+    −0.02 to +0.50 point. `mpc` spends at most about half a point more
+    energy.
+  - In exchange, its avoidable violation share is 0 to 0.21 point lower
+    than `exh`'s (`viol mpc − exh` −0.21 to 0.00).
+- **Operations** (`mpc`, primary cells):
+  - 1.0–28.5 transitions per site-day and ≤ 2.03 gap seconds per
+    site-day;
+  - partial patterns are used up to 34% of the time;
+  - J per delivered Mbit: 9.16 against 10.22 (`aon`) at 10/90, g = 1, S0,
+    and 7.58 against 8.45 at 26/74.
+  - At 26/74, g = 2, the total all-user failure share is 1.14%: 0.68%
+    avoidable plus 0.46% unavoidable.
+
+**Corrections to the P3.3 record** (found while verifying P3.4; they change
+no P3.3 or P3.4 verdict):
+1. **The 1% budget is a tuning average, not a per-cell guarantee.** P3.3
+   run 2 says the tuned parameters are "all within the 1% budget on
+   development data". By the D32 selection rule, the budget applies to the
+   violation share averaged over the seven g in the primary scenario.
+   Individual (g, scenario) cells can exceed it. In development, 27 of 280
+   `mpc` cells do.
+2. **The `mpc` violation range rounds an exceedance.** P3.3 run 2 gives
+   `mpc`'s violations at 26/74 as "0.46–1.00%". The g = 1.5 value is
+   1.0042%, so that cell's saving is unqualified (D28).
+3. **The hardware sensitivity omitted its high-load violations.** It
+   reported savings at g = 1 only (M_RF 1024: 33.6%; 53 dBm: 19.1%). At
+   10/90 and g ≥ 1.5, the S0-tuned forecast quantile (α = 0.5) breaks the
+   budget under `mrf1024_S0` and `hw53_S0`: `mpc` violates 1.31–7.83% and
+   `exh` 1.35–8.40%. The test reproduces this (`mpc` 1.31–7.87% under
+   `mrf1024_S0`).
+   - The parameters were selected on the primary energy model, whose
+     7.2 GHz cell draws 171.6 W with no load and 760.5 W at full load.
+   - Both sensitivities make the 7.2 GHz layer much more power-hungry:
+     - M_RF 1024 draws 492.9 W with no load;
+     - 53 dBm draws 214.8 W with no load and 1341.9 W at full load
+       (assumed PA η 0.15).
+   - Under them, the same α keeps far fewer cells on. At 10/90, g = 2:
+     0.32 against 1.23 on test, 0.27 against 1.14 in development. More
+     slots then fall above the chosen pattern's capacity.
+   - **The two development results are bitwise identical,** with the same
+     pattern sequence. This is not an error:
+     - at ISD 200 the DL is interference-limited, so DL x* barely depends
+       on the DL power offset: at 53 dBm it equals the 50 dBm value in
+       seven of the eight patterns, and all-on is 3.738 against 3.719;
+     - both energy models lead `mpc` to the same decisions.
+   - **The frozen parameters are hardware-specific.** No budget-compliant
+     saving is claimed for those cells.
+
+**Limitations** (as registered): Milan 2013 CDR activity, not 2026 6G
+traffic or bytes; seven held-out days; eight network-wide sector-index
+patterns, not 57 independent sectors; the online decision time excludes
+the 2.9 h offline table; everything is conditional on the P3.1–P3.3
+models. Added by this run: the frozen tuning is hardware-specific
+(correction 3).
+
+**Decision** (registered rule; all gates passed). P3.4 run 1 is Phase 3's
+held-out result of record. Next is the publication-readiness audit.
+
 ## 4. Open items
 
 1. **P3.1, FR3 inputs.** List every input of 1.2's digital model that the
@@ -2488,6 +2693,19 @@ robustness side by side):
    - *Resolved by D22 (2026-11-10):* under the all-user criterion ISD 500
      fails at any traffic. It leaves the energy stages and is reported as a
      coverage boundary.
+7. **The frozen tuning is hardware-specific** (found while verifying
+   P3.4).
+   - At 10/90 and g ≥ 1.5, the S0-tuned α = 0.5 breaks the 1% budget under
+     the M_RF 1024 and 53 dBm energy models (`mpc` 1.3–7.9%), in
+     development and on test.
+   - **For the publication audit to decide:**
+     - (a) state it as a limitation and claim no saving in those cells; or
+     - (b) define per-hardware tuning on development data, as a new
+       registered stage.
+   - Option (b) cannot be validated on the test week, which has now been
+     read. Unread Milan weeks remain (25 Nov – 22 Dec 2013; the dataset
+     runs from 1 Nov 2013 to 1 Jan 2014) and could serve as a fresh
+     held-out set.
 
 ## 5. Audit of P3.0 (ChatGPT, 2026-11-09) and response
 

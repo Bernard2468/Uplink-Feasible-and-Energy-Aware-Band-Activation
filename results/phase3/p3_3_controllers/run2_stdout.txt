@@ -1,0 +1,38 @@
+F0 PASS
+traces: F5 PASS (79 s)
+ISD 200: victims [935, 5756], case C_deployment
+ISD 200: realization 10/100, 8 s
+ISD 200: realization 20/100, 13 s
+ISD 200: realization 30/100, 20 s
+ISD 200: realization 40/100, 28 s
+ISD 200: realization 50/100, 35 s
+ISD 200: realization 60/100, 42 s
+ISD 200: realization 70/100, 48 s
+ISD 200: realization 80/100, 55 s
+ISD 200: realization 90/100, 62 s
+ISD 200: realization 100/100, 69 s
+table solved (8102 s)
+x* and F1 done (9318 s)
+energy tables done (9320 s)
+  tuned thr_ul (9388 s)
+  tuned thr_dl (9457 s)
+  tuned exh (9483 s)
+  tuned mpc (9619 s)
+tuning done (9619 s)
+evaluation done (9923 s)
+F6 done (9930 s)
+F7 done (9934 s)
+F8 done (9997 s)
+F0_provenance PASS
+F5_traces PASS
+F11_run1_reuse PASS
+F2_activation_coupling PASS
+F1_radio_reproduction PASS
+F3_fixed_point PASS
+F4_all_user PASS
+F6_ledger PASS
+F7_causality PASS
+F8_dp_correctness PASS
+F9_fairness PASS
+F10_decision_time PASS
+P3.3 GATES PASSED 10007 s

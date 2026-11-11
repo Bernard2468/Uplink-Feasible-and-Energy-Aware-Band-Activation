@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 run 1 passed its gates, amendment 1 (eight patterns, fallback, per-S tuning) registered, run 2 pending; P3.4 after P3.3.** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) next.** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -2197,6 +2197,123 @@ untouched.
       only, because reuse needs 100 realizations.
     - The verdict was forced to fail.
     - It printed only gate lines, and its outputs were not opened.
+
+#### P3.3 run 2 (commit f3093a3): all gates F0–F11 PASSED; result of record (2026-11-11, 10 007 s)
+
+Outputs are in `results/phase3/p3_3_controllers/`. The raw files
+(`table_isd200.npz`, `runs.json.gz`) are git-ignored; their hashes in the
+manifest match. The manifest's config hash (0937434c…) is the committed
+config's. Run 1 stays in `run1/`.
+
+| Gate | Result |
+|---|---|
+| F0 | 9 provenance checks and 11 constant checks pass, amendment included; all 14 trace hashes verified |
+| F1 | 6 P3.2c arrays bitwise; 12 x* exact; table vs P3.2c: load 7.9e-13, outage 0; calibration equal |
+| F2 | Across all 8 patterns: no off-sector 7.2 GHz load, no off-sector user on 7.2 GHz, on-sector load > 0 at every x > 0 |
+| F3 | 44 batched solves converged (residual ≤ 2.0e-11); closure ≤ 2.2e-16; occupancy ≤ 2.0e-11; 4422 workload comparisons, 0 mismatches |
+| F4 | Identity to 1.8e-13 on the 20 solved states; outage monotone in every pattern; all-user x* ≤ admitted x* |
+| F5 | 9998 complete candidate squares; 2 and 3 clipped slots at g = 3 and 3.5 |
+| F6 | 100 runs: energy to 1.1e-14, violation seconds and bits exact, transitions equal |
+| F7 | 700 checks, 0 violations |
+| F8 | 250 instances over 8⁴ sequences, 2.5e-16 |
+| F9 | One trace array (hash recorded); only the oracles see the full trace |
+| F10 | Median per decision: `thr` 0.06 ms, `exh` 0.21 ms, `mpc` 0.31 ms (99th percentile 0.84 ms); `oracle` 39 ms per site-week. WSL2, x86-64 laptop |
+| F11 | Run 1's evidence intact; 10 spot-recomputed arrays bitwise equal to run 1's |
+
+**Capacity of the eight patterns** (all-user, 50 dBm; x* in units of the
+busy hour):
+
+| Pattern | DL x* | UL y* | x*_both, 10/90 | x*_both, 26/74 |
+|---|---|---|---|---|
+| (0,0,0) | 1.445 | 0.3008 | 1.445 | 0.856 |
+| (1,0,0) | 1.574 | 0.3086 | 1.574 | 0.878 |
+| (0,1,0) | 1.590 | 0.3125 | 1.590 | 0.889 |
+| (0,0,1) | 1.879 | 0.3711 | 1.879 | 1.056 |
+| (1,1,0) | 1.766 | 0.3164 | 1.766 | 0.901 |
+| (1,0,1) | 2.188 | 0.3867 | 2.188 | 1.101 |
+| (0,1,1) | 2.203 | 0.4375 | 2.203 | 1.245 |
+| (1,1,1) | 3.719 | 0.7734 | 3.719 | 2.201 |
+
+- **All-on is the maximum-capacity pattern** everywhere, so it is the
+  fallback in every case.
+- **Partial activation adds little capacity** (at most 1.5× the 3.5 GHz
+  layer alone).
+- **Sector index 2 is decisive:** (0,0,1) and (0,1,1) are the strongest
+  one- and two-sector patterns.
+- **Usage follows from this.** The controllers use (0,0,1) and (0,1,1) for
+  up to 38% of the time and almost never use (1,0,0) or (1,1,0). At 10/90,
+  S0, g = 1.5, `oracle` uses (0,0,1) 23.5% and (0,1,1) 14.8% of the time.
+
+**Tuned and frozen parameters** (all within the 1% budget on development
+data):
+
+| Controller | 10/90, S0 | 10/90, S1/S2 | 26/74, S0–S2 |
+|---|---|---|---|
+| `thr_ul` | m 0.75, H 1 | m 0.2, H 1 | m 0.2, H 1 |
+| `thr_dl` | m 0.75, H 1 | m 0.2, H 1 | m 0.75 (S0), 0.2 (S1/S2) |
+| `exh` | α 0.5 | α 0.9 | α 0.9 |
+| `mpc` | α 0.5, H 3 | α 0.9, H 3 | α 0.9, H 3 |
+
+**Development results.** These are exploratory: they are not scored, and
+the held-out test is P3.4.
+
+Saving vs always-on, `mpc` / `oracle`, at 50 dBm. Savings are qualified,
+i.e. both controllers meet the 1% budget:
+
+| Mix, g | S0 | S1 | S2 |
+|---|---|---|---|
+| 10/90, 1 | 10.9 / 11.0% | 24.3 / 24.4% | 42.7 / 42.7% |
+| 10/90, 2 | 5.7 / 5.8% | 15.9 / 16.4% | 31.2 / 33.5% |
+| 26/74, 1 | 10.8 / 11.1% | 22.7 / 24.0% | 38.9 / 41.5% |
+| 26/74, 2 | 5.5 / 5.8% | 11.9 / 13.0% | 20.7 / 23.0% |
+
+- **The online controllers come close to the oracle.**
+  - The gap is ≤ 0.3 point in S0 and ≤ 2.6 points in S2 (Q3).
+  - `thr_ul` and `exh` are within 0.5 point of `mpc`.
+  - `mpc`'s avoidable all-user violations are 0.46–1.00% at 26/74, 0–0.95%
+    at 10/90.
+- **Energy per bit.** At 10/90, g = 1: 9.73 J/Mbit (`mpc`) against
+  10.92 (`aon`). At 26/74: 8.05 against 9.02.
+- **Transitions.** 10–27 transitions per site-day and ≤ 2 gap seconds per
+  site-day.
+- **The UL-agnostic rule `thr_dl` at 26/74 (H2).**
+  - Its DL-only violations stay ≤ 1.1%, but its all-user violations are:
+
+    | Overhead | g = 1 | g = 1.5 | g = 2 | g = 2.5 |
+    |---|---|---|---|---|
+    | S0 | 2.6% | 9.6% | 7.5% | 5.7% |
+    | S1/S2 | 7.1% | 37.0% | 45.1% | 36.0% |
+
+  - It claims extra saving over `thr_ul` of 0.2–0.4% (S0) and 5.8–15.0% (S2)
+    by violating the UL.
+  - `oracle_dl` (UL-agnostic, perfect foresight) violates 14–49% at
+    g = 1.5–2.
+- **Hardware sensitivity.**
+  - At 10/90, g = 1, S0, the `mpc` saving scales with the 7.2 GHz no-load
+    power:
+
+    | Hardware | Saving |
+    |---|---|
+    | 43 dBm | 7.8% |
+    | 50 dBm | 10.9% |
+    | 53 dBm | 19.1% |
+    | M_RF 64 | 3.6% |
+    | M_RF 1024 | 33.6% |
+
+  - The D29 UL-load sensitivity, Set 3 and the "left" case change it by
+    ≤ 0.9 point. Cat 2 lowers it to 8.3%.
+- **The service boundary (H4).** At 26/74 beyond g ≈ 2.2, no pattern meets
+  the all-user criterion for 5.5% (g = 2.5), 19.7% (g = 3) and 31.8%
+  (g = 3.5) of the time. Savings there exist only on the avoidable slots.
+
+**Decision** (registered rule; all gates passed). The following are frozen
+and go into P3.4's pre-registration:
+- the parameters above;
+- the forecast model and its quantiles;
+- the development x* thresholds;
+- the maximum-capacity fallbacks;
+- the test squares' a_ref;
+- the development T_0.5.
 
 ## 4. Open items
 

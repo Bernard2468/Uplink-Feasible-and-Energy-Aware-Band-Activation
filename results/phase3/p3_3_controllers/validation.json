@@ -1,0 +1,325 @@
+{
+  "F0_provenance": {
+    "inputs": {
+      "p3_1_manifest": true,
+      "p3_1_outputs": true,
+      "p3_2b_manifest": true,
+      "p3_2b_outputs": true,
+      "p3_2c_manifest": true,
+      "p3_2c_outputs": true,
+      "p3_2c_config": true,
+      "trace_files_present": true,
+      "trace_files_sha256": true
+    },
+    "constants": {
+      "dates": true,
+      "trace_rules": true,
+      "growth": true,
+      "patterns": true,
+      "budget_eps": true,
+      "tuning": true,
+      "controllers": true,
+      "scenarios": true,
+      "timing": true,
+      "oracle_penalty": true,
+      "amendment_1": true
+    },
+    "passed": true
+  },
+  "F5_traces": {
+    "coverage": {
+      "2013-11-04": {
+        "rows": 5639488,
+        "t_min_ms": 1383519600000,
+        "t_max_ms": 1383605400000,
+        "slot_min": 0,
+        "slot_max": 143,
+        "misaligned_rows": 0,
+        "square_min": 1,
+        "square_max": 10000,
+        "internet_empty_rows": 2825506,
+        "internet_negative_rows": 0,
+        "rows_outside_day": 0,
+        "distinct_slots": 144
+      },
+      "2013-11-05": {
+        "rows": 5874140,
+        "t_min_ms": 1383606000000,
+        "t_max_ms": 1383691800000,
+        "slot_min": 0,
+        "slot_max": 143,
+        "misaligned_rows": 0,
+        "square_min": 1,
+        "square_max": 10000,
+        "internet_empty_rows": 2892580,
+        "internet_negative_rows": 0,
+        "rows_outside_day": 0,
+        "distinct_slots": 144
+      },
+      "2013-11-06": {
+        "rows": 5912097,
+        "t_min_ms": 1383692400000,
+        "t_max_ms": 1383778200000,
+        "slot_min": 0,
+        "slot_max": 143,
+        "misaligned_rows": 0,
+        "square_min": 1,
+        "square_max": 10000,
+        "internet_empty_rows": 2898786,
+        "internet_negative_rows": 0,
+        "rows_outside_day": 0,
+        "distinct_slots": 144
+      },
+      "2013-11-07": {
+        "rows": 5886883,
+        "t_min_ms": 1383778800000,
+        "t_max_ms": 1383864600000,
+        "slot_min": 0,
+        "slot_max": 143,
+        "misaligned_rows": 0,
+        "square_min": 1,
+        "square_max": 10000,
+        "internet_empty_rows": 2899176,
+        "internet_negative_rows": 0,
+        "rows_outside_day": 0,
+        "distinct_slots": 144
+      },
+      "2013-11-08": {
+        "rows": 5918856,
+        "t_min_ms": 1383865200000,
+        "t_max_ms": 1383951000000,
+        "slot_min": 0,
+        "slot_max": 143,
+        "misaligned_rows": 0,
+        "square_min": 1,
+        "square_max": 10000,
+        "internet_empty_rows": 2957866,
+        "internet_negative_rows": 0,
+        "rows_outside_day": 0,
+        "distinct_slots": 144
+      },
+      "2013-11-09": {
+        "rows": 5052416,
+        "t_min_ms": 1383951600000,
+        "t_max_ms": 1384037400000,
+        "slot_min": 0,
+        "slot_max": 143,
+        "misaligned_rows": 0,
+        "square_min": 1,
+        "square_max": 10000,
+        "internet_empty_rows": 2515947,
+        "internet_negative_rows": 0,
+        "rows_outside_day": 0,
+        "distinct_slots": 144
+      },
+      "2013-11-10": {
+        "rows": 4731582,
+        "t_min_ms": 1384038000000,
+        "t_max_ms": 1384123800000,
+        "slot_min": 0,
+        "slot_max": 143,
+        "misaligned_rows": 0,
+        "square_min": 1,
+        "square_max": 10000,
+        "internet_empty_rows": 2418119,
+        "internet_negative_rows": 0,
+        "rows_outside_day": 0,
+        "distinct_slots": 144
+      }
+    },
+    "all_days_aligned": true,
+    "selection_reproducible": true,
+    "candidates": 9998,
+    "dev_squares": [
+      4460,
+      4654,
+      4755,
+      4955,
+      5059,
+      5061,
+      5156,
+      5159,
+      5161,
+      5162,
+      5163,
+      5259,
+      5261,
+      5263,
+      5361,
+      5458,
+      5567,
+      5857,
+      5955,
+      5957,
+      5959,
+      5965,
+      6064,
+      6073,
+      6165
+    ],
+    "test_squares": [
+      4457,
+      4459,
+      4754,
+      4761,
+      4854,
+      4855,
+      4856,
+      4857,
+      4956,
+      4961,
+      5158,
+      5255,
+      5256,
+      5258,
+      5262,
+      5461,
+      5658,
+      5659,
+      5758,
+      5967,
+      6058,
+      6065,
+      6072,
+      6169,
+      6260
+    ],
+    "selected_complete": true,
+    "max_quantization_error": 0.012499816082800874,
+    "clipped_slots": {
+      "0.5": 0,
+      "1.0": 0,
+      "1.5": 0,
+      "2.0": 0,
+      "2.5": 0,
+      "3.0": 2,
+      "3.5": 3
+    },
+    "seconds": 78.81403160095215,
+    "passed": true
+  },
+  "F11_run1_reuse": {
+    "run1_manifest": true,
+    "run1_outputs": true,
+    "reuse": true,
+    "shapes_ok": true,
+    "spot_arrays_compared": 10,
+    "spot_mismatches": 0,
+    "passed": true
+  },
+  "F2_activation_coupling": {
+    "off_sector_72_load_nonzero": 0,
+    "off_sector_users_on_72": 0,
+    "on_sector_72_load_zero_at_traffic": 0,
+    "passed": true
+  },
+  "F1_radio_reproduction": {
+    "raw_compared": 6,
+    "raw_mismatches": 0,
+    "x_star_compared": 12,
+    "x_star_mismatches": 0,
+    "table_vs_p32c_load_max_abs": 7.904787935331115e-13,
+    "table_vs_p32c_outage_max_abs": 0.0,
+    "calibration_equal": true,
+    "passed": true
+  },
+  "F3_fixed_point": {
+    "solves": 44,
+    "not_converged": 0,
+    "max_residual": 2.0149326651619504e-11,
+    "closure_max_rel": 2.219180735561609e-16,
+    "occupancy_identity_max_abs": 2.015176914227368e-11,
+    "load_range_bad": 0,
+    "workload_mismatches": 0,
+    "workload_comparisons": 4422,
+    "monotone_load_bad": 0,
+    "zero_traffic_bad": 0,
+    "passed": true
+  },
+  "F4_all_user": {
+    "identity_max_abs": 1.829647544582258e-13,
+    "monotone_all_bad": 0,
+    "all_above_admitted": 0,
+    "identity_states": 20,
+    "passed": true
+  },
+  "F6_ledger": {
+    "runs_checked": 100,
+    "energy_max_rel": 1.1208559567957348e-14,
+    "viol_max_abs_s": 0.0,
+    "bits_max_rel": 0.0,
+    "transition_mismatches": 0,
+    "passed": true
+  },
+  "F7_causality": {
+    "checks": 700,
+    "violations": 0,
+    "passed": true
+  },
+  "F8_dp_correctness": {
+    "random_instances": 200,
+    "real_windows": 50,
+    "dp_vs_brute_max_rel": 2.4649840669365444e-16,
+    "passed": true
+  },
+  "F9_fairness": {
+    "trace_sha256": "9588d93517a76a1ca9fcdc2f9bd767a0aa1177cdfe8d06197c22607f3d2977ad",
+    "oracle_only_full_trace": true,
+    "controllers_on_identical_runs": true,
+    "passed": true
+  },
+  "F10_decision_time": {
+    "per_controller": {
+      "aon": {
+        "reset_ms": 0.002382999809924513,
+        "decide_median_ms": 0.00252399877354037,
+        "decide_p99_ms": 0.012826199945266094
+      },
+      "off": {
+        "reset_ms": 0.0020799998310394585,
+        "decide_median_ms": 0.002481001502019353,
+        "decide_p99_ms": 0.002836529984051593
+      },
+      "tod": {
+        "reset_ms": 0.0018310001905774698,
+        "decide_median_ms": 0.002655000571394339,
+        "decide_p99_ms": 0.00317246003760374
+      },
+      "thr_ul": {
+        "reset_ms": 0.0429660012741806,
+        "decide_median_ms": 0.061876000472693704,
+        "decide_p99_ms": 0.16310030014210472
+      },
+      "thr_dl": {
+        "reset_ms": 0.07828399975551292,
+        "decide_median_ms": 0.06071149982744828,
+        "decide_p99_ms": 0.1779610095218229
+      },
+      "exh": {
+        "reset_ms": 0.01300100120715797,
+        "decide_median_ms": 0.21081200065964367,
+        "decide_p99_ms": 0.536849770123807
+      },
+      "mpc": {
+        "reset_ms": 0.012914000762975775,
+        "decide_median_ms": 0.307210000755731,
+        "decide_p99_ms": 0.8401210504962359
+      },
+      "oracle": {
+        "reset_ms": 38.97038600007363,
+        "decide_median_ms": 0.0006499994924524799,
+        "decide_p99_ms": 0.0007800007188052405
+      },
+      "oracle_dl": {
+        "reset_ms": 41.2679510009184,
+        "decide_median_ms": 0.0006709997251164168,
+        "decide_p99_ms": 0.0008112304203677917
+      }
+    },
+    "machine": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "processor": "x86_64",
+    "passed": true
+  },
+  "smoke_run": false,
+  "all_checks_passed": true
+}

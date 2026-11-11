@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; publication-readiness audit recorded (§10); figure stage complete, Figures 1–8 (§10.6, §10.8).** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; publication-readiness audit recorded (§10); figure stage complete, Figures 1–8 (§10.6, §10.8; Figures 1 and 2 revised to single panels, §10.9).** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -3107,3 +3107,37 @@ appear inside a field. It was rerun with a CSV parser.
 
 **Figure stage complete:** Figures 1–8, 369 of 369 automated checks
 (90 + 279).
+
+### 10.9 Revision of Figures 1 and 2: single-panel figures (user decision, 2026-11-11)
+
+The user judged that the two-panel Figures 1 and 2 of 10.8 read as
+illustrations rather than technical figures. They asked for single-panel
+figures without (a)/(b) labels, as in leading journals. Decided:
+
+- **Figure 1: one standalone network-layout figure** (single column,
+  3.5 in). It is the Munich map that was panel (a).
+  - File stem `fig1_network_layout_w1` replaces `fig1_architecture_w1`,
+    which is deleted.
+- **The controller diagram (old 1(b)) leaves the figures.** The controller
+  goes into the text as Algorithm 1 (pseudocode).
+  - When Algorithm 1 is written, each of its lines must be checked against
+    the frozen `p3_3_controllers.py` (its blob at e55fd3a). The eight code
+    claims verified for the diagram in 10.8 are the starting point.
+- **Figure 2: one panel** (single column): the recorded case-A 7.2 GHz SINR
+  percentiles under the four interference models, with the F2 thresholds.
+  - My refinement, adopted: the share of user positions meeting F2 is
+    printed beside each row. The figure therefore still carries the
+    feasibility result: DL 0.995 (averaged) to 0.962 (directional) and 0.919
+    (pure pattern).
+  - The other values of the old panel (b), for 3.5 GHz and case C, go to the
+    text or a table. They are in the E1c.3 results of
+    `PHASE_2_RADIO_PROTOCOL.md`.
+- **Figure 3 is unchanged:** two panels, double column.
+- **§10.4's plan:** Figures 1 and 2 change from 1 × 2 to one panel each.
+
+The scripts change accordingly (`model_figures.py`,
+`verify_model_figures.py`), and the verifier gains three checks:
+- every F2 share sits on its model's row;
+- every share is consistent with its recorded percentiles relative to the
+  threshold;
+- the captions of Figures 1 and 2 carry no panel labels.

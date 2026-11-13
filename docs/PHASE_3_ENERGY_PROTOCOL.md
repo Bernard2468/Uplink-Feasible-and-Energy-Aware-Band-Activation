@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; publication-readiness audit recorded (§10); figure stage complete, Figures 1–8 (§10.6, §10.8; Figures 1 and 2 revised to single panels, §10.9; Figures 2 and 7 in colour, §10.10, §10.12); manuscript draft (§10.11).** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; publication-readiness audit recorded (§10); figure stage complete, Figures 1–8 (§10.6, §10.8; Figures 1 and 2 revised to single panels, §10.9; Figures 2 and 7 in colour, §10.10, §10.12); manuscript draft (§10.11); the author's final version in LaTeX, single column (§10.13, §10.14).** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -3358,3 +3358,192 @@ one protocol-derived macro, the 235 m square size, is read from D31, which
 10.11 did not change). From now on, protocol entries are written before the
 numbers are regenerated and verified, and the verifier is re-run on the
 committed tree.
+
+### 10.13 The author's final version transcribed to LaTeX: decisions before the build (2026-11-13)
+
+The author supplied a final version of the paper, `Uplink-Feasible and
+Energy-Aware Band Activation.docx` (SHA-256 `3f31a283…d6120f`) with its PDF
+(`57a293da…62ff`), and asked for it to replace the content of the LaTeX
+draft: same text, equations, tables, figures and references, laid out in
+IEEEtran like the draft, with nothing missed.
+
+**What was checked before transcription.**
+- Every number in the final version was recomputed from the frozen outputs
+  (E1c.3, P3.1, P3.2b/c, P3.3, P3.4). All agree except one: the S1 no-load
+  power of the 7.2 GHz cell is 171.565 + 172.027 = 343.59 W, not
+  343.60 W (the sum of the two rounded values).
+- The method statements were checked against the configs and code: TDD
+  52/70 and 16/70; overheads 0.14/0.08; T_TR 50 ms + T_SCell 105 ms; SMTC
+  20 ms; traffic grid 0.025 to 5; 6-slot reference; weekday/weekend
+  profiles; threshold rule (fewest cells, step up at once, hold H slots);
+  time-of-day 06:00–24:00; all-on initial state; pigeonhole bootstrap
+  (squares × realizations, 2,000 draws; violation differences over
+  squares); shadowing shared by sectors and carriers of a site and
+  independent across sites; D_0.5 per site. All hold.
+- Figures 2–9 of the final version are Figures 1–8 of `paper/figures/`
+  (pixel comparison, mean absolute difference ≤ 0.003). The LaTeX uses the
+  vector PDFs. Figure 1 is new: a conceptual illustration supplied by the
+  author (`word/media/image1.jpeg`, `deb72d2f…a4cff1`), used unchanged.
+
+**Author decisions (asked before the build; all four as recommended).**
+1. Nine small errors are fixed; everything else is word for word:
+   343.60 → 343.59 W; eq. (14) gains its minimum over the causal policy
+   class Π_causal of the expected sum of interval energies E_t^(h), the
+   symbols its own text defines; the stray "t" in eq. (16) is removed;
+   O(H|A|2) → O(H|A|²); "It's" → "Its"; the missing "—" in Table 1's note
+   is restored; "Fig. 1." → "Fig. 1" mid-sentence; reference [1] gets its
+   first author's initial (A. Bazzi); reference [31] (TS 38.101-1, cited
+   nowhere) is cited at the 23 dBm UE ceiling in III.B, which keeps the
+   author's numbering [1]–[36].
+2. Two figure descriptions are corrected. The second sentence of the
+   Fig. 3 caption and the first sentence of V.A's second paragraph described
+   beam geometry, which Fig. 3 does not show; they now describe its
+   percentiles, F2 shares and thresholds. "computational," is removed from
+   the last sentence of V.G (Fig. 9 has no timing data).
+3. Notation: the violation budget β (clashing with the path gain β of
+   eq. (4)) becomes η; the directional weight α_{i,u} of eq. (3) (clashing
+   with the forecast quantile level α) becomes κ_{i,u}.
+4. References: [30] TR 38.901 V19.5.0 (Sept. 2026), the version used; [35]
+   dataset version 1.3, the version fetched; pages added to [6]
+   (pp. 21476–21480) and [12] (pp. 1–6). [32] TS 38.214 still has no
+   version.
+
+**Transcription rules.**
+- Results are macros generated from the frozen outputs, as before;
+  every macro renders exactly the author's number (or the corrected
+  343.59).
+- The text is otherwise the author's, including wording I would have
+  changed. Remaining points are reported to the author, not edited:
+  - the Fig. 1 image has a typo ("antema"), uses α, β and φ as angles that
+    the text does not define, and depicts multipath, which the model does
+    not include;
+  - IEEE requires AI-generated images to be disclosed in the
+    acknowledgments, if Fig. 1 is one;
+  - Table III calls the held-out realization indices "seeds";
+  - L^O2I is described as building penetration only, but in-car users have
+    a car penetration loss.
+- IEEEtran conventions replace Word formatting: "Abstract—", "Index
+  Terms—", TABLE I–IV in Roman numerals, and automatic figure, table,
+  equation and reference numbering. The numbering equals the author's.
+- A transcription check compares the LaTeX source, with macros expanded,
+  against the text of the .docx, word for word. Every difference must be
+  one of the decisions above.
+
+### 10.14 The author's final version in LaTeX: results (2026-11-13)
+
+`paper/manuscript/main.tex` is now the author's final version: 7 sections,
+27 equations, Tables I–IV, Algorithm 1, Figures 1–9 and references
+[1]–[36], word for word except the decisions of 10.13 and the one below.
+
+**One more error, found during the build (same policy as decision 1).**
+V.E said that at 26/74 the DL-only rule "remains within the 1% budget
+according to its own downlink evaluation". This holds for every scenario at
+g ≤ 2, which covers the nine H2 cells that Fig. 7 shows. At g = 2.5–3.5,
+under S1 and S2, its own check reaches 1.048–1.076%. The sentence now reads
+"Under the 26/74 traffic composition and g ≤ 2, …". The verifier checks
+both halves: the claim at g ≤ 2, and that the qualification is needed.
+
+**Layout (author decision).**
+- **First build: two columns** like the draft, with figures and tables as
+  top-of-page floats. The author found them displaced: Fig. 1 inside the
+  contribution list, and Fig. 9 after the Conclusion.
+- **Second attempt: still two columns.** Single-column floats were pinned
+  after their paragraphs, and full-width floats moved to pages of their
+  subsections. Every figure stayed within one page of its paragraph, but Fig. 5
+  still followed the V.D heading, and Figs. 6 and 7 shared a page.
+- **Why two columns cannot work here.** Subsections V.B–V.G hold a third
+  to half a page of text each, while their figures are 2.7–6.3 in tall. A
+  full-width figure can only sit at a page top or bottom, so no two-column
+  layout keeps every figure after its paragraph and before the next
+  heading.
+- **Strips tried and reverted.** Full-width strips (`cuted`) placed inline
+  ran off the page and displaced text between consecutive strips.
+- **Decision: single column, like the .docx** (IEEEtran `journal,onecolumn`,
+  11 pt, 24 pages).
+  - Every figure, table and the algorithm is pinned with [H] directly after
+    the paragraph the .docx places it after.
+  - The full-width figures are shown at their natural width (7.16 in).
+    Figs. 2 and 3 are shown at 4.5 in and Fig. 1 at 0.78 of the line.
+
+**How placement is checked.** `\label{anchor:<float>}` marks, in main.tex,
+the end of the paragraph each float follows in the .docx.
+`scripts/paper/float_placement.py` requires every float to be:
+- pinned;
+- directly after its anchor in the source;
+- on its anchor's page, or at the top of the next page when the rest of
+  that page cannot hold it (as in Word).
+
+It also requires numbering in page order. The verifier also places each
+float at its anchor when checking that references are numbered in order of
+first citation.
+
+**Transcription check.** `scripts/paper/compare_author_final.py` compares
+main.tex, with its macros expanded, against the .docx: 12,669 against
+12,704 tokens.
+- The running text is compared in order.
+- The 14 floats are compared block by block in the .docx order.
+- Each formula is reduced to one token holding its symbols, so a changed
+  symbol, index or number inside a formula shows as a difference.
+- All 35 differences are documented. They are the decisions of 10.13, the
+  error above, and IEEEtran formatting:
+  - "Section IV-D" cross-references;
+  - table captions in small caps;
+  - g set as a math symbol in two places;
+  - a final period at the end of the Table IV note.
+
+**Numbers.** 189 macros render every result the text states. The generator
+writes only the macros the text uses; 70 more are computed and not written.
+The verifier recomputes each one by its own route where one exists, for
+example:
+- the mean of active groups from the pattern shares;
+- x* from min(x*_DL, y*_UL/ρ);
+- the unavoidable share as total minus avoidable;
+- the H2 points as the difference of the two shares.
+
+**References.** The bibliography is now the author's list in main.tex
+(thebibliography); `references.bib` is removed.
+- Each entry with a Crossref or arXiv record agrees with it: DOI or arXiv
+  number, year, volume, issue, pages, title and authors.
+- The standards, reports, white paper and dataset entries read as decided.
+
+**Verification.**
+- `verify_manuscript.py`: 140 of 140 checks pass. They include the claims
+  of the new text against the data, the configs and the frozen code. Among
+  them:
+  - shadowing shared by the sectors and carriers of a site;
+  - weekday and weekend profiles;
+  - the threshold rule;
+  - the all-on initial state;
+  - the pigeonhole bootstrap;
+  - the 1,024-RF-chain configuration keeping fewer groups active;
+  - the oracle's zero violation on the development model.
+- **Mutation test.** All 9 planted errors were caught:
+  - a changed word;
+  - a changed number;
+  - a typed result;
+  - a changed formula;
+  - a deleted sentence;
+  - a changed caption;
+  - swapped references;
+  - Fig. 9 moved after the conclusion;
+  - Fig. 5 moved into V.D.
+- The figure verifications are unchanged: 95/95 and 200/200.
+
+**Not committed.** The author's .docx and PDF stay untracked in the
+repository root. The transcription report records the .docx hash, and the
+verifier reruns the comparison whenever the .docx is present.
+
+**Remaining points for the author:**
+- the affiliation, the contact details and an acknowledgment;
+- the version of TS 38.214;
+- the Fig. 1 image:
+  - a typo ("antema");
+  - angles α, β and φ that the text does not define;
+  - multipath that the model does not include;
+  - if it is AI-generated, IEEE requires a disclosure in the
+    acknowledgments;
+- "Held-out realization seeds 100–199" in Table III: these are realization
+  indices;
+- L^O2I is described as building penetration only, but in-car users have a
+  car penetration loss;
+- the supplementary material.

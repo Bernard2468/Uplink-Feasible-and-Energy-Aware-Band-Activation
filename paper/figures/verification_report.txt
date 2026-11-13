@@ -78,6 +78,11 @@ PASS  caption constant: all 42 primary mpc cells meet the budget
 PASS  caption constant: 196 scenario cells
 PASS  caption constant: Q3 limits 1 and 5 points
 PASS  caption constant: H2 registered at 26/74, g in {1, 1.5, 2}, S0-S2
+PASS  mix colours are distinct from every controller and scenario colour
+PASS  figure manifest records the same mix colours
+PASS  Figure 7: every mix artist (22) is drawn in its mix colour
+PASS  Figure 7: DL-only limit stays black
+PASS  Figure 8: (a) over (c) and (b) over (d) share left and right edges; rows share top and bottom
 PASS  fig4_activation_w5.pdf: no Type 3 fonts, TrueType embedded, STIX only
 PASS  fig4_activation_w5.png: 7.16 in at 600 dpi
 PASS  fig5_heldout_savings_w6.pdf: no Type 3 fonts, TrueType embedded, STIX only
@@ -89,4 +94,4 @@ PASS  fig7_capacity_boundary_w3w8.png: 7.16 in at 600 dpi
 PASS  fig8_comparison_robustness_w9.pdf: no Type 3 fonts, TrueType embedded, STIX only
 PASS  fig8_comparison_robustness_w9.png: 7.16 in at 600 dpi
 
-ALL CHECKS PASSED: 90 / 90; 1080 plotted values and 579 source-data rows recomputed independently
+ALL CHECKS PASSED: 95 / 95; 1080 plotted values and 579 source-data rows recomputed independently

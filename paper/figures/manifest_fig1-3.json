@@ -3,9 +3,9 @@
   "script_sha256": "5bb88af5d59d67bd313b8b89b66b1a090e2f627b88b420f48436c97baf04b1fe",
   "shared_style_module": {
     "path": "scripts/figures/frozen_figures.py",
-    "sha256": "a939b8f0b815d9e93be5762bb06d6927930c23534a6cf702d53a0ff4c99e68c6"
+    "sha256": "25a02db164032d0acf5930e6a9dde48778e77e5caf4a3de0d109f67b248ff1e3"
   },
-  "git_head_at_run": "008870b23db4d028521747e5bb34a0c713a78a42",
+  "git_head_at_run": "b3aba45a54f1c255b6e0d81b1f7ae2c3927e06ab",
   "python": "3.12.16",
   "numpy": "1.26.4",
   "matplotlib": "3.11.2",

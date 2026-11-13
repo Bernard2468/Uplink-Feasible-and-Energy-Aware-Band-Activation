@@ -1,7 +1,7 @@
 {
   "tool": "scripts/figures/frozen_figures.py",
-  "script_sha256": "a939b8f0b815d9e93be5762bb06d6927930c23534a6cf702d53a0ff4c99e68c6",
-  "git_head_at_run": "62edb2b46c4560cc0054ed23350bb4314bf6f593",
+  "script_sha256": "25a02db164032d0acf5930e6a9dde48778e77e5caf4a3de0d109f67b248ff1e3",
+  "git_head_at_run": "b3aba45a54f1c255b6e0d81b1f7ae2c3927e06ab",
   "python": "3.12.16",
   "numpy": "1.26.4",
   "matplotlib": "3.11.2",
@@ -49,15 +49,15 @@
     "fig6_dl_only_w7.pdf": "ca9547fbfce3b35e7585a81cd5e52db68b915d3e4223706c919ec40c1bec2fa3",
     "fig6_dl_only_w7.png": "c799984f468f3681adc4d3bc28ae28cf9f4fdde33160a7283fee7330168817dd",
     "source_data/fig6_dl_only_w7.csv": "a197ecae3b02ca31d26904e66dc07ddfa843bbdbb45c017483928cb0f4369aa9",
-    "fig7_capacity_boundary_w3w8.pdf": "504c95f30b490d4a2bea23b3de942468085af78d4b307d3cb1891eded1f16ffe",
-    "fig7_capacity_boundary_w3w8.png": "11156d39590082680106a70d6edf8221fc4f0b98f703d610098554308c48cda8",
+    "fig7_capacity_boundary_w3w8.pdf": "5271a8c2ef4639d8cc7b15193b7a90a2039002e29cb8c1138db4d73a50a8ad36",
+    "fig7_capacity_boundary_w3w8.png": "73b0e7ff8c0900e9e3fa6cee96ef76d3fe83ebb1a71a699c917982b5790259b4",
     "source_data/fig7_capacity_boundary_w3w8.csv": "04df4777e7f0820cbeaf077f377cb81e00eacc79aaf1e6423c3f141ecb295ac7",
-    "fig8_comparison_robustness_w9.pdf": "5d9fdfb666af69a6d038dd9fa9d6d4a353727868f86fade975c63614068f2b84",
-    "fig8_comparison_robustness_w9.png": "c834fa361f517808e67126cbc452c46f6deaee0de317ed1da56f101a6f08c04a",
+    "fig8_comparison_robustness_w9.pdf": "e55b0b94f37ea85bae58cefc7e85348c6fc86092e44fe88c44fba86c4a534eea",
+    "fig8_comparison_robustness_w9.png": "ea0c879b013f7c512d0b6f940d2637d3b3973fd0821cac3c0c1937ee39c1b3b9",
     "source_data/fig8_comparison_robustness_w9.csv": "6c90d646d746a2df51eb5754771d2efa7bf70255ab69a0a70f5fc6094c5c8382",
     "captions.md": "ea56b7ca4d78f70f0edc5ff7d70133e2578e42af4ee2a37df04caa245c0c495b",
     "caption_facts.json": "60fbcdfa4d31f4f821ded86429a9757dd93c6f215e13d3318e34af7a10496b1d",
-    "plotted_values.json": "42985954e848e3445561773665ff24e405a57d987e177213aab95c22b32f9fc2"
+    "plotted_values.json": "2a2db3ab98a7a1b116563c688250dda980b9cbac21292fd389c7220884e31183"
   },
   "layout_checks": {
     "fig4_activation_w5": {
@@ -93,6 +93,45 @@
       "neutral_anchor": "#f0efec",
       "max_channel_error_at_budget": 0.006382160707420259,
       "heatmap_norm": "TwoSlopeNorm(0, 1, 8)"
+    }
+  },
+  "mix_colours": {
+    "ericsson_typical": "#9b2f8f",
+    "genai_2025": "#8f6400"
+  },
+  "panel_grid": {
+    "fig8_comparison_robustness_w9": {
+      "edges_in": {
+        "left_column": [
+          0.97,
+          3.97,
+          0.97,
+          3.97
+        ],
+        "right_column": [
+          4.97,
+          7.0526,
+          4.97,
+          7.0526
+        ],
+        "top_row": [
+          0.635,
+          0.635,
+          0.635,
+          0.955,
+          0.955,
+          0.955
+        ],
+        "bottom_row": [
+          0.105,
+          0.105,
+          0.105,
+          0.46,
+          0.46,
+          0.46
+        ]
+      },
+      "aligned": true
     }
   },
   "all_layout_checks_passed": true

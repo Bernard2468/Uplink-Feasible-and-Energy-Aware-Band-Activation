@@ -1,10 +1,10 @@
 {
  "all_checks_passed": true,
- "n_checks": 90,
+ "n_checks": 95,
  "n_plotted_values": 1080,
  "n_source_rows": 579,
- "figure_manifest_sha256": "a61d6a8af61561a23689aa1979922a881f6f49a45f43fa9e72f57491787340b9",
- "verifier_sha256": "00b306536f745a840eb40c3d30b547d56f6c89d267b84062b03129a2f5c7b683",
+ "figure_manifest_sha256": "6045ceeaa6d270bfea0a0a73479baaf43a6f32768bfcf3f3ac3dbf68c8c576b9",
+ "verifier_sha256": "0e2a409892a545052d4c98d1e357827314683f383e64717dc1fd79f88948a45e",
  "checks": [
   {
    "check": "input: P3.4 summary.json matches its manifest",
@@ -405,6 +405,63 @@
    "check": "caption constant: H2 registered at 26/74, g in {1, 1.5, 2}, S0-S2",
    "passed": true,
    "detail": ""
+  },
+  {
+   "check": "mix colours are distinct from every controller and scenario colour",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "figure manifest records the same mix colours",
+   "passed": true,
+   "detail": {
+    "ericsson_typical": "#9b2f8f",
+    "genai_2025": "#8f6400"
+   }
+  },
+  {
+   "check": "Figure 7: every mix artist (22) is drawn in its mix colour",
+   "passed": true,
+   "detail": []
+  },
+  {
+   "check": "Figure 7: DL-only limit stays black",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "check": "Figure 8: (a) over (c) and (b) over (d) share left and right edges; rows share top and bottom",
+   "passed": true,
+   "detail": {
+    "left_column": [
+     0.97,
+     3.97,
+     0.97,
+     3.97
+    ],
+    "right_column": [
+     4.97,
+     7.0526,
+     4.97,
+     7.0526
+    ],
+    "top_row": [
+     0.635,
+     0.635,
+     0.635,
+     0.955,
+     0.955,
+     0.955
+    ],
+    "bottom_row": [
+     0.105,
+     0.105,
+     0.105,
+     0.46,
+     0.46,
+     0.46
+    ]
+   }
   },
   {
    "check": "fig4_activation_w5.pdf: no Type 3 fonts, TrueType embedded, STIX only",

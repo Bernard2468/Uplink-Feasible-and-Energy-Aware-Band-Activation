@@ -141,6 +141,10 @@ MIXLAB = {'ericsson_typical': 'UL/DL 10/90', 'genai_2025': 'UL/DL 26/74'}
 MIXS = {'ericsson_typical': '10/90', 'genai_2025': '26/74'}
 MIX_LS = {'ericsson_typical': '-', 'genai_2025': '--'}
 MIX_FILL = {'ericsson_typical': True, 'genai_2025': False}
+# mix colours where a figure has no controllers (Figure 7; §10.10): plum / bronze, validated with the dataviz checker
+# (pair: CVD 18.4 deutan, tritan 7.3 with marker/position as secondary encoding; normal vision 23.8) and >= 15 OKLab
+# Delta E from every controller and scenario colour, so a mix is never read as a controller
+MIX_COL = {'ericsson_typical': '#9b2f8f', 'genai_2025': '#8f6400'}
 NCELL_COL = ['#86b6ef', '#3987e5', '#1c5cab', '#0d366b']      # ordinal ramp, validated (--ordinal)
 SCN_LAB = {'primary_S0': 'Primary, S0', 'primary_S1': 'Primary, S1', 'primary_S2': 'Primary, S2',
            'cat2_S0': 'Cat 2 sleep, S0', 'cat2_S1': 'Cat 2 sleep, S1', 'cat2_S2': 'Cat 2 sleep, S2',
@@ -178,6 +182,7 @@ plt.rcParams.update({
 SOURCE = {}      # figure -> list of rows (CSV)
 FACTS = {}       # caption facts: name -> formatted string
 ENCODING = {}    # figure -> colour-encoding checks
+PANEL_GRID = {}  # figure -> panel edges of a multi-panel grid and whether they align (§10.10)
 
 
 def rec(fig, panel, series, quantity, unit, value, lo=None, hi=None, ctrl='', mix='', scn='', g='', source=''):
@@ -526,7 +531,7 @@ def fig7():
     gs = fig.add_gridspec(1, 2, width_ratios=[1.0, 1.0], left=0.07, right=0.985, top=0.74, bottom=0.25, wspace=0.24)
     ax = fig.add_subplot(gs[0, 0])
     pats = [tuple(S3['patterns'][str(i)]) for i in range(8)]
-    mix_col = {'ericsson_typical': INK2, 'genai_2025': '#b3b1a8'}
+    mix_col = MIX_COL
     w = 0.36
     for i, p in enumerate(pats):
         ps = str(p)
@@ -559,7 +564,7 @@ def fig7():
     axb.set_yscale('symlog', linthresh=1.0, linscale=1.0)
     u = lambda mx_, g_: 100 * r('aon', mx_, g_, 'primary_S0')['unavoidable_share']['all_user']
     for mx in MIXES:
-        col = INK if mx == 'genai_2025' else '#7a7872'
+        col = MIX_COL[mx]
         mk = 's' if mx == 'genai_2025' else 'o'
         yt = [u(mx, g) for g in G]
         yd = [100 * D3[f'aon|{mx}|{g}|primary_S0']['unavoidable_share']['all_user'] for g in G]
@@ -593,10 +598,11 @@ def fig7():
     axb.yaxis.set_minor_locator(NullLocator())
     axb.set_xlabel('Traffic growth $g$')
     axb.set_ylabel('Unavoidable share (%)')
-    hb = [Line2D([], [], color=INK, marker='s', ms=3.8, lw=1.1, label='26/74, test week'),
-          Line2D([], [], color=INK, marker='s', ms=3.8, mfc='white', lw=0.9, ls=(0, (3, 1.5)), label='26/74, development'),
-          Line2D([], [], color='#7a7872', marker='o', ms=3.8, lw=1.1, label='10/90, test week'),
-          Line2D([], [], color='#7a7872', marker='o', ms=3.8, mfc='white', lw=0.9, ls=(0, (3, 1.5)),
+    c26, c10 = MIX_COL['genai_2025'], MIX_COL['ericsson_typical']
+    hb = [Line2D([], [], color=c26, marker='s', ms=3.8, lw=1.1, label='26/74, test week'),
+          Line2D([], [], color=c26, marker='s', ms=3.8, mfc='white', lw=0.9, ls=(0, (3, 1.5)), label='26/74, development'),
+          Line2D([], [], color=c10, marker='o', ms=3.8, lw=1.1, label='10/90, test week'),
+          Line2D([], [], color=c10, marker='o', ms=3.8, mfc='white', lw=0.9, ls=(0, (3, 1.5)),
                  label='10/90, development'),
           Line2D([], [], color=INK2, lw=0.8, ls=BUDGET_LS, label='1% (H4 threshold)'),
           Line2D([], [], color=INK2, lw=0.8, ls=(0, (1, 1.5)), label='busy hour at all-on $x^*$')]
@@ -632,15 +638,19 @@ HEAT_NORM = TwoSlopeNorm(vmin=0.0, vcenter=1.0, vmax=8.0)
 
 def fig8():
     fid = 'fig8_comparison_robustness_w9'
-    fig = plt.figure(figsize=(DOUBLE, 6.3))
-    top = fig.add_gridspec(1, 4, width_ratios=[1.0, 0.45, 0.43, 1.05], left=0.075, right=0.985, top=0.955,
-                           bottom=0.635, wspace=0.05)
-    bot = fig.add_gridspec(1, 5, width_ratios=[1.55, 0.13, 0.05, 0.22, 0.95], left=0.135, right=0.985, top=0.46,
-                           bottom=0.105, wspace=0.0)
+    W_, H_ = DOUBLE, 6.3
+    fig = plt.figure(figsize=(W_, H_))
+    # one grid for the four panels (§10.10): (a) above (c) in the left column, (b) above (d) in the right column,
+    # with identical left and right edges in each column. Inches from the left edge of the figure.
+    L0, L1, R0, R1 = 0.97, 3.97, 4.97, 0.985 * W_
+    TOP, BOT = (0.635, 0.955), (0.105, 0.46)
+    ax_at = lambda x0, x1, row: fig.add_axes([x0 / W_, row[0], (x1 - x0) / W_, row[1] - row[0]])  # noqa: E731
+    gap_a, cb_w, cb_gap = 0.07, 0.09, 0.13
+    wl1 = (L1 - L0 - gap_a) / 1.45                 # (a): left part 1.0, right part 0.45 of the broken axis
 
     # (a) broken-axis scatter of frozen operating points
     mx, g, scn = SCAT_CELL
-    axl, axr = fig.add_subplot(top[0, 0]), fig.add_subplot(top[0, 1])
+    axl, axr = ax_at(L0, L0 + wl1, TOP), ax_at(L0 + wl1 + gap_a, L1, TOP)
     for c in SCAT_CTRL:
         rr = r(c, mx, g, scn)
         x, y = 100 * rr['avoidable_violation_share']['all_user'], 100 * rr['saving_vs_aon']['point']
@@ -669,7 +679,7 @@ def fig8():
     axr.set_xticks([20, 40, 60])
     vbudget(axl, 'f8a|budget')
     axl.text(1.0, 36.4, '1% budget', ha='center', va='bottom', fontsize=7, color=INK2)
-    for a, xx, k in ((axl, 1.0, 1), (axr, 0.0, 1.0 / 0.45)):
+    for a, xx, k in ((axl, 1.0, 1), (axr, 0.0, wl1 / (L1 - L0 - gap_a - wl1))):
         a.plot([xx - 0.012 * k, xx + 0.012 * k], [-0.03, 0.03], transform=a.transAxes, color=AXIS, clip_on=False,
                lw=0.6)
     axl.set_ylabel('Saving vs all-on (%)')
@@ -677,7 +687,7 @@ def fig8():
     describe(fig, [axl, axr], '(a) Operating points, UL/DL 26/74, $g$ = 2, S2', row=0)
 
     # (b) Q3 gaps with paired intervals
-    axq = fig.add_subplot(top[0, 3])
+    axq = ax_at(R0, R1, TOP)
     ylab = []
     for i, (mx_, g_, S) in enumerate(Q3_CELLS):
         yv = len(Q3_CELLS) - 1 - i
@@ -706,11 +716,11 @@ def fig8():
     axq.set_xlabel('MPC energy gap (points of all-on energy)')
     hq = [Line2D([], [], ls='none', marker=CTRL[c]['marker'], ms=5.5 if c == 'oracle' else 4, color=CTRL[c]['color'],
                  label=CTRL[c]['label']) for c, _ in REFS]
-    axq.legend(handles=hq, ncol=1, loc='upper right', handletextpad=0.3, handlelength=1.0)
+    axq.legend(handles=hq, ncol=1, loc='upper right', bbox_to_anchor=(1.0, 0.86), handletextpad=0.3, handlelength=1.0)
     describe(fig, [axq], '(b) MPC gap to perfect-foresight references', row=0)
 
     # (c) heatmap of mpc avoidable violation share, all 196 cells
-    axh, cax = fig.add_subplot(bot[0, 0]), fig.add_subplot(bot[0, 2])
+    axh, cax = ax_at(L0, L1 - cb_w - cb_gap, BOT), ax_at(L1 - cb_w, L1, BOT)
     ncol = 2 * len(G) + 1
     Z = np.full((len(SCN_ORDER), ncol), np.nan)
     fails, enc_bad = [], []
@@ -760,11 +770,24 @@ def fig8():
     cb.outline.set_linewidth(0.5)
     cb.ax.axhline(1.0, color=INK, lw=0.9)
     cb.set_label('Avoidable violation share (%); line: 1% budget', fontsize=8)
-    cb.ax.yaxis.set_label_position('left')
-    describe(fig, [axh], '(c) MPC avoidable violation share, all 196 cells', row=1)
+    describe(fig, [axh, cax], '(c) MPC avoidable violation share, all 196 cells', row=1)
 
     # (d) mpc saving at g = 2 across energy scenarios, rows aligned with (c)
-    axd = fig.add_subplot(bot[0, 4])
+    axd = ax_at(R0, R1, BOT)
+    pos = {n: a.get_position() for n, a in (('a_left', axl), ('a_right', axr), ('b', axq), ('c_map', axh),
+                                             ('c_bar', cax), ('d', axd))}
+    edge = lambda v: round(float(v) * W_, 9)  # noqa: E731
+    grid = {'left_column': [edge(pos['a_left'].x0), edge(pos['a_right'].x1), edge(pos['c_map'].x0), edge(pos['c_bar'].x1)],
+            'right_column': [edge(pos['b'].x0), edge(pos['b'].x1), edge(pos['d'].x0), edge(pos['d'].x1)],
+            'top_row': [pos[n].y0 for n in ('a_left', 'a_right', 'b')] + [pos[n].y1 for n in ('a_left', 'a_right', 'b')],
+            'bottom_row': [pos[n].y0 for n in ('c_map', 'c_bar', 'd')] + [pos[n].y1 for n in ('c_map', 'c_bar', 'd')]}
+    aligned = (grid['left_column'][0] == grid['left_column'][2] and grid['left_column'][1] == grid['left_column'][3]
+               and grid['right_column'][0] == grid['right_column'][2] and grid['right_column'][1] == grid['right_column'][3]
+               and len(set(grid['top_row'][:3])) == 1 and len(set(grid['top_row'][3:])) == 1
+               and len(set(grid['bottom_row'][:3])) == 1 and len(set(grid['bottom_row'][3:])) == 1)
+    PANEL_GRID[fid] = {'edges_in': grid, 'aligned': aligned}
+    if not aligned:
+        raise SystemExit(f'Figure 8 panels are not on one grid: {grid}')
     gd = 2.0
     for i, scn_ in enumerate(SCN_ORDER):
         for mx_, off in (('ericsson_typical', -0.17), ('genai_2025', 0.17)):
@@ -1030,7 +1053,10 @@ def main():
         'outputs_sha256': outputs,
         'layout_checks': layout,
         'encoding_checks': ENCODING,
-        'all_layout_checks_passed': all(not v['problems'] and v['min_font_pt'] >= MIN_PT for v in layout.values()),
+        'mix_colours': MIX_COL,
+        'panel_grid': PANEL_GRID,
+        'all_layout_checks_passed': (all(not v['problems'] and v['min_font_pt'] >= MIN_PT for v in layout.values())
+                                     and all(v['aligned'] for v in PANEL_GRID.values())),
     }
     (OUT / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8', newline='\n')
     print('layout checks passed' if manifest['all_layout_checks_passed'] else 'LAYOUT PROBLEMS (see manifest)')

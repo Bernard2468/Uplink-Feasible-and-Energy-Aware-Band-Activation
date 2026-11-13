@@ -3167,3 +3167,53 @@ The scripts change accordingly (`model_figures.py`,
   manifest are untouched.
 - **Lesson:** after adding files to a shared output folder, re-run every
   verifier that reads that folder.
+
+### 10.10 Figure 7 in colour and Figure 8 on one grid (user request, 2026-11-13)
+
+**Figure 7 was grey.**
+- **Cause:** I applied 10.5's rule "mixes are encoded by marker fill and
+  line style" literally. That rule assumes colour is already taken by the
+  controllers, but Figure 7 shows no controllers, so it ended up grey.
+- **Change:** both panels now colour the two UL/DL mixes: 10/90 plum
+  `#9b2f8f`, 26/74 bronze `#8f6400`.
+  - In (a) these are the bars; in (b) the lines, markers, x* lines and
+    their labels.
+  - The DL-only limit stays black, and test vs development keeps filled and
+    solid vs open and dashed.
+- **Why these colours:** all eight palette hues belong to controllers.
+  Reusing one would make a mix read as a controller, for example MPC blue
+  for 10/90.
+  - Checked with the dataviz validator. The pair passes every gate:
+    normal-vision ΔE 23.8, CVD 18.4 (deutan).
+  - Tritan separation is 7.3. That is legal with secondary encoding, which
+    Figure 7 has: fixed bar position in (a), and circle vs square markers in
+    (b).
+  - Each colour is at least 15 OKLab ΔE from every controller colour and
+    from the S0–S2 blues. The closest pairs are plum to violet (16.0) and
+    bronze to green (16.4). Teal, olive and brown candidates failed this
+    test or the chroma floor.
+- **Rule amended:** mixes take these two colours only in figures without
+  controller colours. Elsewhere they keep marker fill, line style or panel.
+
+**Figure 8 was misaligned.**
+- **Cause:** the top row and the bottom row used two independent grid
+  layouts. Panel (c), with two heatmaps and a colour bar, was wider than
+  (a), which shifted and narrowed (d).
+- **Change:** one explicit grid, in inches.
+  - (a) and (c) share left and right edges (0.97 and 3.97 in); (c)'s colour
+    bar now fits inside that column, with its label moved to the gutter.
+  - (b) and (d) share theirs (4.97 and 7.05 in).
+  - Each row shares top and bottom.
+  - (b)'s legend moved below the "Q3 limit (S0)" label, which it crowded.
+- **Build check:** the build asserts the alignment, and the manifest
+  records the edges.
+
+**Verification additions** (`verify_frozen_figures.py`):
+- every Figure 7 mix artist (22) carries its mix colour;
+- the DL-only limit is black;
+- no mix colour equals a controller or scenario colour;
+- the manifest records the same mix colours;
+- the recorded Figure 8 edges align.
+
+No plotted value, source-data row or caption changes. Figures 4–6 are
+byte-identical.

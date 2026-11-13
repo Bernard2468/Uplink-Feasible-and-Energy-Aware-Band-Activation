@@ -422,6 +422,27 @@ consts = {
 for k, ok in consts.items():
     check(f'caption constant: {k}', ok)
 
+# ------------------------------------------------------------------ Figure 7 colours and Figure 8 grid (§10.10)
+MIXC = {'ericsson_typical': '#9b2f8f', 'genai_2025': '#8f6400'}     # plum / bronze, validated (§10.10)
+SCNC = {'#6da7ec', '#2a78d6', '#104281'}
+check('mix colours are distinct from every controller and scenario colour',
+      not (set(MIXC.values()) & (set(PAL.values()) | SCNC)) and len(set(MIXC.values())) == 2)
+check('figure manifest records the same mix colours', MF.get('mix_colours') == MIXC, MF.get('mix_colours'))
+p7 = PV['fig7_capacity_boundary_w3w8']
+bad7 = [g_ for g_, v in p7.items() if g_.split('|')[0] in ('f7a', 'f7b') and len(g_.split('|')) > 2
+        and g_.split('|')[2] in MIXC and g_.split('|')[1] in ('both', 'test', 'dev', 'xstar')
+        and v.get('facecolor', v.get('color')) != MIXC[g_.split('|')[2]]]
+n7 = sum(1 for g_ in p7 if g_.split('|')[1:2] and g_.split('|')[1] in ('both', 'test', 'dev', 'xstar'))
+check(f'Figure 7: every mix artist ({n7}) is drawn in its mix colour', not bad7 and n7 == 16 + 6, bad7[:4])
+check('Figure 7: DL-only limit stays black', all(p7[f'f7a|dl|{i}']['color'] == '#0b0b0b' for i in range(8)))
+pg = MF.get('panel_grid', {}).get('fig8_comparison_robustness_w9', {})
+e_ = pg.get('edges_in', {})
+check('Figure 8: (a) over (c) and (b) over (d) share left and right edges; rows share top and bottom',
+      pg.get('aligned') is True and e_['left_column'][0] == e_['left_column'][2] and e_['left_column'][1] == e_['left_column'][3]
+      and e_['right_column'][0] == e_['right_column'][2] and e_['right_column'][1] == e_['right_column'][3]
+      and len(set(e_['top_row'][:3])) == 1 and len(set(e_['bottom_row'][:3])) == 1
+      and len(set(e_['top_row'][3:])) == 1 and len(set(e_['bottom_row'][3:])) == 1, e_)
+
 # ------------------------------------------------------------------ PDF fonts and PNG size
 for fid in PV:
     pdf = (FIG / f'{fid}.pdf').read_bytes()

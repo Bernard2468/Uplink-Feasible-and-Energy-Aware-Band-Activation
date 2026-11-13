@@ -3547,3 +3547,11 @@ verifier reruns the comparison whenever the .docx is present.
 - L^O2I is described as building penetration only, but in-car users have a
   car penetration loss;
 - the supplementary material.
+
+**Title page (author request, 2026-11-13).** The placeholder footnote under
+the author name is removed; the title page shows the title and the author
+name only.
+The .docx and its PDF are no longer in the repository folder. The transcription
+check was rerun from an unpacked copy of the .docx, made earlier this session;
+it is anchored to its `word/document.xml` (SHA-256 `c35813e9…c21a48a`) and
+gave the same 12,669 tokens and the same 35 documented differences.

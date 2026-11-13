@@ -16,7 +16,7 @@ git blob. Writes paper/figures/:
   source_data/fig{1,2,3}_*.csv, plotted_values_fig1-3.json, caption_facts_fig1-3.json, captions_fig1-3.md,
   manifest_fig1-3.json
 Checked by scripts/figures/verify_model_figures.py, an independent recomputation.
-Rules: docs/PHASE_3_ENERGY_PROTOCOL.md §10.4-10.5, §10.7 and §10.9.
+Rules: docs/PHASE_3_ENERGY_PROTOCOL.md §10.4-10.5, §10.7, §10.9 and §10.12.
 """
 import hashlib
 import json
@@ -285,7 +285,11 @@ def fig1():
 # ---------------------------------------------------------------- Figure 2 (working 2(c), single panel; §10.9)
 MODELS = [('noise_multi', 'No interference'), ('primary', 'Beam-averaged'), ('sd', 'Directional'),
           ('geo', 'Pure pattern')]
-MOD_COL = {'noise_multi': '#b9b7af', 'primary': '#86847d', 'sd': '#4a4945', 'geo': '#0b0b0b'}
+# One hue per interference model, data marks only; text, threshold lines and the glyph legend stay neutral (§10.12).
+# Aqua, blue, orange, plum: all from the paper's palette; validated on white with the data-viz six-check validator,
+# all pairs: worst CVD Delta E 8.4 (protan, orange-aqua), worst normal-vision Delta E 21.6, every colour >= 3:1.
+# Each row is also named by its tick label, so identity never rests on colour alone.
+MOD_COL = {'noise_multi': '#199e70', 'primary': '#2a78d6', 'sd': '#eb6834', 'geo': '#9b2f8f'}
 DIRS = (('DL', 'DL_7.2GHz', 'DL, 7.2 GHz'), ('UL_F2', 'UL_7.2GHz', 'UL, 7.2 GHz'))
 
 
@@ -637,6 +641,7 @@ def main():
         'font': {'family': 'STIXGeneral', 'file': Path(FF.FONT_PATH).name, 'sha256': sha(FF.FONT_PATH),
                  'pdf_fonttype': 42},
         'width_in': widths,
+        'fig2_model_colours': MOD_COL,
         'input_sha256': INPUTS_BEFORE,
         'shared_module_input_sha256': FF.INPUTS_BEFORE,
         'inputs_unchanged_after_plotting': True,

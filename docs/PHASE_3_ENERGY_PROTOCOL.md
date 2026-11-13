@@ -1,6 +1,6 @@
 # Phase 3: energy model and band-activation control (protocol)
 
-Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; publication-readiness audit recorded (§10); figure stage complete, Figures 1–8 (§10.6, §10.8; Figures 1 and 2 revised to single panels, §10.9).** Revision 1
+Status: **P3.0 design proposal, revisions 1-3 (2026-11-09/10); P3.1 complete (run 2, amendment 1); P3.2a complete (run 2, amendment 1); P3.2b complete (run 2, amendment 1); P3.2c complete (run 1, revision 4); revision 5 and P3.3 pre-registered; P3.3 complete (run 2, amendment 1); P3.4 (held-out test) complete (run 1): all gates G0–G10 passed, H1, H2, H4 and Q3 held; publication-readiness audit recorded (§10); figure stage complete, Figures 1–8 (§10.6, §10.8; Figures 1 and 2 revised to single panels, §10.9; Figures 2 and 7 in colour, §10.10, §10.12); manuscript draft (§10.11).** Revision 1
 follows the ChatGPT audit of P3.0; §5 lists each audit point with its
 verdict and the evidence. Nothing in this file is pre-registered yet. Each
 stage below gets its own config, code, tests and pre-registration commit
@@ -3297,3 +3297,64 @@ the frozen code.
 - the affiliation and acknowledgment;
 - the version of TS 38.214;
 - the supplementary material referred to in Section IV.A.
+
+### 10.12 Figure 2 in colour (user request, 2026-11-13)
+
+**Figure 2 was grey.** The four interference models were drawn as a grey
+ramp, from light grey (no interference) to black (pure pattern). The user
+asked for colour on the data marks only, clearly distinguishable.
+
+**Change:** one hue per model, applied to its range line, end ticks, open
+5th-percentile marker and filled median, in both the DL and UL groups:
+- no interference: aqua `#199e70`;
+- beam-averaged: blue `#2a78d6`;
+- directional: orange `#eb6834`;
+- pure pattern: plum `#9b2f8f`.
+
+Unchanged: the text, tick labels, the F2-share column, the glyph legend
+(it explains the glyphs, not the models) and the F2 threshold lines, which
+stay neutral grey. Geometry, values and caption are unchanged; the caption
+names no colours.
+
+**Why these colours.**
+- Checked with the dataviz validator on the white page, all six pairs:
+  - worst normal-vision ΔE 21.6 (blue–aqua; floor 15);
+  - worst CVD ΔE 8.4 (protan, orange–aqua; target 8);
+  - every colour at least 3:1 against white (3.20–6.57).
+- Rejected sets:
+  - blue, orange, green, violet: blue–violet normal-vision ΔE 10.5;
+  - blue, orange, green, red: orange–red ΔE 7.1;
+  - any set with green `#008300` and orange: protan ΔE 3.2;
+  - the palette aqua `#1baf7a`: contrast 2.82:1, too light for thin
+    lines. Its darker palette step `#199e70` is used instead.
+- **Colour reuse.** All four colours already appear in the paper's palette,
+  for controllers (blue, orange, and aqua in its lighter step `#1baf7a`)
+  and for the 10/90 mix (plum, Figure 7). Any four clear colours would repeat palette hues.
+  Figure 2 shows neither controllers nor mixes, and each row is named by
+  its tick label, so identity never rests on colour. 10.10's rule (mixes
+  take plum and bronze only in figures without controller colours) is
+  unaffected.
+
+**Verification additions** (`verify_model_figures.py`, now 200 checks). The
+verifier recomputes the colour metrics itself (OKLab; Machado–Oliveira–
+Fernandes 2009 CVD matrices; WCAG contrast) and reproduces the validator's
+21.6 and 8.4. New checks:
+- each model is drawn in its registered colour, and the manifest records
+  the same colours;
+- open 5th-percentile markers and filled medians, both in the row colour;
+- the threshold lines stay neutral;
+- chroma and lightness band;
+- the all-pairs ΔE gates;
+- contrast against white.
+
+Figures 1 and 3 are byte-identical. In the manuscript, `numbers.tex` is
+unchanged; only Figure 2 and the recorded hashes change.
+
+**Correction (commit 6e3a92b).** `numbers.json` recorded a stale hash of
+this protocol. I ran the manuscript verification, then added 10.11, then
+committed. The verifier's "numbers.json records the same input hashes"
+check would have failed on that commit; no macro value was affected (the
+one protocol-derived macro, the 235 m square size, is read from D31, which
+10.11 did not change). From now on, protocol entries are written before the
+numbers are regenerated and verified, and the verifier is re-run on the
+committed tree.

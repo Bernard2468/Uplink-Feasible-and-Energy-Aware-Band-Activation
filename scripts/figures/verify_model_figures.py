@@ -504,6 +504,60 @@ p2 = PV['fig2_interference_feasibility_w2']
 mc = {sn: {p2[f'f2|{mt}|{sn}|{part}']['color'] for mt in DIRS for part in ('range', 'ends', 'p5', 'p50')} for sn in MOD}
 check('Figure 2: one colour per interference model in both rows groups, four distinct colours',
       all(len(v) == 1 for v in mc.values()) and len({next(iter(v)) for v in mc.values()}) == 4, mc)
+
+
+# Figure 2 colours (§10.12), computed here from the hex values: OKLab (Ottosson), CVD by the Machado-Oliveira-
+# Fernandes (2009) severity-1.0 matrices in linear RGB, WCAG 2 contrast. Gates: those of the data-viz validator.
+def _lin(h):
+    c = np.array([int(h[i:i + 2], 16) / 255.0 for i in (1, 3, 5)])
+    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+
+
+def _oklab(rgb):
+    lms = np.cbrt(np.array([[0.4122214708, 0.5363325363, 0.0514459929], [0.2119034982, 0.6806995451, 0.1073969566],
+                            [0.0883024619, 0.2817188376, 0.6299787005]]) @ rgb)
+    return np.array([[0.2104542553, 0.7936177850, -0.0040720468], [1.9779984951, -2.4285922050, 0.4505937099],
+                     [0.0259040371, 0.7827717662, -0.8086757660]]) @ lms
+
+
+CVD = {'protan': [[0.152286, 1.052583, -0.204868], [0.114503, 0.786281, 0.099216], [-0.003882, -0.048116, 1.051998]],
+       'deutan': [[0.367322, 0.860646, -0.227968], [0.280085, 0.672501, 0.047413], [-0.011820, 0.042940, 0.968881]],
+       'tritan': [[1.255528, -0.076749, -0.178779], [-0.078411, 0.930809, 0.147602], [0.004733, 0.691367, 0.303900]]}
+
+
+def _de(h1, h2, sim=None):
+    f = (lambda c: c) if sim is None else (lambda c: np.clip(np.array(CVD[sim]) @ c, 0.0, 1.0))
+    return 100.0 * float(np.linalg.norm(_oklab(f(_lin(h1))) - _oklab(f(_lin(h2)))))
+
+
+def _contrast_white(h):
+    y = float(np.array([0.2126, 0.7152, 0.0722]) @ _lin(h))
+    return 1.05 / (y + 0.05)
+
+
+F2_COL = {'noise_multi': '#199e70', 'primary': '#2a78d6', 'sd': '#eb6834', 'geo': '#9b2f8f'}   # registered, §10.12
+drawn2 = {sn: next(iter(v)) for sn, v in mc.items()}
+check('Figure 2: each interference model drawn in its registered colour', drawn2 == F2_COL, drawn2)
+check('figure manifest records the same Figure 2 colours', MAN.get('fig2_model_colours') == F2_COL,
+      MAN.get('fig2_model_colours'))
+bad2 = [g_ for sn in MOD for mt in DIRS for g_, want in
+        ((f'f2|{mt}|{sn}|p5', ('#ffffff', F2_COL[sn])), (f'f2|{mt}|{sn}|p50', (F2_COL[sn], F2_COL[sn])))
+        if (p2[g_]['mfc'], p2[g_]['mec']) != want]
+check('Figure 2: 5th-percentile markers open (white face), medians filled, both in the row colour', not bad2, bad2[:4])
+check('Figure 2: F2 threshold lines stay neutral grey (not a data colour)',
+      all(p2[f'f2|{mt}|threshold']['color'] == '#52514e' for mt in DIRS))
+pairs2 = [(a, b) for i, a in enumerate(MOD) for b in MOD[i + 1:]]
+lab2 = {sn: _oklab(_lin(F2_COL[sn])) for sn in MOD}
+chroma2 = {sn: round(float(math.hypot(lab2[sn][1], lab2[sn][2])), 4) for sn in MOD}
+check('Figure 2 colours are chromatic (OKLCH C >= 0.10) and in the light band (0.43 <= L <= 0.77)',
+      all(c_ >= 0.10 for c_ in chroma2.values()) and all(0.43 <= lab2[sn][0] <= 0.77 for sn in MOD),
+      {sn: (round(float(lab2[sn][0]), 3), chroma2[sn]) for sn in MOD})
+nv2 = min(_de(F2_COL[a], F2_COL[b]) for a, b in pairs2)
+cvd2 = min(_de(F2_COL[a], F2_COL[b], s) for a, b in pairs2 for s in ('protan', 'deutan'))
+check('Figure 2 colours, all pairs: normal-vision Delta E >= 15 and protan/deutan Delta E >= 8',
+      nv2 >= 15.0 and cvd2 >= 8.0, f'normal {nv2:.1f}, CVD {cvd2:.1f}')
+con2 = {sn: round(_contrast_white(F2_COL[sn]), 2) for sn in MOD}
+check('Figure 2 colours: contrast >= 3:1 against the white page', all(v >= 3.0 for v in con2.values()), con2)
 for k, h in MAN['outputs_sha256'].items():
     check(f'output hash matches figure manifest: {k}', sha(FIG / k) == h)
 check('figure manifest: layout and build checks passed', MAN['all_layout_checks_passed'] is True

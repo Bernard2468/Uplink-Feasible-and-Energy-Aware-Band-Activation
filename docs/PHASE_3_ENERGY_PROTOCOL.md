@@ -3217,3 +3217,83 @@ The scripts change accordingly (`model_figures.py`,
 
 No plotted value, source-data row or caption changes. Figures 4–6 are
 byte-identical.
+
+### 10.11 Manuscript draft (2026-11-13)
+
+The user asked for the draft to follow their outline, with the references
+they supplied cited in IEEE style, numbered in order of first citation.
+`paper/manuscript/` holds the IEEEtran draft: 12 pages, Figures 1–8,
+Tables I–III and Algorithm 1.
+
+**How numbers enter the text.** No result is typed into `main.tex`.
+- **Generation.** `scripts/paper/paper_numbers.py` writes 172 macros from
+  the frozen outputs. Each input is hash-checked against its manifest, and
+  P3.4's `validation.json` against its committed blob.
+- **Kinds of macro.** Each macro is one of:
+  - a verified figure-caption fact;
+  - a value at a key path;
+  - a stated aggregate.
+- **Verification.** `scripts/paper/verify_manuscript.py` (77 checks, all
+  passed):
+  - recomputes every non-figure macro with its own code;
+  - rejects any typed number that is not on an allowlist of design
+    constants with justifications;
+  - checks the qualitative claims of the text against the data;
+  - checks Algorithm 1 and the model equations against the frozen
+    controller code (its blob at e55fd3a);
+  - checks the references, the figure hashes, the abstract length
+    (≤ 250 words) and a clean compile with every float before the
+    references.
+- **Mutation test.** 7 of 7 planted errors were caught: a wrong value, a
+  typed number, an undefined macro, a missing entry, a swapped figure, a
+  non-ASCII initial and an unknown citation.
+
+**References.** Every DOI and preprint was checked against its record:
+- 28 DOIs against Crossref (26 supplied, 2 added);
+- the dataset DOI against DataCite;
+- the two preprints against arXiv.
+
+For the supplied entries, titles, authors, volumes, issues and pages match
+the supplied list. Changes and additions:
+- **[10] L2S (IEEE TVT 2026) exists.** Crossref confirms vol. 75, no. 9,
+  pp. 20896–20911 (DOI 10.1109/TVT.2026.3681243). The exclusion in
+  10.2, row 6 is withdrawn; it is cited.
+- **[30] TR 38.901:** V19.5.0 (2026-09) instead of V16.1.0, because the
+  results use V19.5.0 from E1c onward.
+- **[35] Milan dataset:** version 1.3 (DataCite; the files fetched), not
+  "Version 1".
+- **Page numbers added:** ICASSP 2026, pp. 21476–21480; CCNC 2026,
+  pp. 1–6.
+- **Seven methods sources added, each in the version that was read:**
+  - Golard et al., PIMRC 2024;
+  - Siomina and Yuan, IEEE TWC 2012;
+  - Bonald et al., CWI PNA-E0302;
+  - ETSI ES 202 706-1 V1.7.1;
+  - 3GPP TS 38.133 V19.6.0 and TS 38.306 V19.4.0;
+  - the Ericsson Mobility Report GenAI article (June 2025).
+- **TS 38.214:** no version or date was supplied; to be confirmed by the
+  author.
+
+**Claims corrected while drafting, before any were committed:**
+1. "MPC's violation share is never higher than exh's" is false. Of the
+   137 cases in which both meet the budget, it is higher in one (10/90,
+   g = 3, Cat 2 sleep, S0). The text now gives the count.
+2. In Fig. 8(a), the time-of-day schedule does not only "save little". It
+   also exceeds the budget (2.96%), and the text says so.
+3. "The test-week busy hour is higher in most squares" came from a
+   verification-time analysis of the raw traces, not from the summaries.
+   It was removed. The text keeps only the dev-to-test drop shared by
+   MPC (0.45–1.70 points) and the oracle (0.44–1.62).
+4. A UE transmits "at most 23 dBm" only in power class 3; the text says
+   so.
+5. "FR3 favored for cell-edge users" in [11] is relative to FR2 only.
+6. The co-location finding is attributed to [18] alone.
+
+**Decided by the drafting** (the user's single-panel decision, 10.9): the
+controller appears as Algorithm 1. Each of its lines is checked against
+the frozen code.
+
+**Open items:**
+- the affiliation and acknowledgment;
+- the version of TS 38.214;
+- the supplementary material referred to in Section IV.A.

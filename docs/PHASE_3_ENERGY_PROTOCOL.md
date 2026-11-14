@@ -3561,3 +3561,37 @@ reports) and `scripts/paper/` are kept outside git and ignored. The four
 unpushed commits that had added them were rewritten without them; their
 other changes are kept. All the files remain in the working folder and all
 checks still pass from there.
+
+### 10.15 Fig. 1 corrected to match the study (author request, 2026-11-14)
+
+The author asked for Fig. 1, their conceptual image, to be corrected to
+what the study models, keeping the same figure. The edits are made on the
+original pixels by `scripts/paper/fix_fig1.py`; the original stays unchanged
+beside the corrected file.
+- **"Transmit antema pattern (Interferer)"** becomes "Transmit antenna
+  pattern (Interferer)": a typo.
+- **The angle symbols α, β and φ are removed**, with their arcs and the
+  dash-dot reference line, and a red smudge beside β is cleaned.
+  - The paper never uses angles at the user.
+  - In the text, α is the forecast quantile level and β the linear path
+    gain.
+  - The array response of eq. (3) is evaluated at the transmitter.
+  - The cleared areas are filled by continuing each beam's own colour
+    along its direction, and the two beam lines are redrawn straight.
+- **"Delayed scattering (τ1, τ2, …)" becomes "Scattering (diffuse
+  component)".** The model has no path delays. Scattered power enters
+  through the diffuse component (1 − κ) of eq. (3), the text's own term,
+  and through the calibrated beamforming deficit. The dashed scattered
+  path and "Local scattering" stay.
+- **The bottom banner is re-typeset**, because "UL/DL" carried stray
+  underline marks. Its wording is unchanged.
+- **The caption** reads "…serving and interfering beams, scattering, and
+  directional interference…" instead of "…multipath propagation…": the
+  study does not resolve multipath (Section VI).
+
+**Check.** The verifier confirms that:
+- the original image still has its .docx hash;
+- the corrected image has the same size;
+- every changed pixel (33,392) lies inside one of the recorded edit boxes.
+
+The transcription check documents the one caption change.

@@ -16,3 +16,7 @@ cmwave_phase2_patch_*.zip
 external/
 *.egg-info/
 .ipynb_checkpoints/
+
+# The manuscript, its figures and its tooling are kept outside git (author request, 2026-11-14).
+paper/
+scripts/paper/

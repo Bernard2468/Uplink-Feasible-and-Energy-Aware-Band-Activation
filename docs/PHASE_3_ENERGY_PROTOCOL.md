@@ -3555,3 +3555,9 @@ The .docx and its PDF are no longer in the repository folder. The transcription
 check was rerun from an unpacked copy of the .docx, made earlier this session;
 it is anchored to its `word/document.xml` (SHA-256 `c35813e9…c21a48a`) and
 gave the same 12,669 tokens and the same 35 documented differences.
+
+**Repository (author request, 2026-11-14).** `paper/` (manuscript, figures,
+reports) and `scripts/paper/` are kept outside git and ignored. The four
+unpushed commits that had added them were rewritten without them; their
+other changes are kept. All the files remain in the working folder and all
+checks still pass from there.
